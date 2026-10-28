@@ -13,7 +13,7 @@
   .wrap { max-width:1300px; margin:0 auto; padding:16px; }
   .maker-header { display:flex; align-items:center; justify-content:space-between; gap:12px; flex-wrap:wrap; margin-bottom:14px; }
   .maker-header h1 { margin:4px 0; }
-  .btn-storyboard { background:#1565c0; color:white; margin-left:auto; }
+  .btn-storyboard { background:#1565c0; color:white; }
   .btn-storyboard:hover { background:#0d47a1; }
   #storyboardDialog { width:min(1100px,calc(100% - 24px)); max-height:90vh; padding:0; border:0; border-radius:16px; color:#26364a; box-shadow:0 18px 65px #162e4c50; }
   #storyboardDialog::backdrop { background:#142c4b80; }
@@ -132,10 +132,19 @@
 document.addEventListener('DOMContentLoaded', () => {
   const nav = document.createElement('nav');
   nav.setAttribute('aria-label', '매쓰투어 메뉴');
-  nav.style.cssText = 'display:flex;gap:16px;align-items:center;padding:10px 16px;background:#fff;color:#223;font:14px/1.5 sans-serif;border-bottom:1px solid #dde3eb;';
+  nav.style.cssText = 'display:flex;flex-wrap:wrap;gap:8px;align-items:center;padding:10px 16px;background:#fff;color:#223;font:14px/1.5 sans-serif;border-bottom:1px solid #dde3eb;';
   const brand = document.createElement('strong'); brand.textContent = '인천 매쓰투어'; nav.appendChild(brand);
-  for (const [href, text] of [['./index.html','체험하기'],['./make.html','미션 만들기']]) {
-    const a=document.createElement('a'); a.href=new URL(href, window.MATHTOUR_CONFIG?.siteBase || location.href).href; a.textContent=text; a.style.color='#2857aa'; nav.appendChild(a);
+  const storyboard = document.getElementById('openStoryboard');
+  const menuStyle = 'display:inline-flex;align-items:center;padding:7px 10px;border:1px solid #d7e3ee;border-radius:8px;background:#f4f8fe;color:#2857aa;font:inherit;font-weight:600;text-decoration:none;cursor:pointer;';
+  const first = storyboard || document.createElement('a');
+  if (!storyboard) first.href = new URL('./make.html#storyboard', window.MATHTOUR_CONFIG?.siteBase || location.href).href;
+  first.textContent = '1. 스토리보드 작성';
+  first.title = '스토리보드 확인 · 작성 양식 다운로드';
+  first.className = ''; first.style.cssText = menuStyle; nav.appendChild(first);
+  for (const [href, text] of [['./make.html','2. 미션 만들기'],['./index.html','3. 체험하기']]) {
+    const a=document.createElement('a');
+    a.href=storyboard && href === './make.html' ? '#mission' : new URL(href, window.MATHTOUR_CONFIG?.siteBase || location.href).href;
+    a.textContent=text; a.style.cssText=menuStyle; nav.appendChild(a);
   }
   document.body.prepend(nav);
   if (!window.MATHTOUR_CONFIG?.apiUrl || window.MATHTOUR_CONFIG?.localTest) {
@@ -151,9 +160,9 @@ document.addEventListener('DOMContentLoaded', () => {
 </head>
 <body>
 <div class="wrap">
-  <header class="maker-header">
+  <header class="maker-header" id="mission">
+    <button type="button" class="btn btn-storyboard" id="openStoryboard" aria-haspopup="dialog">1. 스토리보드 작성</button>
     <h1>🧩 MATHTOUR INCHEON 미션 만들기</h1>
-    <button type="button" class="btn btn-storyboard" id="openStoryboard" aria-haspopup="dialog">📋 스토리보드 보기 · 다운로드</button>
   </header>
 
   <div class="row">
@@ -1377,7 +1386,14 @@ document.querySelector('.wrap').addEventListener('change', function (event) {
       '현재 불러온 장면과 3단계에서 수정한 표정·대사·게임 번호를 표시해요. 본문 코드를 수정했다면 먼저 장면 불러오기를 눌러 주세요. 다운로드는 제출과 별개예요.';
     byId('storyboardDownloadStatus').textContent = '선택한 스토리보드를 저장해요. 게임 파일 없이도 내려받을 수 있어요.';
   }
-  byId('openStoryboard').addEventListener('click', () => { mode = scenes.length ? 'current' : 'template'; render(); dialog.showModal(); byId('closeStoryboard').focus(); });
+  function openStoryboard() {
+    if (dialog.open) return;
+    mode = scenes.length ? 'current' : 'template'; render(); dialog.showModal(); byId('closeStoryboard').focus();
+  }
+  byId('openStoryboard').addEventListener('click', openStoryboard);
+  function openLinkedStoryboard() { if (location.hash === '#storyboard') openStoryboard(); }
+  document.addEventListener('DOMContentLoaded', openLinkedStoryboard);
+  window.addEventListener('hashchange', openLinkedStoryboard);
   byId('closeStoryboard').addEventListener('click', () => dialog.close());
   byId('showCurrentStoryboard').addEventListener('click', () => { mode = 'current'; render(); });
   byId('showStoryboardTemplate').addEventListener('click', () => { mode = 'template'; render(); });

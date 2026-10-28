@@ -38,7 +38,14 @@
       '현재 불러온 장면과 3단계에서 수정한 표정·대사·게임 번호를 표시해요. 본문 코드를 수정했다면 먼저 장면 불러오기를 눌러 주세요. 다운로드는 제출과 별개예요.';
     byId('storyboardDownloadStatus').textContent = '선택한 스토리보드를 저장해요. 게임 파일 없이도 내려받을 수 있어요.';
   }
-  byId('openStoryboard').addEventListener('click', () => { mode = scenes.length ? 'current' : 'template'; render(); dialog.showModal(); byId('closeStoryboard').focus(); });
+  function openStoryboard() {
+    if (dialog.open) return;
+    mode = scenes.length ? 'current' : 'template'; render(); dialog.showModal(); byId('closeStoryboard').focus();
+  }
+  byId('openStoryboard').addEventListener('click', openStoryboard);
+  function openLinkedStoryboard() { if (location.hash === '#storyboard') openStoryboard(); }
+  document.addEventListener('DOMContentLoaded', openLinkedStoryboard);
+  window.addEventListener('hashchange', openLinkedStoryboard);
   byId('closeStoryboard').addEventListener('click', () => dialog.close());
   byId('showCurrentStoryboard').addEventListener('click', () => { mode = 'current'; render(); });
   byId('showStoryboardTemplate').addEventListener('click', () => { mode = 'template'; render(); });

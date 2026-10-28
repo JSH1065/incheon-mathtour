@@ -13,7 +13,7 @@
   .wrap { max-width:1300px; margin:0 auto; padding:16px; }
   .maker-header { display:flex; align-items:center; justify-content:space-between; gap:12px; flex-wrap:wrap; margin-bottom:14px; }
   .maker-header h1 { margin:4px 0; }
-  .btn-storyboard { background:#1565c0; color:white; margin-left:auto; }
+  .btn-storyboard { background:#1565c0; color:white; }
   .btn-storyboard:hover { background:#0d47a1; }
   #storyboardDialog { width:min(1100px,calc(100% - 24px)); max-height:90vh; padding:0; border:0; border-radius:16px; color:#26364a; box-shadow:0 18px 65px #162e4c50; }
   #storyboardDialog::backdrop { background:#142c4b80; }
@@ -128,13 +128,13 @@
 
 </style>
 <script src="./config.js?v=20261028-live"></script>
-<script src="./site-common.js" defer></script>
+<script src="./site-common.js?v=20261029-nav" defer></script>
 </head>
 <body>
 <div class="wrap">
-  <header class="maker-header">
+  <header class="maker-header" id="mission">
+    <button type="button" class="btn btn-storyboard" id="openStoryboard" aria-haspopup="dialog">1. 스토리보드 작성</button>
     <h1>🧩 MATHTOUR INCHEON 미션 만들기</h1>
-    <button type="button" class="btn btn-storyboard" id="openStoryboard" aria-haspopup="dialog">📋 스토리보드 보기 · 다운로드</button>
   </header>
 
   <div class="row">
@@ -780,7 +780,7 @@ document.querySelector('.wrap').addEventListener('change', function (event) {
 <script src="./submission-files.js"></script>
 <script src="./project-maker.js"></script>
 <script src="./storyboard-core.js"></script>
-<script src="./storyboard-panel.js"></script>
+<script src="./storyboard-panel.js?v=20261029-nav"></script>
 
 </body>
 </html>

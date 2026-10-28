@@ -31,7 +31,8 @@ if (!index.includes('<th>게임 번호·연결 파일</th>')) {
   });
 }
 index = index.replace('GitHub Pages에 게시한 수업 예시입니다. OneDrive 제출은 아직 연결 전이며, 파일 일괄 업로드는 로컬 시험 환경에서 확인했습니다.', 'GitHub Pages에 게시한 수업 예시입니다. 제작기에서 본문·게임·사진을 함께 가져와 GitHub로 제출할 수 있어요.');
-index = index.replace('학교·이름을 입력하고 미리보기 확인 완료 후, 제출 파일 준비 (개별 파일)를 눌러 파일을 저장해요. OneDrive 제출 링크는 아직 연결 전이에요.', '학교·이름을 입력하고 미리보기 확인 완료 후, GitHub에 업로드를 눌러 제출해요. 우측 상단 스토리보드 보기·다운로드에서 장면별 게임 번호를 확인하고 기획안을 저장할 수 있어요.');
+index = index.replace('학교·이름을 입력하고 미리보기 확인 완료 후, 제출 파일 준비 (개별 파일)를 눌러 파일을 저장해요. OneDrive 제출 링크는 아직 연결 전이에요.', '학교·이름을 입력하고 미리보기 확인 완료 후, GitHub에 업로드를 눌러 제출해요. 좌측 상단 1. 스토리보드 작성에서 장면별 게임 번호를 확인하고 기획안을 저장할 수 있어요.');
+index = index.replace('우측 상단 스토리보드 보기·다운로드', '좌측 상단 1. 스토리보드 작성');
 index = index.replace('<a href="./스토리보드.txt" download>스토리보드.txt</a>', '<a href="./스토리보드.txt" download>스토리보드 TXT · AI에 전달</a>');
 if (!index.includes('href="./스토리보드.html"')) index = index.replace('<li><a href="./K02.html"', '<li><a href="./스토리보드.html">스토리보드 HTML · 표로 보기</a></li><li><a href="./K02.html"');
 await writeFile(indexPath, index);

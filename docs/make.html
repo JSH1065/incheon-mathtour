@@ -11,6 +11,21 @@
   body { margin:0; font-family:"맑은 고딕","Malgun Gothic",sans-serif; background:#f4f7fb; color:#222; padding:0; }
 
   .wrap { max-width:1300px; margin:0 auto; padding:16px; }
+  .maker-header { display:flex; align-items:center; justify-content:space-between; gap:12px; flex-wrap:wrap; margin-bottom:14px; }
+  .maker-header h1 { margin:4px 0; }
+  .btn-storyboard { background:#1565c0; color:white; margin-left:auto; }
+  .btn-storyboard:hover { background:#0d47a1; }
+  #storyboardDialog { width:min(1100px,calc(100% - 24px)); max-height:90vh; padding:0; border:0; border-radius:16px; color:#26364a; box-shadow:0 18px 65px #162e4c50; }
+  #storyboardDialog::backdrop { background:#142c4b80; }
+  .storyboard-shell { display:flex; flex-direction:column; max-height:90vh; }
+  .storyboard-toolbar { padding:18px 20px; background:#f3f7fc; border-bottom:1px solid #d7e3ee; }
+  .storyboard-heading { display:flex; justify-content:space-between; align-items:center; gap:12px; }
+  .storyboard-heading h2 { margin:0; font-size:20px; }
+  .storyboard-actions { display:flex; flex-wrap:wrap; gap:8px; margin-top:12px; }
+  .storyboard-mode[aria-pressed="true"] { background:#1565c0; color:white; }
+  .storyboard-scroll { overflow:auto; padding:20px; }
+  #storyboardNotice { margin:0 0 12px; padding:10px 12px; background:#fff8e1; border-radius:8px; font-size:13px; line-height:1.6; }
+  #storyboardDownloadStatus { min-height:1.6em; margin:8px 0 0; font-size:12px; color:#546e7a; }
   .row { display:flex; gap:16px; flex-wrap:wrap; align-items:flex-start; }
   .col { flex:1; min-width:360px; }
   .card { background:#fff; border-radius:14px; padding:16px; box-shadow:0 4px 14px rgba(0,0,0,.08); margin-bottom:16px; }
@@ -117,7 +132,10 @@
 </head>
 <body>
 <div class="wrap">
-  <h1>🧩 MATHTOUR INCHEON 미션 만들기</h1>
+  <header class="maker-header">
+    <h1>🧩 MATHTOUR INCHEON 미션 만들기</h1>
+    <button type="button" class="btn btn-storyboard" id="openStoryboard" aria-haspopup="dialog">📋 스토리보드 보기 · 다운로드</button>
+  </header>
 
   <div class="row">
     <!-- 왼쪽: 입력 + 붙여넣기 + 사진 -->
@@ -276,6 +294,24 @@
     </div>
   </div>
 </div>
+
+<dialog id="storyboardDialog" aria-labelledby="storyboardDialogTitle">
+  <div class="storyboard-shell">
+    <div class="storyboard-toolbar">
+      <div class="storyboard-heading"><h2 id="storyboardDialogTitle">스토리보드</h2><button type="button" class="btn btn-prompt" id="closeStoryboard" aria-label="스토리보드 창 닫기">닫기 ✕</button></div>
+      <div class="storyboard-actions" aria-label="스토리보드 선택">
+        <button type="button" class="btn btn-prompt storyboard-mode" id="showCurrentStoryboard" aria-pressed="true">현재 작품</button>
+        <button type="button" class="btn btn-prompt storyboard-mode" id="showStoryboardTemplate" aria-pressed="false">작성 양식</button>
+      </div>
+      <div class="storyboard-actions">
+        <button type="button" class="btn btn-storyboard" id="downloadStoryboardText" style="margin-left:0">TXT 다운로드 · AI에 전달</button>
+        <button type="button" class="btn btn-prompt" id="downloadStoryboardHtml">HTML 다운로드 · 표로 보기</button>
+      </div>
+      <p id="storyboardDownloadStatus" role="status">선택한 스토리보드를 저장해요. 게임 파일 없이도 내려받을 수 있어요.</p>
+    </div>
+    <div class="storyboard-scroll"><p id="storyboardNotice"></p><div id="storyboardContent"></div></div>
+  </div>
+</dialog>
 
 <script>
   /* ===== 선생님 설정 ===== */
@@ -743,6 +779,8 @@ document.querySelector('.wrap').addEventListener('change', function (event) {
 <script src="./project-core.js"></script>
 <script src="./submission-files.js"></script>
 <script src="./project-maker.js"></script>
+<script src="./storyboard-core.js"></script>
+<script src="./storyboard-panel.js"></script>
 
 </body>
 </html>

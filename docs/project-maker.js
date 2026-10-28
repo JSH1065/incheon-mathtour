@@ -73,7 +73,7 @@
       '3. 게임 장면은 <section class="scene" data-title="게임 1" data-game="1"></section>처럼 번호만 적어. 게임 2는 data-game="2"야. 실제 게임 코드는 절대로 본문에 섞지 마.',
       '4. 이야기·설명·사진 장면은 section 안에 내용을 넣고 data-game은 생략해. 사진이 필요할 때만 IMG1, IMG2, IMG3를 사용해. 외부 파일·라이브러리는 불러오지 마.',
       '5. 각 장면에 data-boy-face, data-boy-text, data-girl-face, data-girl-text, data-problem, data-hint를 넣어. 표정은 stand, how, thinking, finding, aha, thumb, lookmap 중 선택해. 캐릭터·말풍선은 직접 그리지 마.',
-      '6. 게임 장면에는 data-problem="true"와 힌트를 적어. 이야기 마지막에는 배운 내용을 돌아보는 장면을 넣어.',
+      '6. 게임 장면에는 data-problem="true"와 힌트를 적어. 관광지 소개 장면과 마지막에 배운 수학을 정리하는 장면을 반드시 넣어. 스토리보드의 게임 번호를 data-game에 그대로 사용해. 한 게임 안의 문제 번호와 게임 파일 번호는 서로 달라.',
       '7. 가운데 화면은 16:9에 맞춰 반응형으로 만들어. 작은 화면에서도 내용이 잘리지 않게 하고 긴 내용은 스크롤할 수 있게 해.',
       '완성된 본문 HTML 전체를 제공해 줘. 게임 파일은 별도 요청에서 만들 거야.'
     ].join('\n');

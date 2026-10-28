@@ -3,7 +3,7 @@ import { readFile, mkdir, writeFile } from 'node:fs/promises';
 import { resolve, join, extname, sep } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { createHash, createHmac, randomBytes, timingSafeEqual } from 'node:crypto';
-import { DriveStore, MAX_HTML_BYTES, httpError, validateMission } from './drive-store.mjs';
+import { DriveStore, MAX_REQUEST_BYTES, httpError, validateMission } from './drive-store.mjs';
 import { createAuth, createGraph } from './auth.mjs';
 
 export const projectRoot = resolve(fileURLToPath(new URL('..', import.meta.url)));
@@ -14,7 +14,7 @@ const html = (res, body) => { res.writeHead(200, { 'Content-Type': 'text/html; c
 const adminPage = config => '<!doctype html><html lang="ko"><meta charset="utf-8"><meta name="viewport" content="width=device-width"><title>OneDrive 연결</title><style>body{font:16px/1.7 sans-serif;max-width:650px;margin:60px auto;padding:20px}input,button{font:inherit;padding:10px;margin:5px 0;display:block}</style><h1>매쓰투어 OneDrive 연결</h1>' + (config.storageMode === 'shared-folder' ? '<p>서버 관리 비밀번호를 입력한 뒤 저장 대상 폴더를 소유한 학교 Microsoft 365 계정으로 로그인하세요.</p><p>기존 폴더에 저장하기 위해 Files.ReadWrite 권한을 요청합니다. 이 권한 자체는 폴더 한 개로 한정되지 않습니다. 프로그램은 설정한 폴더 아래에 작품을 저장합니다. 학교 정책에 따라 관리자 승인이 필요할 수 있습니다.</p>' : '<p>서버 관리 비밀번호를 입력한 뒤 Microsoft 계정으로 로그인해 앱 전용 폴더 연결을 승인하세요.</p>') + '<form method="post" action="/admin/connect"><label for="password">서버 관리 비밀번호</label><input id="password" name="password" type="password" required autocomplete="current-password"><button>Microsoft 계정 연결</button></form><p>학생에게는 GitHub Pages의 체험·제작 주소와 개인별 제출코드만 전달합니다.</p></html>';
 async function bodyOf(req) {
   const chunks = []; let length = 0;
-  for await (const chunk of req) { length += chunk.length; if (length > MAX_HTML_BYTES * 2) throw httpError(413, 'too_large'); chunks.push(chunk); }
+  for await (const chunk of req) { length += chunk.length; if (length > MAX_REQUEST_BYTES) throw httpError(413, 'too_large'); chunks.push(chunk); }
   const raw = Buffer.concat(chunks).toString('utf8');
   if ((req.headers['content-type'] || '').includes('application/x-www-form-urlencoded')) return Object.fromEntries(new URLSearchParams(raw));
   try { return JSON.parse(raw); } catch { throw httpError(400, 'invalid_json'); }

@@ -164,7 +164,7 @@
 
       <div class="card">
         <label>1단계 · AI에게 줄 프롬프트</label>
-        <p class="hint">스토리보드(활동지) 파일을 내가 쓰는 AI(ChatGPT·Gemini 등)에 먼저 올린 뒤, 아래 프롬프트를 붙여넣어 코드를 받아오세요.</p>
+        <p class="hint">스토리보드의 게임 장면에는 <b>게임 1·게임 2</b>처럼 번호만 정해요. AI에게는 이야기 본문을 만드는 프롬프트와 게임을 만드는 프롬프트를 각각 전달해요.</p>
         <button class="btn btn-prompt" onclick="togglePrompt()">📋 프롬프트 열기 / 복사</button>
         <div class="prompt-box" id="promptBox">
           <textarea id="promptText" readonly></textarea>
@@ -173,23 +173,27 @@
       </div>
 
       <div class="card">
-        <label>2단계 · 게임 가져오기</label>
-        <p class="hint"><a href="./example_game.html" download>예시 게임 HTML 내려받기</a><br>게임을 따로 만들었다면 HTML 파일을 선택해요. 사진은 아래 IMG1·IMG2·IMG3로 연결하고, 표정·대사·힌트는 오른쪽에서 설정해요.</p>
-        <label for="gameAssetFile">📎 게임 HTML 파일</label>
-        <input type="file" id="gameAssetFile" accept=".html,.htm,text/html" onchange="pickGameAsset(this)">
+        <label>2단계 · 사용할 게임 번호</label>
+        <p class="hint">게임 번호만 입력하면 장소에 맞는 파일명을 자동으로 만들어요. 실제 파일은 아래 <b>4단계</b>에서 본문 HTML과 함께 가져와요.</p>
+        <label for="newGameNumber">게임 번호</label>
+        <div style="display:flex;gap:8px"><input id="newGameNumber" type="number" min="1" max="999" value="1" style="max-width:100px"><button type="button" class="btn btn-prompt" id="addGameBtn">게임 번호 추가</button></div>
+        <div id="gameNumberList" style="margin-top:10px"></div>
         <div id="gameAssetStatus" class="msg" role="status" aria-live="polite"></div>
-        <button type="button" class="btn btn-prompt" id="clearGameAssetBtn" hidden onclick="clearGameAsset()" style="margin-top:8px">게임 파일 지우기 · 코드 입력으로 돌아가기</button>
         <details style="margin:10px 0">
           <summary style="cursor:pointer;font-size:13px;color:#1565c0">게임만 만들 때 사용할 AI 프롬프트</summary>
+          <label for="gamePromptNumber">만들 게임 선택</label>
+          <select id="gamePromptNumber"></select>
           <p class="hint">정답을 맞히면 <b>다음</b> 버튼을 켜고, 마지막 <b>미션 완료</b> 버튼에서만 <b>missionClear()</b>를 호출하도록 해요.</p>
           <textarea id="gameAssetPrompt" readonly aria-label="게임 에셋용 AI 프롬프트" style="height:170px;font-size:12px"></textarea>
           <button type="button" class="btn btn-prompt" id="copyGameAssetPromptBtn" onclick="copyGameAssetPrompt()">프롬프트 복사</button>
         </details>
         <div id="legacyCodeFields">
-        <label>또는 기존처럼 코드 붙여넣기</label>
-        <p class="hint">AI가 준 HTML 코드를 통째로 붙여넣고 <b>장면 불러오기</b>를 누르면, 오른쪽에 장면 목록이 생겨요.</p>
-        <textarea id="aiCode" class="code" placeholder="여기에 AI가 만든 코드를 통째로 붙여넣어요."></textarea>
+        <label>스토리보드 본문 코드 (파일로 가져올 때는 생략)</label>
+        <p class="hint">이야기 본문만 붙여넣어 장면을 만들 수도 있어요. 게임 코드는 여기 섞지 않고 게임 번호로 연결해요.</p>
+        <textarea id="aiCode" class="code" placeholder="이야기 본문 HTML을 붙여넣거나, 아래에서 본문 파일을 가져오세요."></textarea>
         <button class="btn btn-check" onclick="loadScenes()">📥 장면 불러오기</button>
+        <button type="button" class="btn btn-prompt" id="loadExampleProject" style="margin-top:8px">게임 2개 예시 스토리보드</button>
+        <p class="hint" style="margin-top:10px"><a href="./examples/K02.html" download>예시 본문 K02.html</a> · <a href="./examples/K02-G1.html" download>게임 1</a> · <a href="./examples/K02-G2.html" download>게임 2</a><br>세 파일을 내려받은 뒤 4단계에서 함께 선택해 보세요.</p>
         </div>
       </div>
 
@@ -234,28 +238,32 @@
     <!-- 오른쪽: 장면 편집 -->
     <div class="col">
       <div class="card">
-        <label>3단계 · 장면마다 캐릭터·대사·힌트 넣기</label>
+        <label>3단계 · 스토리보드와 게임 연결</label>
         <p class="hint">
           대사는 장면이 넘어가며 <b>하나의 이야기</b>가 되게 이어서 써요. 표정·대사·말풍선은 비워도 돼요.<br>
           <b>문제 장면</b>에 체크하면 힌트칸이 생겨요. 힌트를 쓰면 가운데 "💡 힌트 보기" 버튼이 생기고, 누르면 <b>오른쪽 여학생 말풍선</b>에 힌트가 나타나요(표정도 생각중으로 바뀜).
         </p>
-        <div id="sceneList"><div class="empty-note">왼쪽에서 게임 HTML 파일을 선택하거나, AI 코드를 붙여넣고 "장면 불러오기"를 누르세요.</div></div>
-        <button class="btn btn-check" onclick="runCheck()">🔍 검사하기 → 미리보기</button>
-        <div class="msg" id="msg"></div>
+        <div id="sceneList"><div class="empty-note">본문을 가져오거나 예시 스토리보드를 불러온 뒤, 장면에서 게임 1·게임 2를 선택해요.</div></div>
       </div>
     </div>
   </div>
 
   <!-- 아래: 전체폭 미리보기 -->
   <div class="preview-card">
-    <label>4단계 · 미리보기 (실제 매쓰투어에 들어갈 그대로 · 22:9)</label>
+    <label for="projectFiles">4단계 · 본문과 게임 HTML 파일 함께 가져오기</label>
+    <p class="hint">본문 HTML 1개와 게임 HTML 여러 개를 한 번에 선택할 수 있어요. 예: <b>K02.html, K02-G1.html, K02-G2.html</b><br>다시 선택하면 같은 이름의 파일만 교체하고 나머지는 유지해요. 파일 가져오기는 이 브라우저에서만 처리되며, 아래 업로드를 눌러야 제출돼요.</p>
+    <input id="projectFiles" type="file" multiple accept=".html,.htm,text/html">
+    <div id="projectFileList" role="status" aria-live="polite" style="font-size:13px;line-height:1.8;margin:10px 0"></div>
+    <button class="btn btn-check" onclick="runCheck()">🔍 전체 파일 검사하기 → 미리보기</button>
+    <div class="msg" id="msg"></div>
+    <label style="margin-top:20px">5단계 · 미리보기 (실제 매쓰투어에 들어갈 그대로 · 22:9)</label>
     <p class="hint">실제 사이트와 똑같은 크기예요. 끝까지 직접 풀어 "미션 완료"가 뜨는지, 버튼이 겹치거나 화면을 넘치지 않는지 확인하세요.</p>
     <iframe id="preview" title="미션 미리보기" sandbox="allow-scripts allow-forms"></iframe>
     <div class="pv-guide">
       🔧 <b>고칠 게 있으면</b> 위에서 표정·대사·힌트를 고치고 <b>다시 "검사하기"</b>를 누르세요.<br>
       ✅ 이대로 괜찮으면 아래 <b>업로드</b>를 누르세요.
     </div>
-    <button class="btn btn-up" id="upBtn" onclick="doUpload()" disabled>⬆ 업로드</button>
+    <button class="btn btn-up" id="upBtn" onclick="doUpload()" disabled>⬆ 본문과 게임 파일 전부 업로드</button>
     <div class="msg" id="upMsg"></div>
   </div>
 </div>
@@ -297,79 +305,8 @@
   let picSrc = { 1:'', 2:'', 3:'' };
   let lastFullHtml = "";
 
-  const PROMPT = [
-'너는 중학생이 "수학 탐구 미션 게임"을 만드는 걸 도와주는 친절한 바이브 코딩 도우미야.',
-'네가 방금 만든 스토리보드를 보고, 아래 조건들을 하나도 빠짐없이 만족하도록 완성된 HTML 코드 "하나"를 만들어줘.',
-'스토리보드의 장면 순서·개수·내용·성공 조건을 그대로 따라서 코딩해.',
-'',
-'[아주 중요 — 역할 분담]',
-'★ 너는 "가운데 게임 화면"만 만들어. 캐릭터 그림, 좌우 말풍선, 힌트 문구는 코드에 절대 넣지 마.',
-'   (대사·표정·힌트·상단 제목·보석 효과는 모두 선생님 템플릿이 자동으로 붙여줘.)',
-'★ 스토리보드의 "보여줄 내용"과 "문제 풀이 로직"만 게임으로 구현해.',
-'',
-'[장면(scene) 규칙]',
-'1. 각 장면을 <section class="scene" ...속성...> ...게임 내용... </section> 로 감싸줘.',
-'   그리고 각 <section class="scene"> 태그에 아래 속성들을 스토리보드 내용 그대로 함께 적어줘(캐릭터는 코드에 그리지 말고, 아래 "메모"만 적는 거야):',
-'   · data-title       = 장면 이름',
-'   · data-boy-face    = 왼쪽 남학생 표정 (stand, how, thinking, finding, aha, thumb, lookmap 중 하나만)',
-'   · data-boy-text    = 왼쪽 남학생 대사 (없으면 빈 문자열 "")',
-'   · data-girl-face   = 오른쪽 여학생 표정 (위 7개 중 하나만)',
-'   · data-girl-text   = 오른쪽 여학생 대사 (없으면 "")',
-'   · data-problem     = 문제를 푸는 장면이면 "true", 아니면 "false"',
-'   · data-hint        = 문제 장면일 때 힌트 문구 (문제 장면이 아니면 "")',
-'   예) <section class="scene" data-title="미션 소개" data-boy-face="lookmap" data-boy-text="여기가 마니산이야!" data-girl-face="finding" data-girl-text="참성단을 찾아보자!" data-problem="false" data-hint="">',
-'   ※ 표정은 반드시 위 7가지(stand/how/thinking/finding/aha/thumb/lookmap) 중에서만 골라 써. 다른 단어는 쓰지 마.',
-
-'2. 한 번에 한 장면만 보이게 하고 나머지는 숨겨. 첫 장면부터 시작해.',
-'3. 소개 장면은 "다음 ▶" 버튼으로 넘어가고, 문제 장면은 성공해야만 넘어가게 해.',
-'4. 맨 마지막(성공) 장면에서 missionClear() 를 딱 한 번만 호출해. (정의하지 말고 호출만, 여러 번 금지)',
-'',
-'[이전 버튼 규칙]',
-'   · 첫 장면을 뺀 모든 장면의 버튼 줄 "왼쪽"에 "◀ 이전" 버튼을 둬서 앞 장면을 다시 볼 수 있게 해.',
-'   · 첫 장면에는 이전 버튼을 넣지 마(숨겨).',
-'   · 이미 성공해서 지나간 문제 장면으로 "◀ 이전"으로 되돌아갔다면, 다시 풀지 않아도 "다음 ▶"으로 바로 넘어갈 수 있게 해.',
-'',
-'[화면 크기·레이아웃]',
-'5. 게임은 16:9 영역 안에 딱 들어가게. 어떤 장면에서도 스크롤이 생기면 안 돼.',
-'6. 한 장면에 너무 많이 넣지 마. 화면을 넘지 않게.',
-'7. 배경이 흰색/밝은색이면 얇은 테두리(연한 회색 1~2px)를 둘러. 글씨와 배경은 뚜렷하게 대비.',
-'',
-'[글자크기 — 아래 숫자를 꼭 지켜줘]',
-'   · 본문 글자크기 = 14px (문제 설명·문제 내용 등 보통 글씨)',
-'   · 버튼 글자크기 = 14px (◀ 이전 / 다음 ▶ / 정답확인 등 모든 버튼)',
-'   · 작은 글씨(보조 설명·단위 등) = 12px',
-'   · 큰 제목이 필요하면 = 24px 정도',
-'   위 숫자를 기준으로 하고, 16:9 안에서 넘치면 조금만 줄여도 돼.',
-'',
-'[버튼·배치 규칙 — 아주 중요]',
-'8. position:absolute, position:fixed, bottom:0 을 쓰지 마. 대신 flex column(세로)으로',
-'   "제목 → 게임 내용 → 입력칸 → 버튼" 순서로 위에서 아래로 차곡차곡 쌓아. (이게 제일 중요)',
-'9. 버튼 줄은 모든 장면에서 항상 "맨 아래 같은 자리"에 가로로 나란히 둬.',
-'   (왼쪽: ◀ 이전 / 오른쪽: 다음 ▶ 또는 정답확인)',
-'10. 버튼 크기: 가로는 글자가 딱 들어갈 정도로만 좁게(예: padding 좌우 18px 정도), 너무 넓게 늘리지 마.',
-'    "◀ 이전" 버튼과 "다음 ▶"(또는 "정답확인") 버튼의 가로·세로 크기를 똑같이 맞춰.',
-'    세로는 낮게(예: padding 위아래 8px 정도, 높이 약 36px).',
-'10-1. 모든 버튼(◀ 이전 / 다음 ▶ / 정답확인)의 색을 아래로 통일해. 버튼마다 색을 다르게 하지 마.',
-'      배경은 "반투명한 흰색"(예: background:rgba(255,255,255,0.85)) — 사진 위에서도 버튼과 글씨가 또렷이 보이게 해.',
-'      테두리는 연한 회색 1px(border:1px solid #cfd8dc), 글씨는 진한 회색(color:#37474f), 모서리는 둥글게(border-radius:10px).',
-'      ※ 완전 투명(transparent)은 쓰지 마. 사진 배경 위에서 안 보여.',
-'11. 요소끼리 절대 겹치지 않게 해. 특히 버튼이 입력칸·안내 문구·문제 내용을 가리면 안 돼.',
-'    입력칸(input·슬라이더)과 버튼 사이에는 충분한 여백을 둬.',
-'12. 문제에 필요한 간단한 안내 문구는 게임 화면 안에 넣어도 돼. 단, 힌트는 넣지 마.',
-'',
-'[사진 규칙 — 쓸 때만]',
-'13. 사진 자리에는 실제 파일명 대신 IMG1, IMG2, IMG3 글자만 그대로 써줘(최대 3장).',
-'    - 작은 그림: <img src="IMG1" style="max-width:100%">',
-'    - 배경: background-image:url(\'IMG1\') 처럼 IMG1 글자를 그대로.',
-'14. 사진 위 점·선은 <canvas>/<svg>로, 위치는 비율(%)로.',
-'',
-'[기타]',
-'15. jQuery 등 외부 라이브러리나 새 인터넷 주소를 가져오지 마.',
-'16. 모바일 터치로도 조작되게. 설명 없이 HTML 코드 블록 하나만. "..."로 줄이지 마.'
-  ].join('\n');
-
-  function togglePrompt(){ document.getElementById('promptText').value=PROMPT; document.getElementById('promptBox').classList.toggle('on'); }
-  function copyPrompt(){ navigator.clipboard.writeText(PROMPT).then(()=>alert('프롬프트를 복사했어요!'),()=>{const t=document.getElementById('promptText');t.select();document.execCommand('copy');alert('복사했어요!');}); }
+  function togglePrompt(){ document.getElementById('promptText').value=window.getProgramPrompt(); document.getElementById('promptBox').classList.toggle('on'); }
+  function copyPrompt(){ navigator.clipboard.writeText(window.getProgramPrompt()).then(()=>alert('프롬프트를 복사했어요!'),()=>{const t=document.getElementById('promptText');t.select();document.execCommand('copy');alert('복사했어요!');}); }
 
   function esc(s){ return String(s==null?'':s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;'); }
   function faceOptions(sel){ return FACES.map(f=>'<option value="'+f.key+'"'+(sel===f.key?' selected':'')+'>'+f.name+'</option>').join(''); }
@@ -424,43 +361,7 @@
   let studentStyle = "";
   let studentScript = "";
 
-  function loadScenes(){
-    gameAssetReadVersion++; gameAsset=null; setAssetMode(false); invalidateCheckedMission();
-    const code=document.getElementById('aiCode').value;
-    const doc=new DOMParser().parseFromString(code,'text/html');
-    const secs=doc.querySelectorAll('section.scene');
-    if(secs.length===0){
-      document.getElementById('sceneList').innerHTML=
-        '<div class="empty-note" style="color:#c62828">장면을 찾지 못했어요.<br>AI 코드에 &lt;section class="scene" data-title="..."&gt; 가 있는지 확인하세요.</div>';
-      scenes=[]; return;
-    }
-    studentStyle = Array.from(doc.querySelectorAll('style')).map(s=>s.textContent).join('\n');
-    studentScript = Array.from(doc.querySelectorAll('script')).map(s=>s.textContent).join('\n');
-
-    const faceKeys = FACES.map(f=>f.key);
-    function safeFace(v){ return faceKeys.indexOf(v)!==-1 ? v : 'stand'; }
-
-    scenes=[];
-    secs.forEach((s,i)=>{
-      // AI가 심어둔 data 속성이 있으면 읽어서 채우고, 없으면 빈 값
-      const boyFace  = safeFace(s.getAttribute('data-boy-face'));
-      const girlFace = safeFace(s.getAttribute('data-girl-face'));
-      const boyText  = s.getAttribute('data-boy-text')  || '';
-      const girlText = s.getAttribute('data-girl-text') || '';
-      const problemAttr = (s.getAttribute('data-problem')||'').trim().toLowerCase();
-      const isProblem = (problemAttr==='true' || problemAttr==='1' || problemAttr==='yes');
-      const hint     = s.getAttribute('data-hint') || '';
-      scenes.push({
-        title: s.getAttribute('data-title') || ('장면'+(i+1)),
-        outer: s.outerHTML,
-        boyFace:boyFace, boyText:boyText,
-        girlFace:girlFace, girlText:girlText,
-        isProblem:isProblem, hint:hint
-      });
-    });
-    renderScenes();
-  }
-
+  function loadScenes(){} // Assigned by project-maker.js after the shared editor helpers load.
 
   function renderScenes(){
     const host=document.getElementById('sceneList'); host.innerHTML='';
@@ -506,7 +407,7 @@
 
     const charData = scenes.map(sc=>{
       // 이 장면이 실제로 쓰는 사진 번호만 골라 출처 모으기
-      const used=[1,2,3].filter(n=>pics[n] && picSrc[n] && picSrc[n].trim() && (gameAsset ? gameAsset.html : sc.outer).indexOf('IMG'+n)!==-1);
+      const used=[1,2,3].filter(n=>pics[n] && picSrc[n] && picSrc[n].trim() && (sc.creditSource || (gameAsset ? gameAsset.html : sc.outer)).indexOf('IMG'+n)!==-1);
       const credit = used.length ? ('사진 출처: '+used.map(n=>picSrc[n].trim()).join(' / ')) : '';
       return {
         boy: boyImg(sc.boyFace), boyText: sc.boyText, boyFace: sc.boyFace,
@@ -566,7 +467,7 @@
 '</div>',
 '</div>',
 '<script>',
-'var MT_CHAR='+JSON.stringify(charData)+';',
+'var MT_CHAR='+scriptJSON(charData)+';',
 'var CHAR_BASE='+JSON.stringify(CHAR_BASE)+';',
 'var mt_done=false;',
 /* 학생(AI) 코드가 호출만 하면 되도록 window에 명시적으로 정의 */
@@ -622,42 +523,8 @@ gameAsset ? '' : 'if(mtSceneList().length===0){missionClear();}',
     const b=document.getElementById('upBtn'); b.disabled=true; b.classList.remove('ready');
   }
   function clearUpMsg(){ const u=document.getElementById('upMsg'); u.className='msg'; u.textContent=''; }
-  function runCheck(){
-    if(gameAsset){runAssetCheck();return;}
-    lastFullHtml='';
-    clearUpMsg();
-    const upBtn=document.getElementById('upBtn'); upBtn.disabled=true; upBtn.classList.remove('ready');
-    const pv=document.getElementById('preview'); const errs=[];
-    const code=document.getElementById('aiCode').value;
+  function runCheck(){} // Assigned by project-maker.js.
 
-    if(scenes.length===0){
-      showErrors(['장면이 없어요. 왼쪽에 AI 코드를 붙여넣고 "장면 불러오기"를 누르세요.']);
-      pv.srcdoc=buildErrorHtml('장면이 없어요'); return;
-    }
-    if(code.indexOf('missionClear')===-1){
-      errs.push('성공해도 보석이 안 나와요. AI에게 "성공하면 missionClear()를 딱 한 번 불러줘"라고 다시 요청하세요.');
-    }
-    const clearCount=(code.match(/missionClear\s*\(/g)||[]).length;
-    if(clearCount>1){ errs.push('missionClear()가 '+clearCount+'번 불려요. AI에게 "성공 순간에 딱 한 번만 호출해줘"라고 요청하세요.'); }
-    const doc=new DOMParser().parseFromString(code,'text/html'); let synErr=null;
-    doc.querySelectorAll('script').forEach(sc=>{ if(synErr)return; const t=sc.textContent||''; if(t.trim()){ try{ new Function(t);}catch(e){ synErr=e.message; } } });
-    if(synErr){ errs.push('코드에 문법 오류가 있어요: ('+synErr+') 그 부분을 AI에게 다시 요청하세요.'); }
-    for(let n=1;n<=3;n++){
-      const used=code.indexOf('IMG'+n)!==-1;
-      if(used && !pics[n]) errs.push('코드에 IMG'+n+'을 썼는데 사진'+n+'을 안 올렸어요. 왼쪽 "사진 넣기"에서 사진'+n+'을 올리세요.');
-      if(!used && pics[n]) errs.push('사진'+n+'을 올렸는데 코드에 IMG'+n+'이 없어요. AI에게 "IMG'+n+' 자리를 넣어줘"라고 하거나 "지우기"를 누르세요.');
-      if(pics[n] && (!picSrc[n] || !picSrc[n].trim())) errs.push('사진'+n+'의 출처를 안 적었어요. 저작권을 위해 "사진'+n+' 출처"칸에 출처를 적어 주세요.');
-    }
-    if(errs.length){ showErrors(errs); pv.srcdoc=buildErrorHtml('고칠 점이 있어요'); return; }
-
-    lastFullHtml=buildFullHtml();
-    pv.srcdoc=lastFullHtml;
-    const m=document.getElementById('msg'); m.className='msg ok';
-    m.textContent='✅ 1차 검사 통과! 아래 미리보기에서 끝까지 풀어 "미션 완료"가 뜨는지, 버튼이 겹치지 않고 화면을 넘치지 않는지 확인한 뒤 업로드하세요.';
-    upBtn.disabled=false; upBtn.classList.add('ready');
-  }
-
-  /* ---------- 업로드 (메시지는 업로드 버튼 바로 아래 #upMsg에) ---------- */
   async function doUpload(){
     const placeId=document.getElementById('placeId').value.trim();
     const topic=document.getElementById('topic').value.trim();
@@ -669,21 +536,21 @@ gameAsset ? '' : 'if(mtSceneList().length===0){missionClear();}',
     if(!uploadCode){u.className='msg bad';u.textContent='개인 제출코드를 입력해 주세요.';return;}
     if(!id||!name){ u.className='msg bad'; u.textContent='❌ 학번과 이름을 입력해 주세요.'; return; }
     if(!topic){ u.className='msg bad'; u.textContent='❌ 탐구 주제를 입력해 주세요.'; return; }
-    if(!lastFullHtml){ u.className='msg bad'; u.textContent='❌ 먼저 검사하기를 눌러 통과해 주세요.'; return; }
+    if(!lastFullHtml || document.getElementById('upBtn').disabled){ u.className='msg bad'; u.textContent='❌ 먼저 미리보기에서 전체 미션 완료까지 진행해 주세요.'; return; }
+    const project = window.buildProjectSubmission();
     const htmlWithTopic=lastFullHtml;
     if(new Blob([htmlWithTopic]).size>5*1024*1024){u.className='msg bad';u.textContent='게임과 사진을 합친 크기가 5MB를 넘어요. 사진 크기를 줄여 주세요.';return;}
     const upBtn=document.getElementById('upBtn'); upBtn.disabled=true; upBtn.classList.remove('ready');
     u.className='msg ok'; u.textContent='⏳ 업로드 중이에요...';
     try{
-      const res=await fetch(SCRIPT_URL,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({ action:'mission_save', id, name, placeId, topic, uploadCode, html:htmlWithTopic })});
+      const res=await fetch(SCRIPT_URL,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({ action:'mission_save', id, name, placeId, topic, uploadCode, html:htmlWithTopic, project })});
       const data=await res.json();
       if(res.ok && data.ok){ u.className='msg ok'; u.textContent='🎉 업로드 완료! ('+(data.saved||'')+')\n이제 매쓰투어에서 내 미션이 보여요.'; }
       else{ let msg='❌ 업로드 실패: '+(data.error||'알 수 없는 오류'); if(data.error==='unauthorized') msg='❌ 학번·이름·제출코드를 확인해 주세요.'; u.className='msg bad'; u.textContent=msg; upBtn.disabled=false; upBtn.classList.add('ready'); }
     }catch(e){ u.className='msg bad'; u.textContent='❌ 전송 오류가 발생했어요. 잠시 후 다시 시도해 주세요.'; upBtn.disabled=false; upBtn.classList.add('ready'); }
   }
-/* 단일 HTML 게임 에셋: 기존 코드 입력·저장 API는 유지한다. */
+/* 스토리보드 실행 문서와 개별 게임의 완료 신호를 연결한다. */
 let gameAsset = null;
-let gameAssetReadVersion = 0;
 let activeAssetPreview = '';
 
 const GAME_ASSET_PROMPT = [
@@ -727,71 +594,6 @@ function showAssetStatus(message, bad) {
   const node = document.getElementById('gameAssetStatus');
   node.className = 'msg ' + (bad ? 'bad' : 'ok');
   node.textContent = message;
-}
-
-function setAssetMode(on) {
-  document.getElementById('legacyCodeFields').hidden = on;
-  document.getElementById('clearGameAssetBtn').hidden = !on;
-}
-
-function clearGameAsset() {
-  gameAssetReadVersion++;
-  gameAsset = null;
-  scenes = [];
-  studentStyle = '';
-  studentScript = '';
-  document.getElementById('gameAssetFile').value = '';
-  document.getElementById('gameAssetStatus').className = 'msg';
-  document.getElementById('sceneList').innerHTML = '<div class="empty-note">게임 HTML 파일을 선택하거나 기존 코드를 붙여넣고 장면을 불러오세요.</div>';
-  setAssetMode(false);
-  invalidateCheckedMission();
-  document.getElementById('preview').srcdoc = '';
-}
-
-async function pickGameAsset(input) {
-  const file = input.files && input.files[0];
-  if (!file) return;
-  const version = ++gameAssetReadVersion;
-  invalidateCheckedMission();
-  gameAsset = null;
-  scenes = [];
-  setAssetMode(false);
-  document.getElementById('preview').srcdoc = '';
-  document.getElementById('sceneList').innerHTML = '<div class="empty-note">게임 파일을 읽는 중이에요.</div>';
-  try {
-    if (!/\.html?$/i.test(file.name)) throw new Error('단일 HTML 게임 파일(.html 또는 .htm)을 선택해 주세요.');
-    const html = await file.text();
-    if (version !== gameAssetReadVersion) return;
-    if (!html.trim()) throw new Error('파일 내용이 비어 있어요.');
-    const doc = new DOMParser().parseFromString(html, 'text/html');
-    if (!doc.body || !doc.body.textContent.trim() && !doc.body.querySelector('canvas,svg,img,input,button,section,div')) {
-      throw new Error('게임 화면을 찾지 못했어요. 완성된 HTML 파일인지 확인해 주세요.');
-    }
-    const sections = Array.from(doc.querySelectorAll('section.scene'));
-    const faceKeys = FACES.map(f => f.key);
-    const safeFace = value => faceKeys.includes(value) ? value : 'stand';
-    scenes = (sections.length ? sections : [doc.body]).map((s, index) => ({
-      title: s.getAttribute('data-title') || (sections.length ? '장면' + (index + 1) : file.name.replace(/\.html?$/i, '')),
-      outer: sections.length ? s.outerHTML : html,
-      boyFace: safeFace(s.getAttribute('data-boy-face')),
-      boyText: s.getAttribute('data-boy-text') || '',
-      girlFace: safeFace(s.getAttribute('data-girl-face')),
-      girlText: s.getAttribute('data-girl-text') || '',
-      isProblem: sections.length ? /^(true|1|yes)$/i.test(s.getAttribute('data-problem') || '') : true,
-      hint: s.getAttribute('data-hint') || ''
-    }));
-    gameAsset = { name: file.name, html, hasScenes: sections.length > 0 };
-    studentStyle = '';
-    studentScript = '';
-    renderScenes();
-    setAssetMode(true);
-    showAssetStatus('📎 ' + file.name + ' · ' + scenes.length + '개 장면을 불러왔어요.\n표정·대사·힌트를 설정하고 검사하기를 누르세요.', false);
-  } catch (error) {
-    if (version !== gameAssetReadVersion) return;
-    input.value = '';
-    showAssetStatus(error.message || '파일을 읽지 못했어요.', true);
-    document.getElementById('sceneList').innerHTML = '<div class="empty-note">게임 HTML 파일을 다시 선택해 주세요.</div>';
-  }
 }
 
 /* 함수 본문을 문자열로 넣어 게임 문서의 첫 스크립트로 실행한다. */
@@ -871,58 +673,6 @@ function buildAssetHostScript() {
   ].join('\n');
 }
 
-function assetErrors() {
-  const errors = [];
-  const code = gameAsset.html;
-  const doc = new DOMParser().parseFromString(code, 'text/html');
-  if (!/\bmissionClear\s*\(/.test(code)) {
-    errors.push('게임의 성공 처리에 window.missionClear() 호출이 필요해요. 왼쪽의 게임용 프롬프트를 참고해 AI에게 추가를 요청하세요.');
-  }
-  doc.querySelectorAll('script').forEach(function (script) {
-    if (script.hasAttribute('src')) return;
-    const type = (script.getAttribute('type') || '').trim().toLowerCase();
-    if (type === 'module' || type && !['text/javascript', 'application/javascript'].includes(type)) return;
-    try { new Function(script.textContent); }
-    catch (error) { errors.push('게임 코드 문법 오류: ' + error.message); }
-  });
-  if (doc.querySelector('script[src],link[rel~="stylesheet"][href],iframe,object,embed,base')) {
-    errors.push('다른 파일을 불러오는 코드가 있어요. 외부 스크립트·스타일·다른 페이지 없이 실행되는 단일 HTML로 만들어 주세요.');
-  }
-  const resources = Array.from(doc.querySelectorAll('img[src],audio[src],video[src],source[src],video[poster],input[type="image"][src]'));
-  const isEmbedded = value => !value || /^(data:|IMG[123]$|#)/i.test(value.trim());
-  if (resources.some(el => !isEmbedded(el.getAttribute('src')) || !isEmbedded(el.getAttribute('poster'))) || doc.querySelector('[srcset]')) {
-    errors.push('게임에 별도 이미지·미디어 파일 주소가 있어요. 이미지는 IMG1·IMG2·IMG3를 사용하거나 파일 내용을 HTML 안에 포함해 주세요.');
-  }
-  const css = Array.from(doc.querySelectorAll('style')).map(el => el.textContent).join('\n') + '\n' + Array.from(doc.querySelectorAll('[style]')).map(el => el.getAttribute('style')).join('\n');
-  if (/@import\b/i.test(css) || Array.from(css.matchAll(/url\(\s*(['"]?)(.*?)\1\s*\)/gi)).some(match => !isEmbedded(match[2]))) {
-    errors.push('게임의 스타일에 외부 파일 주소가 있어요. 배경은 IMG1·IMG2·IMG3로 지정해 주세요.');
-  }
-  for (let n = 1; n <= 3; n++) {
-    const used = code.includes('IMG' + n);
-    if (used && !pics[n]) errors.push('게임에서 IMG' + n + '을 사용해요. 사진 ' + n + '을 선택해 주세요.');
-    if (!used && pics[n]) errors.push('사진 ' + n + '을 사용하려면 게임에 IMG' + n + '을 넣거나 해당 사진을 지워 주세요.');
-    if (pics[n] && !picSrc[n].trim()) errors.push('사진 ' + n + '의 출처를 적어 주세요.');
-  }
-  return Array.from(new Set(errors));
-}
-
-function runAssetCheck() {
-  invalidateCheckedMission();
-  const errors = assetErrors();
-  const preview = document.getElementById('preview');
-  if (errors.length) {
-    showErrors(errors);
-    preview.srcdoc = buildErrorHtml('게임 파일을 확인해 주세요');
-    return;
-  }
-  activeAssetPreview = 'preview-' + Date.now().toString(36) + '-' + Math.random().toString(36).slice(2);
-  lastFullHtml = buildFullHtml();
-  const msg = document.getElementById('msg');
-  msg.className = 'msg ok';
-  msg.textContent = '✅ 파일 검사 통과! 아래 미리보기에서 게임을 끝까지 풀어 주세요. 성공 신호가 확인되면 업로드할 수 있어요.';
-  preview.srcdoc = lastFullHtml;
-}
-
 window.addEventListener('message', function (event) {
   const data = event.data;
   if (event.source !== document.getElementById('preview').contentWindow || !data || data.type !== 'MT_ASSET_PREVIEW' || !activeAssetPreview || data.run !== activeAssetPreview || !lastFullHtml) return;
@@ -935,7 +685,7 @@ window.addEventListener('message', function (event) {
     up.classList.add('ready');
     const msg = document.getElementById('msg');
     msg.className = 'msg ok';
-    msg.textContent = '✅ 게임 성공 신호 확인! 표정·대사·사진과 화면 배치를 확인한 뒤 업로드하세요.';
+    msg.textContent = '✅ 전체 미션 완료 확인! 본문과 연결한 게임 파일을 함께 업로드할 수 있어요.';
   }
 });
 
@@ -955,6 +705,8 @@ document.querySelector('.wrap').addEventListener('change', function (event) {
 });
 
 </script>
+<script src="./project-core.js"></script>
+<script src="./project-maker.js"></script>
 
 </body>
 </html>

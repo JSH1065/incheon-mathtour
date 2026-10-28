@@ -2,6 +2,8 @@ import { createHash, randomUUID } from 'node:crypto';
 
 export const PLACE_IDS = new Set(['B01','B02','B03','K01','K02','K03','K04','K05','M01','M02','M03','M04','N01','N02','N03','N04','S01','S02','S03']);
 export const MAX_HTML_BYTES = 5 * 1024 * 1024;
+export const MAX_PROJECT_BYTES = 8 * 1024 * 1024;
+export const MAX_REQUEST_BYTES = 24 * 1024 * 1024;
 export function httpError(status, code) { return Object.assign(new Error(code), { status, code }); }
 export function validatePlace(value) { if (!PLACE_IDS.has(value)) throw httpError(400, 'invalid_place'); return value; }
 export function validateId(value) { if (typeof value !== 'string' || !/^[A-Za-z0-9_-]{1,40}$/.test(value)) throw httpError(400, 'invalid_id'); return value; }
@@ -11,6 +13,23 @@ export function validateMission(data) {
   if (typeof data.topic !== 'string' || !data.topic.trim() || data.topic.length > 80) throw httpError(400, 'invalid_topic');
   if (typeof data.html !== 'string' || !data.html.trim()) throw httpError(400, 'invalid_html');
   if (Buffer.byteLength(data.html, 'utf8') > MAX_HTML_BYTES) throw httpError(413, 'too_large');
+  if (data.project !== undefined) validateProject(data.project, data.placeId);
+}
+export function validateProject(project, placeId) {
+  const bad = () => { throw httpError(400, 'invalid_project'); };
+  if (!project || project.schemaVersion !== 1 || !Array.isArray(project.games) || project.games.length > 20 || !Array.isArray(project.storyboard) || !project.storyboard.length || project.storyboard.length > 50) bad();
+  const validHtml = file => file && typeof file.html === 'string' && file.html.trim() && Buffer.byteLength(file.html, 'utf8') <= 2 * 1024 * 1024;
+  if (!validHtml(project.program) || typeof project.program.name !== 'string' || !/^[^<>:"/\\|?*\x00-\x1f]{1,100}\.html?$/i.test(project.program.name) || project.program.name.startsWith('.')) bad();
+  const seen = new Set(), names = new Set([project.program.name.toLowerCase()]);
+  for (const game of project.games) {
+    if (!Number.isInteger(game.number) || game.number < 1 || game.number > 999 || seen.has(game.number) || game.name !== placeId + '-G' + game.number + '.html' || names.has(game.name.toLowerCase()) || !validHtml(game)) bad();
+    seen.add(game.number); names.add(game.name.toLowerCase());
+  }
+  for (const scene of project.storyboard) {
+    if (!scene || typeof scene.title !== 'string' || scene.title.length > 500 || (scene.gameNumber !== null && scene.gameNumber !== undefined && !seen.has(scene.gameNumber))) bad();
+  }
+  if (project.pictures !== undefined && (!Array.isArray(project.pictures) || project.pictures.length > 3 || project.pictures.some(pic => ![1,2,3].includes(pic.number) || typeof pic.data !== 'string' || !/^data:image\/(png|jpeg|webp);base64,/.test(pic.data) || typeof pic.source !== 'string'))) bad();
+  if (Buffer.byteLength(JSON.stringify(project), 'utf8') > MAX_PROJECT_BYTES) throw httpError(413, 'too_large');
 }
 const enc = encodeURIComponent;
 const entryName = id => createHash('sha256').update(id).digest('hex') + '.json';
@@ -85,10 +104,20 @@ export class DriveStore {
       const folder = await this.missionFolder(data.placeId);
       const files = await this.folder(await this.root(), 'html');
       const revision = randomUUID();
+      let projectFolderId;
+      if (data.project) {
+        // Stage all originals under a unique revision. The public record changes only after every file succeeds.
+        const projects = await this.folder(await this.root(), 'projects');
+        const student = await this.folder(projects, data.placeId + '-' + createHash('sha256').update(data.id).digest('hex'));
+        projectFolderId = await this.folder(student, revision);
+        for (const file of [data.project.program, ...data.project.games]) await this.put(projectFolderId, file.name, file.html, 'text/html; charset=utf-8');
+        const manifest = { schemaVersion: 1, program: data.project.program.name, games: data.project.games.map(({number,name}) => ({number,name})), storyboard: data.project.storyboard, pictures: data.project.pictures || [] };
+        await this.put(projectFolderId, 'storyboard.json', JSON.stringify(manifest), 'application/json');
+      }
       // HTML을 먼저 완전히 저장한 뒤 작은 목록 파일을 갱신한다.
       // 다른 학생의 저장은 서로 다른 파일을 사용하므로 공용 index 덮어쓰기가 없다.
       const item = await this.put(files, revision + '.html', data.html, 'text/html; charset=utf-8');
-      const metadata = { schemaVersion: 1, id: data.id, name: data.name.trim(), placeId: data.placeId, topic: data.topic.trim(), htmlFileId: item.id, revision, updatedAt: new Date().toISOString() };
+      const metadata = { schemaVersion: 1, id: data.id, name: data.name.trim(), placeId: data.placeId, topic: data.topic.trim(), htmlFileId: item.id, projectFolderId, revision, updatedAt: new Date().toISOString() };
       await this.put(folder, entryName(data.id), JSON.stringify(metadata), 'application/json');
       return { ok: true, saved: data.placeId + ' / ' + data.id, revision };
     });

@@ -2,7 +2,7 @@
 window.MATHTOUR_CONFIG = Object.freeze({
   storageProvider: "github",
   siteBase: "https://jsh1065.github.io/incheon-mathtour/",
-  apiUrl: "", // GitHub 접수 서버의 https://.../api 주소. 저장 권한은 서버에서만 관리합니다.
+  apiUrl: "https://incheon-mathtour-upload.onrender.com/api", // 저장 권한은 서버에서만 관리합니다.
   githubCatalog: "./submissions/catalog.json",
   title: "인천 매쓰투어",
   // 교사가 GitHub Pages에 게시한 공개 예시. 학생 제출 저장소와 분리합니다.

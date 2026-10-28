@@ -912,7 +912,6 @@ async function openMission(p){
   listBox.innerHTML = "<p style='text-align:center; font-size:1.6cqw;'>미션 목록을 불러오는 중...</p>";
   openOverlay("studentMissionLayer");
 
-  if(!SCRIPT_URL && !window.MATHTOUR_CONFIG?.sharedSources?.length){listBox.textContent="아직 저장소가 연결되지 않았어요. 선생님께 알려 주세요.";return;}
   // 이 장소에 올라온 미션 목록 조회
   try{
     const data = await window.loadMissionCatalog(p.id);
@@ -921,14 +920,14 @@ async function openMission(p){
     if(!data.missions || data.missions.length === 0){
       listBox.innerHTML =
         "<p style='text-align:center; font-size:1.6cqw; line-height:1.6;'>" +
-        (data.partial ? "일부 저장소를 불러오지 못했어요. 잠시 후 다시 시도해 주세요.</p>" : "아직 이 장소에 등록된 미션이 없어요.</p>");
+        (data.partial ? "일부 저장소를 불러오지 못했어요. 잠시 후 다시 시도해 주세요.</p>" : data.unconfigured ? "아직 학생 제출 저장소가 연결되지 않았어요. 마니산에서 공개 예시를 체험할 수 있어요.</p>" : "아직 이 장소에 등록된 미션이 없어요.</p>");
       return;
     }
 
     // 이름 버튼 목록 만들기 (화면엔 이름만, 내부로는 학번 사용)
     listBox.innerHTML =
       "<p style='text-align:center; font-size:1.5cqw; color:#667; margin:0 0 1cqw;'>" +
-      "풀어볼 친구의 미션을 골라보세요</p>" +
+      "체험할 미션을 골라보세요</p>" +
       "<div style='display:flex; flex-wrap:wrap; gap:1cqw; justify-content:center;'></div>";
     const grid = listBox.querySelector("div");
     if(data.partial){const note=document.createElement("p");note.textContent="일부 저장소를 불러오지 못했어요. 표시된 작품은 체험할 수 있어요.";listBox.prepend(note);}
@@ -942,7 +941,7 @@ async function openMission(p){
       btn.style.cssText =
         "background:#4a6cf7; color:#fff; border:none; padding:1.1cqw 2.2cqw;" +
         "border-radius:1.4cqw; cursor:pointer; line-height:1.3; text-align:center;";
-      btn.onclick = ()=> runStudentMission(p, m.id, m.sourceApi);
+      btn.onclick = ()=> runStudentMission(p, m.id, m.sourceApi, m.exampleUrl);
       grid.appendChild(btn);
     });
 
@@ -954,7 +953,7 @@ async function openMission(p){
 }
 
 /* 고른 학생의 미션 HTML을 iframe에 띄우기 */
-async function runStudentMission(p, sid, sourceApi = SCRIPT_URL){
+async function runStudentMission(p, sid, sourceApi = SCRIPT_URL, exampleUrl){
   const listBox = document.getElementById("smList");
   const runBox  = document.getElementById("smRun");
   const frame   = document.getElementById("smFrame");
@@ -968,9 +967,13 @@ fitMissionFrame();                 // ← 추가: 무대 높이에 맞춰 iframe
   frame.srcdoc = "<p style='font-family:sans-serif; padding:20px;'>미션을 불러오는 중...</p>";
 
   try{
-    const res = await fetch(sourceApi + "?action=mission_load&placeId="
-                + encodeURIComponent(p.id) + "&sid=" + encodeURIComponent(sid));
-    const data = await res.json();
+    let data;
+    if(exampleUrl){data=await window.loadExampleMission(p.id,sid,exampleUrl);}
+    else{
+      const res = await fetch(sourceApi + "?action=mission_load&placeId="
+                  + encodeURIComponent(p.id) + "&sid=" + encodeURIComponent(sid));
+      data = await res.json();
+    }
     if(data.ok && data.html){
       frame.srcdoc = data.html;   // 학생이 만든 완성 HTML 그대로 실행
     }else{

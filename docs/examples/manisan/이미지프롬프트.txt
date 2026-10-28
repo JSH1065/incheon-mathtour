@@ -1,0 +1,6 @@
+생성 방식: OpenAI 내장 image_gen 도구, 2026-10-28
+사용 파일: manisan-illustration.jpg (원본 PNG를 웹용 JPEG로 변환)
+용도: 제작기 사진1 → IMG1. 실제 관광지 실측 사진이 아닌 가상 일러스트.
+
+최종 프롬프트:
+Use case: illustration-story. Asset type: 16:9 landscape background for a Korean middle-school math field-trip activity set at Manisan mountain on Ganghwa Island. Create a beautiful gentle storybook illustration, wide landscape, layered green mountain ridges and small islands of the West Sea in the far distance. A modest Korean stone altar inspired by Chamseongdan with a rounded stone base and low square upper platform sits on a mountain ridge to the right, with a winding stone footpath approaching from the foreground. Soft gouache and colored-pencil textures, inviting daylight, calm mint green and warm cream palette, crisp uncluttered silhouette, no people. Leave the central and left part spacious for a readable text panel placed by HTML. This is an educational imagined illustration, not an archaeological reconstruction. No written text, no letters, no numbers, no UI, no watermark. Landscape aspect ratio 16:9, opaque background.

@@ -1,0 +1,57 @@
+{
+  "title": "마니산에서 만난 삼각형의 비밀",
+  "placeId": "K02",
+  "topic": "피타고라스 정리로 산길의 길이 찾기",
+  "pictures": [
+    {
+      "number": 1,
+      "file": "manisan-illustration.jpg",
+      "source": "OpenAI imagegen 생성 · 마니산을 모티브로 한 가상 일러스트 (2026-10-28)"
+    }
+  ],
+  "scenes": [
+    {
+      "title": "관광지 소개 · 마니산과 참성단",
+      "boyFace": "lookmap",
+      "boyText": "강화도 마니산에 도착했어!",
+      "girlFace": "stand",
+      "girlText": "산과 바다가 함께 보이는 곳이야. 참성단도 만나 보자.",
+      "content": "<div class=\"tag\">INCHEON · GANGHWA</div><h1>마니산에서 만난<br>삼각형의 비밀</h1><p>인천 강화도의 마니산에는 <b>참성단</b>이 있어요.<br>단군이 하늘에 제사를 지냈다고 전해지는 곳이에요.</p><p class=\"small\">서해의 섬과 능선을 바라보며 수학 여행을 시작해요.<br>배경은 마니산을 모티브로 만든 AI 일러스트예요.</p>",
+      "photo": true
+    },
+    {
+      "title": "탐구 준비 · 산길을 삼각형으로",
+      "boyFace": "finding",
+      "boyText": "비스듬한 길의 길이는 어떻게 구할까?",
+      "girlFace": "how",
+      "girlText": "수평 거리와 높이를 알면 직각삼각형으로 생각할 수 있어.",
+      "content": "<div class=\"tag\">OUR QUESTION</div><h1>눈에 보이지 않는 길이 찾기</h1><p>수평 거리 <b>a</b>, 수직 높이 <b>b</b>, 비스듬한 길이 <b>c</b>.<br>두 방향이 직각이라면 <b>a² + b² = c²</b>를 사용할 수 있어요.</p><div class=\"formula\">직각 확인 → 빗변 찾기 → 식 세우기</div><p class=\"small\">게임 속 길이와 산길은 학습을 위해 단순화한 가상 모형이에요.<br>실제 등산로 거리나 참성단의 측정값이 아니에요.</p>"
+    },
+    {
+      "title": "게임 1 · 두 개의 길이 열쇠",
+      "gameNumber": 1,
+      "boyFace": "thinking",
+      "boyText": "두 문제를 풀어 길이 열쇠를 모아 보자!",
+      "girlFace": "how",
+      "girlText": "정답 확인 → 다음 → 마지막 미션 완료 순서야.",
+      "hint": "빗변을 구할 때는 두 변의 제곱을 더하고, 나머지 변은 빗변의 제곱에서 다른 변의 제곱을 빼요. 마지막에는 제곱근을 구해요."
+    },
+    {
+      "title": "풀이 연결 · 더할까, 뺄까?",
+      "boyFace": "aha",
+      "boyText": "10과 12를 구했어. 마지막에 제곱근을 잊으면 안 되네!",
+      "girlFace": "thumb",
+      "girlText": "직각을 마주 보는 가장 긴 변이 빗변이야.",
+      "content": "<div class=\"tag\">TWO KEYS, ONE RULE</div><h1>같은 정리, 다른 빈칸</h1><div class=\"grid\"><article><b>빗변이 빈칸이면</b><p>6² + 8² = c²<br>36 + 64 = 100<br><strong>c = 10 m</strong></p></article><article><b>나머지 변이 빈칸이면</b><p>5² + b² = 13²<br>b² = 169 − 25 = 144<br><strong>b = 12 m</strong></p></article></div><p class=\"small\">100과 144는 길이의 제곱이에요. 길이는 양수이므로 양의 제곱근을 구해요.</p>"
+    },
+    {
+      "title": "배운 수학 정리 · 탐험 노트",
+      "boyFace": "thumb",
+      "boyText": "직각삼각형이라면 두 변으로 나머지 길이를 찾을 수 있어!",
+      "girlFace": "aha",
+      "girlText": "직각인지 확인하고, 빗변을 찾는 것이 먼저야.",
+      "content": "<div class=\"tag\">FIELD NOTES</div><h1>오늘의 수학을 정리해요</h1><div class=\"formula\">a² + b² = c²</div><p>① <b>직각삼각형</b>에서 사용해요.<br>② 직각을 마주 보는 변 <b>c가 빗변</b>이에요.<br>③ 제곱의 합·차를 계산한 뒤 <b>제곱근</b>을 구해요.</p><p class=\"small\">스스로 설명하기: 빗변이 5, 한 변이 3이면 다른 변은 왜 4일까요?<br>정리가 끝났다면 아래 ‘전체 미션 완료’를 눌러요.</p>",
+      "photo": true
+    }
+  ]
+}

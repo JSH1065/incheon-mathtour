@@ -11,7 +11,7 @@ document.addEventListener('DOMContentLoaded', () => {
     const message = document.createElement('p');
     message.id='connectionNotice'; message.setAttribute('role','status');
     message.style.cssText='margin:0;padding:8px 16px;background:#fff4ce;color:#684d00;font:14px/1.5 sans-serif;';
-    message.textContent=window.MATHTOUR_CONFIG?.localTest ? '로컬 검사 모드 · 이 화면에서 올린 작품은 OneDrive에 전송되지 않습니다.' : '저장소 연결 준비 중입니다. 게임 만들기와 미리보기는 사용할 수 있어요.';
+    message.textContent=window.MATHTOUR_CONFIG?.localTest ? '로컬 검사 모드 · 이 화면에서 올린 작품은 OneDrive에 전송되지 않습니다.' : '학생 제출 저장소는 연결 준비 중입니다. 마니산 공개 예시 체험, 게임 만들기와 미리보기는 사용할 수 있어요.';
     nav.after(message);
   }
 });

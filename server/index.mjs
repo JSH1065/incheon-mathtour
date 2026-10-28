@@ -31,7 +31,7 @@ class RateLimits {
 }
 
 export function loadConfig(env = process.env) {
-  const baseUrl = (env.BASE_URL || 'http://localhost:8787').replace(/\/$/, '');
+  const baseUrl = (env.BASE_URL || env.RENDER_EXTERNAL_URL || 'http://localhost:8787').replace(/\/$/, '');
   const parsed = new URL(baseUrl);
   const local = ['localhost','127.0.0.1','[::1]'].includes(parsed.hostname);
   if (parsed.protocol !== 'https:' && !local) throw new Error('Public BASE_URL must use HTTPS.');

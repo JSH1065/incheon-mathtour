@@ -3,6 +3,7 @@ services:
     name: incheon-mathtour-upload
     runtime: node
     plan: free
+    autoDeployTrigger: off
     buildCommand: npm ci --ignore-scripts
     startCommand: node server/index.mjs
     healthCheckPath: /api?action=status
@@ -15,8 +16,6 @@ services:
         value: 0.0.0.0
       - key: STORAGE_PROVIDER
         value: github
-      - key: BASE_URL
-        sync: false
       - key: PAGES_ORIGIN
         value: https://jsh1065.github.io
       - key: GITHUB_REPOSITORY

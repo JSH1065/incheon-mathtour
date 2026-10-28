@@ -1,7 +1,7 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import { readFile } from 'node:fs/promises';
-import { randomBytes } from 'node:crypto';
+import { randomBytes, webcrypto } from 'node:crypto';
 import vm from 'node:vm';
 import { GitHubStore } from './github-store.mjs';
 import { createApplication, loadConfig, codeHash } from './index.mjs';
@@ -67,6 +67,47 @@ test('GitHub API uses a private submission code instead of a client-selected stu
   const post = code => fetch('http://127.0.0.1:' + server.address().port + '/api', { method: 'POST', headers: { 'content-type': 'application/json', origin: 'null' }, body: JSON.stringify({ ...mission('ATTACK'), action: 'mission_save', uploadCode: code }) });
   assert.equal((await post('wrong')).status, 403); assert.equal(saved.length, 0);
   assert.equal((await post('private-code')).status, 200); assert.equal(saved[0].id, 'S01');
+});
+
+test('one common maker separates 20 submissions, safely updates one, and keeps private keys out of GitHub', async t => {
+  const config = loadConfig({ BASE_URL: 'http://localhost', STORAGE_PROVIDER: 'github' });
+  config.encryptionKey = randomBytes(32).toString('base64');
+  const api = fakeGitHub(), store = new GitHubStore({ token: 'test-token', repository: 'test/math', fetchImpl: api.fetch, mutationDelay: 0 });
+  const classCode = 'private-classroom-code';
+  const server = createApplication({ config, store, readRoster: async () => ({ students: [{ id: 'S01', uploadCodeHash: codeHash(classCode, config.encryptionKey) }] }) });
+  await new Promise(resolve => server.listen(0, '127.0.0.1', resolve)); t.after(() => new Promise(resolve => server.close(resolve)));
+  const url = 'http://127.0.0.1:' + server.address().port + '/api';
+  const post = (submissionKey, extra = {}) => fetch(url, { method: 'POST', headers: { 'content-type': 'application/json', origin: 'null' }, body: JSON.stringify({ ...mission('CHOSEN-FOLDER'), school: '같은학교', name: '동명이인', action: 'mission_save', uploadCode: classCode, submissionKey, ...extra }) });
+  assert.equal((await (await fetch(url + '?action=status')).json()).commonMaker, true);
+  assert.equal((await post('')).status, 400);
+  assert.equal((await post('a'.repeat(48), { uploadCode: 'wrong-code' })).status, 403);
+  const keys = Array.from({length: 20}, () => randomBytes(24).toString('hex'));
+  const replies = await Promise.all(keys.map(key => post(key)));
+  for (const reply of replies) assert.equal(reply.status, 200);
+  const catalog = () => JSON.parse(api.files()['docs/submissions/catalog.json']);
+  assert.equal(catalog().missions.length, 20);
+  assert.equal(new Set(catalog().missions.map(row => row.id)).size, 20);
+  assert(catalog().missions.every(row => /^M[a-f0-9]{32}$/.test(row.id)));
+  assert.equal((await post(keys[0], { topic: '수정한 작품', id: catalog().missions[1].id })).status, 200);
+  assert.equal(catalog().missions.length, 20);
+  assert.equal(catalog().missions.filter(row => row.topic === '수정한 작품').length, 1);
+  const published = JSON.stringify(api.files());
+  for (const secret of [...keys, classCode, config.encryptionKey]) assert(!published.includes(secret));
+});
+
+test('common maker retains a private key per author and separates browsers, including blocked storage', async () => {
+  const source = await readFile(new URL('../docs/submission-files.js', import.meta.url), 'utf8');
+  const storage = () => { const values = new Map(); return { getItem: key => values.get(key), setItem: (key, value) => values.set(key, value) }; };
+  const maker = localStorage => { const window = { localStorage, crypto: webcrypto }; vm.runInNewContext(source, { window, Uint8Array }); return window.MathTourSubmission; };
+  const saved = storage(), first = maker(saved), second = maker(storage());
+  const key = first.commonSubmissionKey('구월중', '학생');
+  assert.match(key, /^[a-f0-9]{48}$/);
+  assert.equal(first.commonSubmissionKey(' 구월중 ', '학생'), key);
+  assert.equal(maker(saved).commonSubmissionKey('구월중', '학생'), key);
+  assert.notEqual(first.commonSubmissionKey('구월중', '다른학생'), key);
+  assert.notEqual(second.commonSubmissionKey('구월중', '학생'), key);
+  const blocked = maker({ getItem() { throw new Error('blocked'); }, setItem() { throw new Error('blocked'); } });
+  assert.equal(blocked.commonSubmissionKey('구월중', '학생'), blocked.commonSubmissionKey('구월중', '학생'));
 });
 test('Korean filenames resolve through the catalog and teacher game edits are fetched afresh', async () => {
   const folder = 'https://school.example/tour/submissions/K02/S01/';

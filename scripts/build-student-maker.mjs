@@ -8,6 +8,16 @@ for (const match of [...html.matchAll(/<script src="\.\/([^"\n]+)"[^>]*><\/scrip
 }
 html = html.replace(/href="\.\//g, 'href="' + site);
 await writeFile(new URL('학생용_매스투어_제작기.html', base), html);
+if (process.argv.includes('--common')) {
+  const privateRoot = new URL('../.private/github-upload/', import.meta.url);
+  const rows = (await readFile(new URL('학생별-제출코드.tsv', privateRoot), 'utf8')).trim().split(/\r?\n/).slice(1);
+  const code = rows.find(row => row.startsWith('S01\t'))?.split('\t')[1];
+  if (!/^[a-f0-9]{24}$/.test(code || '')) throw new Error('Missing class submission code');
+  const common = html.replace('<div id="uploadCodeFields">', '<div id="uploadCodeFields" hidden>')
+    .replace('<input id="uploadCode"', '<input id="uploadCode" data-common="true" value="' + code + '"');
+  await writeFile(new URL('공통_매스투어_제작기.html', privateRoot), common, { mode: 0o600 });
+  console.log('Built one common classroom HTML. School/name and a private automatic key keep submissions separate.');
+}
 if (process.argv.includes('--personal')) {
   const privateRoot = new URL('../.private/github-upload/', import.meta.url);
   const rows = (await readFile(new URL('학생별-제출코드.tsv', privateRoot), 'utf8')).trim().split(/\r?\n/).slice(1);

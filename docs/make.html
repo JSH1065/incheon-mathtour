@@ -560,7 +560,19 @@ gameAsset ? '' : 'if(mtSceneList().length===0){missionClear();}',
     const upBtn=document.getElementById('upBtn'); upBtn.disabled=true; upBtn.classList.remove('ready');
     u.className='msg ok'; u.textContent='⏳ 업로드 중이에요. 여러 명이 함께 제출하면 순서대로 저장하므로 잠시 기다려 주세요.';
     try{
-      const res=await fetch(SCRIPT_URL,{method:'POST',headers:{'Content-Type':'application/json'},signal:AbortSignal.timeout(300000),body:JSON.stringify({ action:'mission_save', school, name, placeId, topic, uploadCode, html:htmlWithTopic, project })});
+      let submissionKey;
+      if(document.getElementById('uploadCode').dataset.common === 'true'){
+        // Refuse to submit to an old server, which would otherwise treat the common code as one student.
+        const statusUrl=new URL(SCRIPT_URL,location.href);statusUrl.searchParams.set('action','status');
+        const statusResponse=await fetch(statusUrl,{cache:'no-store',signal:AbortSignal.timeout(300000)});
+        const status=await statusResponse.json();
+        if(!statusResponse.ok || !status.ok || !status.commonMaker){
+          u.className='msg bad';u.textContent='공통 제작기 연결을 준비하고 있어요. 아직 제출되지 않았으니 잠시 후 다시 시도해 주세요.';
+          upBtn.disabled=false;upBtn.classList.add('ready');return;
+        }
+        submissionKey=window.MathTourSubmission.commonSubmissionKey(school,name);
+      }
+      const res=await fetch(SCRIPT_URL,{method:'POST',headers:{'Content-Type':'application/json'},signal:AbortSignal.timeout(300000),body:JSON.stringify({ action:'mission_save', school, name, placeId, topic, uploadCode, submissionKey, html:htmlWithTopic, project })});
       const data=await res.json();
       if(res.ok && data.ok){ u.className='msg ok'; u.textContent='🎉 '+(data.provider==='github'?'GitHub 저장 완료!':'업로드 완료!')+' ('+(data.saved||'')+')\n'+(data.provider==='github'?'사이트 반영까지 몇 분 걸릴 수 있어요. 반영 후 지도에서 작품을 선택해 주세요.':'이제 매쓰투어에서 내 미션이 보여요.'); }
       else{ let msg='❌ 업로드 실패: '+(data.error||'알 수 없는 오류'); if(data.error==='unauthorized') msg='❌ 학교·이름·제출코드를 확인해 주세요.'; u.className='msg bad'; u.textContent=msg; upBtn.disabled=false; upBtn.classList.add('ready'); }

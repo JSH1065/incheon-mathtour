@@ -61,7 +61,7 @@ export function createApplication({ config, store, auth, readRoster }) {
         rates.check('api:' + ip, 600);
         if (req.method === 'GET') {
           const action = url.searchParams.get('action');
-          if (action === 'status') { json(res, 200, { ok: true, mode: config.mock ? 'local-test' : config.provider, storage: config.provider === 'github' ? 'GitHub' : 'OneDrive' }); return; }
+          if (action === 'status') { json(res, 200, { ok: true, mode: config.mock ? 'local-test' : config.provider, storage: config.provider === 'github' ? 'GitHub' : 'OneDrive', commonMaker: config.provider === 'github' }); return; }
           if (action === 'mission_list') { json(res, 200, await store.list(url.searchParams.get('placeId'))); return; }
           if (action === 'mission_load') { json(res, 200, await store.load(url.searchParams.get('placeId'), url.searchParams.get('sid'))); return; }
           throw httpError(400, 'unknown_action');
@@ -75,8 +75,17 @@ export function createApplication({ config, store, auth, readRoster }) {
             const suppliedHash = codeHash(String(data.uploadCode || ''), config.encryptionKey);
             const student = roster.students?.find(item => item.uploadCodeHash && same(item.uploadCodeHash, suppliedHash));
             if (!student || (student.school && student.school !== data.school) || (student.name && student.name !== data.name)) throw httpError(403, 'unauthorized');
-            // The server-issued code determines the folder, never a browser-supplied ID.
+            // Legacy individual makers keep their folder. A common maker adds a private browser key.
+            // Never accept a chosen folder ID, and never expose that browser key in published files.
             data.id = student.id;
+            if (data.submissionKey !== undefined) {
+              if (typeof data.submissionKey !== 'string' || !/^[a-f0-9]{48}$/.test(data.submissionKey)) throw httpError(400, 'invalid_submission_key');
+              if (typeof data.school !== 'string' || !data.school.trim() || data.school.length > 40 || typeof data.name !== 'string' || !data.name.trim() || data.name.length > 40) throw httpError(400, 'invalid_school_or_name');
+              data.school = data.school.normalize('NFC').trim();
+              data.name = data.name.normalize('NFC').trim();
+              data.id = 'M' + createHmac('sha256', Buffer.from(config.encryptionKey, 'base64'))
+                .update(JSON.stringify(['common-maker-v1', student.id, data.school, data.name, data.submissionKey])).digest('hex').slice(0, 32);
+            }
             validateMission(data);
             rates.check('github-student:' + data.id, 10);
             json(res, 200, await store.save(data)); return;

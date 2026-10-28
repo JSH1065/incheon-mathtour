@@ -12,6 +12,20 @@
     const author = identity(school, name);
     return placeId + '_' + (author.school + author.name).replace(/\s/g, '');
   }
+  const commonKeys = new Map();
+  function commonSubmissionKey(school, name) {
+    const author = identity(school, name);
+    const storageKey = 'mathtour:common-submission:v1:' + JSON.stringify([author.school, author.name]);
+    if (commonKeys.has(storageKey)) return commonKeys.get(storageKey);
+    let key;
+    try { key = root.localStorage?.getItem(storageKey); } catch { /* File storage can be unavailable. */ }
+    if (typeof key !== 'string' || !/^[a-f0-9]{48}$/.test(key)) {
+      key = Array.from(root.crypto.getRandomValues(new Uint8Array(24)), byte => byte.toString(16).padStart(2, '0')).join('');
+    }
+    commonKeys.set(storageKey, key);
+    try { root.localStorage?.setItem(storageKey, key); } catch { /* Keep this session's key in memory. */ }
+    return key;
+  }
   function buildFiles({ placeId, school, name, topic, project, html, submissionId }) {
     const author = identity(school, name), base = prefix(placeId, school, name);
     if (!String(topic || '').trim()) throw new Error('탐구 주제를 입력해 주세요.');
@@ -33,5 +47,5 @@
     add('storyboard', '스토리보드.json', 'application/json;charset=utf-8', JSON.stringify(manifest, null, 2));
     return files;
   }
-  root.MathTourSubmission = { identity, prefix, buildFiles };
+  root.MathTourSubmission = { identity, prefix, buildFiles, commonSubmissionKey };
 })(typeof window === 'undefined' ? globalThis : window);

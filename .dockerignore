@@ -1,0 +1,7 @@
+.env
+.private
+onedrive-target.json
+node_modules
+.git
+students.json
+test-results

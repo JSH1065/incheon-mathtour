@@ -1,0 +1,14 @@
+{
+  "name": "incheon-mathtour-onedrive",
+  "version": "1.0.0",
+  "private": true,
+  "type": "module",
+  "engines": { "node": ">=22.9.0" },
+  "scripts": {
+    "start": "node --env-file-if-exists=.env server/index.mjs",
+    "test": "node --test server/*.test.mjs",
+    "secrets": "node scripts/setup-secrets.mjs",
+    "roster": "node --env-file-if-exists=.env scripts/create-roster.mjs"
+  },
+  "dependencies": { "@azure/msal-node": "7.1.2" }
+}

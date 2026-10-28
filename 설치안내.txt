@@ -1,0 +1,194 @@
+인천 매쓰투어 · 학교 OneDrive 저장 + GitHub Pages 체험
+
+현재 준비된 것
+- 원래 지도의 장소, 영상, 캐릭터, 표정, 보석 진행 방식을 유지한 체험 사이트
+- 게임 HTML 파일 가져오기와 IMG1·IMG2·IMG3를 지원하는 제작기
+- 정답 → 다음 → 풀이 → 미션 완료 방식의 예시 게임
+- 학교 Microsoft 365 OneDrive의 지정 공유 폴더에 작품을 저장하는 Node.js 연결 서버
+- 학생별 제출코드, 다른 학생 파일 분리, 미리보기 완료 후 업로드
+- 같은 지도에서 다른 선생님의 기존 작품 목록도 합쳐 볼 수 있는 선택 설정
+
+현재 상태
+공유 폴더 '11월 14일 코딩수업(3학년)'가 열리고 업로드 메뉴가 보이는 것을 확인했습니다.
+이 링크는 학교 Microsoft 365 OneDrive입니다. 이전 개인 Microsoft 계정용 안내를 변경했습니다.
+파일 제작과 로컬 검사를 마쳤습니다. 실제 OneDrive 계정 연결, 운영 서버 배포,
+GitHub 저장소 생성 및 Pages 게시는 별도로 완료해야 합니다.
+서버의 Microsoft 계정 정보와 운영 주소는 아직 입력하지 않았습니다.
+로컬 검사는 Microsoft에 접속하지 않는 모의 저장소를 사용합니다.
+공유 폴더에는 아직 파일을 올리지 않았으며 자동 업로드 권한도 승인하지 않았습니다.
+
+구조
+학생의 제작기(GitHub Pages)
+  → 연결 서버: 제출코드 확인
+  → 선생님의 OneDrive: 완성 HTML과 작품 정보 저장
+  → 학생의 체험 지도(GitHub Pages): 작품 목록과 HTML 불러오기
+
+GitHub Pages는 정적 파일을 제공하므로 OneDrive에 저장하는 서버를 실행하지 않습니다.
+따라서 외부 HTTPS 주소와 영구 저장 공간이 있는 Node.js 서버 한 곳이 필요합니다.
+운영 업체에 따라 비용이 발생할 수 있습니다. 이 패키지는 특정 유료 서비스에 가입하지 않습니다.
+
+파일 위치
+docs/index.html          학생용 지도
+docs/make.html           게임 제작기
+docs/example_game.html   예시 게임
+docs/config.js           공개 사이트 설정: 연결 서버 주소만 입력
+docs/images, video,
+docs/student_images      원래 체험 형식을 유지하는 지도·영상·캐릭터
+server/                 OneDrive 연결 서버
+scripts/                관리 비밀번호와 학생 제출코드 생성 도구
+.env.example            서버 환경설정 예시 (실제 값 없음)
+onedrive-target.example.json  공유 폴더 설정 예시 (실제 링크 없음)
+.private/onedrive-target.json 실제 공유 링크가 들어 있는 서버 전용 설정
+Dockerfile              서버 배포용
+
+1. GitHub Pages 게시
+GitHub 계정에 공개 저장소 incheon-mathtour를 만듭니다.
+이 폴더의 프로젝트 파일을 저장소에 올립니다. node_modules, .env, .private,
+실제 학생 명단인 students.json과 실제 onedrive-target.json은 올리지 않습니다.
+.gitignore에도 제외되어 있으며 실제 공유 링크는 배포 ZIP에서도 제외합니다.
+GitHub 저장소 Settings → Pages → Deploy from a branch에서 main /docs를 선택합니다.
+예상 사이트 주소: https://jsh1065.github.io/incheon-mathtour/
+이 주소는 저장소를 실제로 만들고 Pages 배포가 끝나야 열립니다.
+제작기 주소는 위 주소 뒤에 make.html을 붙입니다.
+
+2. 연결 서버 준비
+Node.js 24 LTS와 npm이 있는 서버를 사용합니다. 최소 Node.js 22.9 이상입니다.
+프로젝트 폴더에서 아래 명령을 실행합니다.
+
+  npm ci
+  npm test
+  npm run secrets
+
+마지막 명령은 서버 전용 .env를 만들고 무작위 관리 비밀번호·암호화 키를 넣습니다.
+기존 .env가 있으면 덮어쓰지 않습니다. 이 파일은 공유하거나 GitHub에 올리지 않습니다.
+암호화 키를 바꾸면 기존 Microsoft 연결과 학생 제출코드를 사용할 수 없으므로 보관합니다.
+
+.env에서 아래 값을 설정합니다.
+  HOST=0.0.0.0
+  PORT=8787
+  BASE_URL=https://연결서버주소
+  PAGES_ORIGIN=https://jsh1065.github.io
+  NODE_ENV=production
+  MOCK_ONEDRIVE=0
+  STORAGE_MODE=shared-folder
+  DATA_DIR=/영구저장공간/매쓰투어
+
+PAGES_ORIGIN은 저장소 경로 없이 도메인만 적습니다.
+서버는 HTTPS를 제공하는 호스트 또는 HTTPS 리버스 프록시 뒤에서 실행합니다.
+DATA_DIR에는 암호화한 Microsoft 로그인 캐시와 제출코드 해시 명단이 보관됩니다.
+재배포 때 사라지지 않는 영구 디스크가 필요합니다. 현재 구성은 서버 인스턴스 1개용입니다.
+Docker로 배포할 경우 DATA_DIR=/data로 두고 영구 볼륨을 /data에 연결합니다.
+Docker에는 scripts가 없으므로 명단 생성은 별도 관리 환경에서 수행한 뒤 안전하게 복사합니다.
+
+3. 학교 Microsoft 계정 연결
+Microsoft Entra 관리 센터에서 학교 계정용 앱을 등록해야 합니다.
+학교 계정으로 OneDrive에 접근하는 것과 앱 등록·권한 동의 가능 여부는 별개입니다.
+학교 정책 때문에 앱 등록이나 권한 동의가 차단되면 학교 Microsoft 365 관리자에게 확인해야 합니다.
+
+앱 설정:
+  이름: Incheon MathTour
+  지원 계정: 학교 조직 디렉터리의 계정 (단일 테넌트)
+  플랫폼: Web
+  리디렉션 주소: https://연결서버주소/auth/callback
+  Microsoft Graph 위임 권한: Files.ReadWrite
+
+앱의 Application (client) ID와 발급한 클라이언트 비밀 값을 서버 .env에 설정합니다.
+  MS_CLIENT_ID=앱ID
+  MS_CLIENT_SECRET=클라이언트비밀값
+  MS_TENANT=학교의Directory(tenant)ID
+
+학교의 Directory (tenant) ID는 앱 등록 개요에서 확인합니다.
+.env.example의 organizations는 여러 조직 계정을 지원하도록 등록한 앱에서만 사용합니다.
+단일 조직 앱이라면 반드시 실제 학교 tenant ID로 바꾸세요.
+
+Files.ReadWrite는 로그인한 사용자의 파일을 읽고 쓰는 권한으로, 공유 폴더 한 개에만
+한정된 권한은 아닙니다. 이 프로그램의 저장 경로는 지정한 폴더 아래로 제한합니다.
+기존 공유 폴더는 앱 전용 폴더가 아니므로 Files.ReadWrite.AppFolder로 접근할 수 없습니다.
+Microsoft 권한 동의 화면에서 범위를 확인하고 선생님 또는 관리자가 승인해야 합니다.
+
+이 값들은 docs/config.js, HTML, 학생 프롬프트 또는 GitHub에 넣지 않습니다.
+Microsoft 계정 비밀번호를 서버 설정에 넣지 않습니다.
+서버를 npm start로 실행하고 https://연결서버주소/admin을 엽니다.
+.env의 ADMIN_PASSWORD로 시작한 뒤 폴더를 소유한 학교 Microsoft 계정으로 로그인합니다.
+파일 읽기·쓰기 권한을 확인하여 동의합니다. 학생은 Microsoft 로그인하지 않습니다.
+연결이 취소되거나 클라이언트 비밀이 만료되면 서버 설정 갱신 및 재연결이 필요합니다.
+
+4. 학생 명단과 제출코드
+students.example.json을 참고하여 서버 관리 환경에 students.json을 만듭니다.
+id는 영문·숫자·밑줄·하이픈 1~40자, 이름은 80자 이내로 입력합니다.
+두 반을 한 저장소에서 운영할 때는 중복되지 않는 학번을 사용합니다.
+수학 내용이나 장소를 학년별로 나눌 필요는 없습니다.
+
+  npm run roster -- students.json
+
+DATA_DIR의 roster.json에는 제출코드 원문 대신 해시가 저장됩니다.
+student-codes.txt는 선생님용 배부 자료입니다. 각 학생에게 자기 코드만 전달합니다.
+명단 생성기는 기존 명단을 덮어쓰지 않습니다. 새 학기에는 기존 자료를 보관한 뒤 새 명단을 준비하세요.
+실제 이름 대신 정한 별칭을 명단과 제작기에 똑같이 써도 됩니다.
+체험 사이트는 공개 작품의 이름·주제·HTML을 제공하므로 공개할 이름을 사용하세요.
+
+5. 공유 폴더와 사이트 연결
+이 작업 폴더에는 전달받은 링크를 .private/onedrive-target.json에 저장했습니다.
+이 파일은 GitHub, 공개 HTML, 배포 ZIP에 포함하지 않습니다.
+실제 서버의 DATA_DIR/onedrive-target.json에 별도로 안전하게 옮기세요.
+ZIP만 사용하는 경우 onedrive-target.example.json을 참고해 같은 파일을 직접 만듭니다.
+sharingUrl에 폴더 공유 링크, expectedName에 정확한 폴더 이름을 입력합니다.
+공유 링크는 브라우저용 주소이므로 docs/config.js의 apiUrl에 넣으면 안 됩니다.
+폴더 이름이 바뀌거나 링크가 만료되면 다시 연결할 때 오류를 표시하며 다른 폴더로 임의 저장하지 않습니다.
+
+docs/config.js의 apiUrl을 https://연결서버주소/api로 바꾸고 GitHub에 반영합니다.
+학생이 제작기에서 학번, 이름, 개인 제출코드를 입력하고 예시 게임을 가져옵니다.
+검사하기 → 12 입력 → 정답 확인 → 다음 → 미션 완료 → 업로드를 순서대로 확인합니다.
+체험 지도에서 검단·강화 → 마니산을 선택하여 업로드한 작품이 보이는지 확인합니다.
+
+인증 및 업로드가 완료되면 '11월 14일 코딩수업(3학년)' 폴더 아래 다음 구조가 생깁니다.
+  html/고유번호.html               게임·사진·캐릭터 연결을 포함한 완성 작품
+  missions/K02/학생별해시.json      해당 장소의 작품 목록 정보
+  feedback/고유번호.json           체험 소감
+
+같은 학생이 같은 장소에 다시 올리면 지도에는 최신 작품 한 개가 표시됩니다.
+다른 학생의 작품과 다른 장소의 작품은 각각 별도 파일입니다.
+HTML 업로드가 끝난 뒤 목록 정보를 바꾸므로 저장 중인 작품이 먼저 목록에 나타나지 않습니다.
+이전 HTML 버전은 복구용으로 남습니다. 저장 용량은 선생님의 OneDrive 용량을 사용합니다.
+완성 작품 한 개는 최대 5MiB입니다. 캐릭터 이미지는 GitHub Pages에서 불러옵니다.
+사이트 주소를 바꾸면 기존 작품의 캐릭터 주소도 바뀌므로 수업 중 주소를 유지하세요.
+
+6. 다른 선생님의 기존 작품과 같은 지도에서 보기
+두 반이 이 제작기와 같은 OneDrive 저장소를 사용하면 별도 설정 없이 한 목록에 나타납니다.
+다른 선생님은 기존 제작기를 계속 사용할 수도 있습니다.
+그 경우 config.js의 sharedSources에 상대 사이트의 작품 조회 API를 추가합니다.
+
+  sharedSources: [{ apiUrl: "https://상대사이트의작품API" }]
+
+조회 API는 mission_list(placeId), mission_load(placeId, sid) 형식이어야 하며,
+새 GitHub Pages 주소에서 읽을 수 있도록 CORS를 허용해야 합니다.
+이번에 확인한 원본 사이트는 같은 조회 형식을 사용합니다. 실제 양쪽 연결 검증은 아직 하지 않았습니다.
+이 옵션은 읽기만 하며, 내 제작기의 업로드는 언제나 내 apiUrl로 갑니다.
+저장소 주소까지 함께 구분하므로 두 저장소에 같은 학번이 있어도 불러올 작품이 섞이지 않습니다.
+sharedSources는 현재 비워 두었습니다. 기존 선생님의 서버는 수정하지 않았습니다.
+
+7. OneDrive 없이 로컬에서만 검사
+PowerShell에서 이 프로젝트 폴더로 이동하고 다음 명령을 실행합니다.
+
+  $env:MOCK_ONEDRIVE='1'
+  $env:HOST='127.0.0.1'
+  $env:BASE_URL='http://127.0.0.1:8787'
+  $env:PAGES_ORIGIN='http://127.0.0.1:8787'
+  $env:NODE_ENV='development'
+  npm start
+
+http://127.0.0.1:8787/make.html에서 아래 시험 정보만 사용할 수 있습니다.
+  학번 TEST01 / 이름 테스트 / 제출코드 LOCAL-DEMO-ONLY
+시험 작품은 DATA_DIR/local-test에만 저장됩니다. Microsoft에는 전송되지 않습니다.
+이 시험 모드는 운영 환경이나 외부 접속 주소로 실행할 수 없도록 제한했습니다.
+검사가 끝나면 Ctrl+C로 서버를 종료합니다.
+
+공식 참고 문서
+GitHub Pages 게시: https://docs.github.com/en/pages/getting-started-with-github-pages/creating-a-github-pages-site
+OneDrive 앱 폴더: https://learn.microsoft.com/en-us/graph/onedrive-sharepoint-appfolder
+MSAL Node 인증: https://learn.microsoft.com/en-us/entra/msal/javascript/node/acquire-token-requests
+
+원본 화면·리소스 출처
+https://ahamathofey.netlify.app/mathtour/mathtour_incheon/incheon_mathtour
+https://ahamathofey.netlify.app/mathtour/mathtour_incheon/incheon_mathtour_make
+공동 수업의 기존 시각 형식을 유지하기 위해 원본 지도·캐릭터·영상을 포함했습니다.

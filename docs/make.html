@@ -1,0 +1,960 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>MATHTOUR INCHEON 미션 만들기</title>
+<style>
+  /* 글자크기 (제목) */
+  h1 { font-size:22px; color:#1565c0; margin:4px 0 14px; }
+  * { box-sizing: border-box; }
+  body { margin:0; font-family:"맑은 고딕","Malgun Gothic",sans-serif; background:#f4f7fb; color:#222; padding:0; }
+
+  .wrap { max-width:1300px; margin:0 auto; padding:16px; }
+  .row { display:flex; gap:16px; flex-wrap:wrap; align-items:flex-start; }
+  .col { flex:1; min-width:360px; }
+  .card { background:#fff; border-radius:14px; padding:16px; box-shadow:0 4px 14px rgba(0,0,0,.08); margin-bottom:16px; }
+  /* 글자크기 (라벨) */
+  label { display:block; font-size:14px; font-weight:bold; margin:8px 0 4px; }
+  /* 글자크기 (입력칸·선택·textarea) */
+  input, select, textarea { width:100%; padding:9px; border:1px solid #cfd8dc; border-radius:8px; font-size:14px; font-family:inherit; }
+  /* 글자크기 (코드 붙여넣기 칸) */
+  textarea.code { height:150px; resize:vertical; font-family:Consolas,"D2Coding",monospace; font-size:13px; line-height:1.5; white-space:pre; }
+  /* 글자크기 (안내문) */
+  .hint { font-size:12.5px; color:#607d8b; margin:4px 0 8px; line-height:1.6; }
+  /* 글자크기 (버튼) */
+  .btn { padding:11px 16px; font-size:14px; border:none; border-radius:10px; cursor:pointer; font-weight:bold; }
+  .btn-prompt { background:#eceff1; color:#37474f; }
+  .btn-prompt:hover { background:#cfd8dc; }
+  .btn-check { background:#42a5f5; color:#fff; width:100%; margin-top:8px; }
+  .btn-check:hover { background:#1e88e5; }
+  .btn-up { background:#bdbdbd; color:#fff; width:100%; margin-top:10px; cursor:not-allowed; }
+  .btn-up.ready { background:#2e7d32; cursor:pointer; }
+  .btn-up.ready:hover { background:#1b5e20; }
+  iframe { width:100%; border:1px solid #cfd8dc; border-radius:10px; background:#fff; display:block; }
+
+  .pic-grid { display:flex; gap:8px; flex-wrap:wrap; }
+  .pic-cell { flex:1; min-width:120px; border:2px dashed #b0bec5; border-radius:10px; padding:10px 8px; text-align:center; background:#fafdff; transition:all .15s; }
+  /* 드래그로 파일을 끌고 올 때 강조 */
+  .pic-cell.dragover { border-color:#42a5f5; background:#e3f2fd; }
+  /* 글자크기 (사진 라벨) */
+  .pic-cell .pc-label { font-size:12.5px; font-weight:bold; color:#546e7a; margin-bottom:4px; }
+  /* 드래그 앤 드롭 안내 영역 (세로로 넓게) */
+  .pic-cell .pc-drop { border:1px dashed #cfd8dc; border-radius:8px; padding:18px 6px; margin:4px 0 6px; color:#90a4ae; font-size:12px; line-height:1.5; cursor:pointer; background:#fff; }
+  .pic-cell .pc-drop .pc-drop-ico { font-size:28px; display:block; margin-bottom:4px; }
+  .pic-cell.dragover .pc-drop { color:#1e88e5; border-color:#42a5f5; }
+  /* 글자크기 (사진 파일선택) */
+  .pic-cell input[type=file] { font-size:11px; width:100%; }
+  .pic-cell img { max-width:100%; max-height:120px; border-radius:6px; margin-top:6px; display:none; }
+  .pic-cell img.on { display:inline-block; }
+  /* 글자크기 (사진 지우기) */
+  .pic-cell .pc-clear { font-size:11px; color:#c62828; background:none; border:none; cursor:pointer; display:none; margin-top:2px; }
+  .pic-cell .pc-clear.on { display:inline-block; }
+  /* 글자크기 (사진 출처 입력칸) */
+  .pic-cell .pc-src { font-size:11px; margin-top:6px; }
+
+  .scene-item { border:1px solid #d7e3ee; border-radius:12px; padding:12px; margin-bottom:12px; background:#fafdff; }
+  .scene-head { display:flex; align-items:center; gap:8px; margin-bottom:8px; }
+  /* 글자크기 (장면 번호) */
+  .scene-no { background:#1565c0; color:#fff; border-radius:8px; padding:3px 10px; font-size:13px; font-weight:bold; }
+  /* 글자크기 (장면 제목) */
+  .scene-title { font-weight:bold; color:#37474f; font-size:14px; }
+  .char-row { display:flex; gap:10px; flex-wrap:wrap; }
+  .char-side { flex:1; min-width:150px; border:1px solid #e3eaf1; border-radius:10px; padding:8px; background:#fff; }
+  .char-side.boy { border-left:4px solid #42a5f5; }
+  .char-side.girl { border-left:4px solid #ec407a; }
+  /* 글자크기 (캐릭터 칸 제목) */
+  .char-side .cs-title { font-size:12.5px; font-weight:bold; color:#546e7a; margin-bottom:4px; }
+  .char-side select { margin-bottom:4px; }
+  /* 글자크기 (대사 입력칸) */
+  .char-side input { font-size:13px; }
+  /* 글자크기 (문제 장면 체크줄) */
+  .q-row { margin-top:8px; display:flex; align-items:center; gap:6px; font-size:13.5px; }
+  .hint-row { margin-top:6px; display:none; }
+  .hint-row.on { display:block; }
+
+  /* 글자크기 (검사·업로드 메시지) */
+  .msg { margin-top:10px; padding:11px; border-radius:8px; font-size:14px; line-height:1.7; white-space:pre-wrap; display:none; }
+  .msg.ok { background:#e8f5e9; color:#2e7d32; display:block; }
+  .msg.bad { background:#ffebee; color:#c62828; display:block; }
+  .msg.bad ul { margin:6px 0 0; padding-left:20px; }
+  .msg.bad li { margin-bottom:8px; }
+
+  .prompt-box { display:none; margin-top:10px; }
+  .prompt-box.on { display:block; }
+  /* 글자크기 (프롬프트 미리보기 칸) */
+  .prompt-box textarea { height:220px; font-size:12px; font-family:Consolas,monospace; white-space:pre-wrap; }
+  /* 글자크기 (미리보기 안내) */
+  .pv-guide { font-size:13px; color:#37474f; background:#fff8e1; border:1px solid #ffe082; border-radius:8px; padding:10px; margin-top:10px; line-height:1.7; }
+  /* 글자크기 (빈 안내) */
+  .empty-note { color:#90a4ae; font-size:13px; padding:10px; text-align:center; }
+
+  /* 미리보기: 실제 본체와 같은 22:9 */
+  .preview-card { background:#fff; border-radius:14px; padding:16px; box-shadow:0 4px 14px rgba(0,0,0,.08); }
+  #preview { aspect-ratio:22/9; max-height:72vh; }
+
+/* ===== 좁은 화면(휴대폰) 대응 ===== */
+@media screen and (max-width:720px){
+  html, body{ overflow-x:hidden; }
+  .wrap{ padding:10px; }
+  .card, .preview-card{ padding:12px; }
+
+  /* 2단 → 1단으로 세로 쌓기, 좁아도 넘치지 않게 */
+  .col{ min-width:0; flex:1 1 100%; }
+  .char-side{ min-width:0; }
+  .pic-cell{ min-width:0; flex:1 1 30%; }
+
+  /* 코드 붙여넣기 칸을 조금 키워 보기 편하게 */
+  textarea.code{ height:180px; }
+
+  /* 미리보기: 납작한 22:9 대신 휴대폰에서는 16:9로 */
+  #preview{ aspect-ratio:16/9; max-height:60vh; }
+}
+
+</style>
+<script src="./config.js"></script>
+<script src="./site-common.js" defer></script>
+</head>
+<body>
+<div class="wrap">
+  <h1>🧩 MATHTOUR INCHEON 미션 만들기</h1>
+
+  <div class="row">
+    <!-- 왼쪽: 입력 + 붙여넣기 + 사진 -->
+    <div class="col">
+      <div class="card">
+        <label>장소 선택</label>
+        <select id="placeId">
+          <option value="B01">B01 부평지하상가·굴포천</option>
+          <option value="B02">B02 부평향교</option>
+          <option value="B03">B03 계양산성박물관·계양산</option>
+          <option value="K01">K01 강화고인돌</option>
+          <option value="K02" selected>K02 마니산</option>
+          <option value="K03">K03 보문사</option>
+          <option value="K04">K04 검단선사박물관</option>
+          <option value="K05">K05 정서진</option>
+          <option value="M01">M01 SSG랜더스필드</option>
+          <option value="M02">M02 문학산</option>
+          <option value="M03">M03 수봉공원·수봉별마루</option>
+          <option value="M04">M04 차이나타운·홍예문</option>
+          <option value="N01">N01 인천대공원</option>
+          <option value="N02">N02 소래포구 어시장</option>
+          <option value="N03">N03 센트럴파크·문보트</option>
+          <option value="N04">N04 인천대교</option>
+          <option value="S01">S01 인천국제공항</option>
+          <option value="S02">S02 아라뱃길</option>
+          <option value="S03">S03 청라호수공원·음악분수</option>
+        </select>
+        <label>탐구 주제</label>
+        <input id="topic" placeholder="예: 피타고라스 정리와 참성단의 높이" maxlength="40">
+        <div class="char-row">
+          <div style="flex:1;min-width:120px;">
+            <label>학번</label>
+            <input id="sid" placeholder="예: 10203" inputmode="numeric">
+          </div>
+          <div style="flex:1;min-width:120px;">
+            <label>이름</label>
+            <input id="sname" placeholder="예: 김수학" maxlength="80">
+          </div>
+        </div>
+        <label for="uploadCode">개인 제출코드</label>
+        <input id="uploadCode" type="password" autocomplete="off" placeholder="선생님이 나눠 준 제출코드">
+        <p class="hint">다른 친구의 작품과 섞이지 않도록, 내 학번·이름·제출코드를 입력해요.</p>
+      </div>
+
+      <div class="card">
+        <label>1단계 · AI에게 줄 프롬프트</label>
+        <p class="hint">스토리보드(활동지) 파일을 내가 쓰는 AI(ChatGPT·Gemini 등)에 먼저 올린 뒤, 아래 프롬프트를 붙여넣어 코드를 받아오세요.</p>
+        <button class="btn btn-prompt" onclick="togglePrompt()">📋 프롬프트 열기 / 복사</button>
+        <div class="prompt-box" id="promptBox">
+          <textarea id="promptText" readonly></textarea>
+          <button class="btn btn-prompt" style="margin-top:6px;width:100%" onclick="copyPrompt()">이 내용 전체 복사</button>
+        </div>
+      </div>
+
+      <div class="card">
+        <label>2단계 · 게임 가져오기</label>
+        <p class="hint"><a href="./example_game.html" download>예시 게임 HTML 내려받기</a><br>게임을 따로 만들었다면 HTML 파일을 선택해요. 사진은 아래 IMG1·IMG2·IMG3로 연결하고, 표정·대사·힌트는 오른쪽에서 설정해요.</p>
+        <label for="gameAssetFile">📎 게임 HTML 파일</label>
+        <input type="file" id="gameAssetFile" accept=".html,.htm,text/html" onchange="pickGameAsset(this)">
+        <div id="gameAssetStatus" class="msg" role="status" aria-live="polite"></div>
+        <button type="button" class="btn btn-prompt" id="clearGameAssetBtn" hidden onclick="clearGameAsset()" style="margin-top:8px">게임 파일 지우기 · 코드 입력으로 돌아가기</button>
+        <details style="margin:10px 0">
+          <summary style="cursor:pointer;font-size:13px;color:#1565c0">게임만 만들 때 사용할 AI 프롬프트</summary>
+          <p class="hint">정답을 맞히면 <b>다음</b> 버튼을 켜고, 마지막 <b>미션 완료</b> 버튼에서만 <b>missionClear()</b>를 호출하도록 해요.</p>
+          <textarea id="gameAssetPrompt" readonly aria-label="게임 에셋용 AI 프롬프트" style="height:170px;font-size:12px"></textarea>
+          <button type="button" class="btn btn-prompt" id="copyGameAssetPromptBtn" onclick="copyGameAssetPrompt()">프롬프트 복사</button>
+        </details>
+        <div id="legacyCodeFields">
+        <label>또는 기존처럼 코드 붙여넣기</label>
+        <p class="hint">AI가 준 HTML 코드를 통째로 붙여넣고 <b>장면 불러오기</b>를 누르면, 오른쪽에 장면 목록이 생겨요.</p>
+        <textarea id="aiCode" class="code" placeholder="여기에 AI가 만든 코드를 통째로 붙여넣어요."></textarea>
+        <button class="btn btn-check" onclick="loadScenes()">📥 장면 불러오기</button>
+        </div>
+      </div>
+
+      <div class="card">
+        <label>2-1단계 · 사진 넣기 (최대 3장)</label>
+        <p class="hint">코드에 <b>IMG1 · IMG2 · IMG3</b> 글자를 썼다면 그 번호에 맞는 사진을 올려요. 자동으로 크기를 줄여 저장해요.<br><b>저작권</b>을 위해 사진마다 <b>출처</b>를 꼭 적어 주세요(그 사진이 나오는 장면 오른쪽 위에 작게 표시돼요).</p>
+        <div class="pic-grid">
+          <div class="pic-cell" id="picCell1">
+            <div class="pc-label">사진 1 → IMG1</div>
+            <div class="pc-drop" onclick="document.getElementById('picFile1').click()">
+              <span class="pc-drop-ico">🖼️</span>
+              여기로 사진을<br>끌어다 놓거나<br>눌러서 선택
+            </div>
+            <input type="file" id="picFile1" accept="image/*" onchange="pickPic(1,this)">
+            <img id="pic1img"><br><button class="pc-clear" id="pic1clr" onclick="clearPic(1)">지우기</button>
+            <input class="pc-src" id="pic1src" placeholder="사진 1 출처 (예: 위키미디어 CC BY)" oninput="picSrc[1]=this.value">
+          </div>
+          <div class="pic-cell" id="picCell2">
+            <div class="pc-label">사진 2 → IMG2</div>
+            <div class="pc-drop" onclick="document.getElementById('picFile2').click()">
+              <span class="pc-drop-ico">🖼️</span>
+              여기로 사진을<br>끌어다 놓거나<br>눌러서 선택
+            </div>
+            <input type="file" id="picFile2" accept="image/*" onchange="pickPic(2,this)">
+            <img id="pic2img"><br><button class="pc-clear" id="pic2clr" onclick="clearPic(2)">지우기</button>
+            <input class="pc-src" id="pic2src" placeholder="사진 2 출처 (예: 위키미디어 CC BY)" oninput="picSrc[2]=this.value">
+          </div>
+          <div class="pic-cell" id="picCell3">
+            <div class="pc-label">사진 3 → IMG3</div>
+            <div class="pc-drop" onclick="document.getElementById('picFile3').click()">
+              <span class="pc-drop-ico">🖼️</span>
+              여기로 사진을<br>끌어다 놓거나<br>눌러서 선택
+            </div>
+            <input type="file" id="picFile3" accept="image/*" onchange="pickPic(3,this)">
+            <img id="pic3img"><br><button class="pc-clear" id="pic3clr" onclick="clearPic(3)">지우기</button>
+            <input class="pc-src" id="pic3src" placeholder="사진 3 출처 (예: 위키미디어 CC BY)" oninput="picSrc[3]=this.value">
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- 오른쪽: 장면 편집 -->
+    <div class="col">
+      <div class="card">
+        <label>3단계 · 장면마다 캐릭터·대사·힌트 넣기</label>
+        <p class="hint">
+          대사는 장면이 넘어가며 <b>하나의 이야기</b>가 되게 이어서 써요. 표정·대사·말풍선은 비워도 돼요.<br>
+          <b>문제 장면</b>에 체크하면 힌트칸이 생겨요. 힌트를 쓰면 가운데 "💡 힌트 보기" 버튼이 생기고, 누르면 <b>오른쪽 여학생 말풍선</b>에 힌트가 나타나요(표정도 생각중으로 바뀜).
+        </p>
+        <div id="sceneList"><div class="empty-note">왼쪽에서 게임 HTML 파일을 선택하거나, AI 코드를 붙여넣고 "장면 불러오기"를 누르세요.</div></div>
+        <button class="btn btn-check" onclick="runCheck()">🔍 검사하기 → 미리보기</button>
+        <div class="msg" id="msg"></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- 아래: 전체폭 미리보기 -->
+  <div class="preview-card">
+    <label>4단계 · 미리보기 (실제 매쓰투어에 들어갈 그대로 · 22:9)</label>
+    <p class="hint">실제 사이트와 똑같은 크기예요. 끝까지 직접 풀어 "미션 완료"가 뜨는지, 버튼이 겹치거나 화면을 넘치지 않는지 확인하세요.</p>
+    <iframe id="preview" title="미션 미리보기" sandbox="allow-scripts allow-forms"></iframe>
+    <div class="pv-guide">
+      🔧 <b>고칠 게 있으면</b> 위에서 표정·대사·힌트를 고치고 <b>다시 "검사하기"</b>를 누르세요.<br>
+      ✅ 이대로 괜찮으면 아래 <b>업로드</b>를 누르세요.
+    </div>
+    <button class="btn btn-up" id="upBtn" onclick="doUpload()" disabled>⬆ 업로드</button>
+    <div class="msg" id="upMsg"></div>
+  </div>
+</div>
+
+<script>
+  /* ===== 선생님 설정 ===== */
+  const SCRIPT_URL = window.MATHTOUR_CONFIG?.apiUrl || "";
+  const CHAR_BASE = new URL("./student_images/", location.href).href;
+  const FACES = [
+    { key:'stand', name:'기본' },{ key:'how', name:'궁금' },{ key:'thinking', name:'생각중' },
+    { key:'finding', name:'찾기' },{ key:'aha', name:'깨달음' },{ key:'thumb', name:'칭찬' },{ key:'lookmap', name:'지도보기' }
+  ];
+  /* 권역 이름 (상단 띠 표시용) — 첨부 기준으로 정리 */
+  const REGION = { B:'계양·부평 권역', K:'검단·강화 권역', M:'미추홀·제물포 권역', N:'남동·연수 권역', S:'서해·영종 권역' };
+  /* 권역별 고유 색상 (상단 띠 색) — B파랑/K초록/M빨강/N보라/S노랑 */
+  /* grad: 그라데이션(진한→연한), text: 글씨색 */
+  const REGION_COLOR = {
+    B:{ grad:'linear-gradient(90deg,#1565c0,#42a5f5)', text:'#ffffff' }, // 파랑
+    K:{ grad:'linear-gradient(90deg,#2e7d32,#66bb6a)', text:'#ffffff' }, // 초록
+    M:{ grad:'linear-gradient(90deg,#c62828,#ef5350)', text:'#ffffff' }, // 빨강
+    N:{ grad:'linear-gradient(90deg,#6a1b9a,#ab47bc)', text:'#ffffff' }, // 보라
+    S:{ grad:'linear-gradient(90deg,#f9a825,#ffee58)', text:'#5d4037' }  // 노랑(글씨 진한 갈색)
+  };
+  /* 장소 이름 (상단 띠 표시용) */
+  const PLACE_NAME = {
+    B01:'부평지하상가·굴포천', B02:'부평향교', B03:'계양산성박물관·계양산',
+    K01:'강화고인돌', K02:'마니산', K03:'보문사', K04:'검단선사박물관', K05:'정서진',
+    M01:'SSG랜더스필드', M02:'문학산', M03:'수봉공원·수봉별마루', M04:'차이나타운·홍예문',
+    N01:'인천대공원', N02:'소래포구 어시장', N03:'센트럴파크·문보트', N04:'인천대교',
+    S01:'인천국제공항', S02:'아라뱃길', S03:'청라호수공원·음악분수'
+  };
+  /* ====================== */
+
+/* 이 제작기는 학번·이름을 직접 입력합니다. */
+
+
+  let scenes = [];
+  let pics = { 1:null, 2:null, 3:null };
+  let picSrc = { 1:'', 2:'', 3:'' };
+  let lastFullHtml = "";
+
+  const PROMPT = [
+'너는 중학생이 "수학 탐구 미션 게임"을 만드는 걸 도와주는 친절한 바이브 코딩 도우미야.',
+'네가 방금 만든 스토리보드를 보고, 아래 조건들을 하나도 빠짐없이 만족하도록 완성된 HTML 코드 "하나"를 만들어줘.',
+'스토리보드의 장면 순서·개수·내용·성공 조건을 그대로 따라서 코딩해.',
+'',
+'[아주 중요 — 역할 분담]',
+'★ 너는 "가운데 게임 화면"만 만들어. 캐릭터 그림, 좌우 말풍선, 힌트 문구는 코드에 절대 넣지 마.',
+'   (대사·표정·힌트·상단 제목·보석 효과는 모두 선생님 템플릿이 자동으로 붙여줘.)',
+'★ 스토리보드의 "보여줄 내용"과 "문제 풀이 로직"만 게임으로 구현해.',
+'',
+'[장면(scene) 규칙]',
+'1. 각 장면을 <section class="scene" ...속성...> ...게임 내용... </section> 로 감싸줘.',
+'   그리고 각 <section class="scene"> 태그에 아래 속성들을 스토리보드 내용 그대로 함께 적어줘(캐릭터는 코드에 그리지 말고, 아래 "메모"만 적는 거야):',
+'   · data-title       = 장면 이름',
+'   · data-boy-face    = 왼쪽 남학생 표정 (stand, how, thinking, finding, aha, thumb, lookmap 중 하나만)',
+'   · data-boy-text    = 왼쪽 남학생 대사 (없으면 빈 문자열 "")',
+'   · data-girl-face   = 오른쪽 여학생 표정 (위 7개 중 하나만)',
+'   · data-girl-text   = 오른쪽 여학생 대사 (없으면 "")',
+'   · data-problem     = 문제를 푸는 장면이면 "true", 아니면 "false"',
+'   · data-hint        = 문제 장면일 때 힌트 문구 (문제 장면이 아니면 "")',
+'   예) <section class="scene" data-title="미션 소개" data-boy-face="lookmap" data-boy-text="여기가 마니산이야!" data-girl-face="finding" data-girl-text="참성단을 찾아보자!" data-problem="false" data-hint="">',
+'   ※ 표정은 반드시 위 7가지(stand/how/thinking/finding/aha/thumb/lookmap) 중에서만 골라 써. 다른 단어는 쓰지 마.',
+
+'2. 한 번에 한 장면만 보이게 하고 나머지는 숨겨. 첫 장면부터 시작해.',
+'3. 소개 장면은 "다음 ▶" 버튼으로 넘어가고, 문제 장면은 성공해야만 넘어가게 해.',
+'4. 맨 마지막(성공) 장면에서 missionClear() 를 딱 한 번만 호출해. (정의하지 말고 호출만, 여러 번 금지)',
+'',
+'[이전 버튼 규칙]',
+'   · 첫 장면을 뺀 모든 장면의 버튼 줄 "왼쪽"에 "◀ 이전" 버튼을 둬서 앞 장면을 다시 볼 수 있게 해.',
+'   · 첫 장면에는 이전 버튼을 넣지 마(숨겨).',
+'   · 이미 성공해서 지나간 문제 장면으로 "◀ 이전"으로 되돌아갔다면, 다시 풀지 않아도 "다음 ▶"으로 바로 넘어갈 수 있게 해.',
+'',
+'[화면 크기·레이아웃]',
+'5. 게임은 16:9 영역 안에 딱 들어가게. 어떤 장면에서도 스크롤이 생기면 안 돼.',
+'6. 한 장면에 너무 많이 넣지 마. 화면을 넘지 않게.',
+'7. 배경이 흰색/밝은색이면 얇은 테두리(연한 회색 1~2px)를 둘러. 글씨와 배경은 뚜렷하게 대비.',
+'',
+'[글자크기 — 아래 숫자를 꼭 지켜줘]',
+'   · 본문 글자크기 = 14px (문제 설명·문제 내용 등 보통 글씨)',
+'   · 버튼 글자크기 = 14px (◀ 이전 / 다음 ▶ / 정답확인 등 모든 버튼)',
+'   · 작은 글씨(보조 설명·단위 등) = 12px',
+'   · 큰 제목이 필요하면 = 24px 정도',
+'   위 숫자를 기준으로 하고, 16:9 안에서 넘치면 조금만 줄여도 돼.',
+'',
+'[버튼·배치 규칙 — 아주 중요]',
+'8. position:absolute, position:fixed, bottom:0 을 쓰지 마. 대신 flex column(세로)으로',
+'   "제목 → 게임 내용 → 입력칸 → 버튼" 순서로 위에서 아래로 차곡차곡 쌓아. (이게 제일 중요)',
+'9. 버튼 줄은 모든 장면에서 항상 "맨 아래 같은 자리"에 가로로 나란히 둬.',
+'   (왼쪽: ◀ 이전 / 오른쪽: 다음 ▶ 또는 정답확인)',
+'10. 버튼 크기: 가로는 글자가 딱 들어갈 정도로만 좁게(예: padding 좌우 18px 정도), 너무 넓게 늘리지 마.',
+'    "◀ 이전" 버튼과 "다음 ▶"(또는 "정답확인") 버튼의 가로·세로 크기를 똑같이 맞춰.',
+'    세로는 낮게(예: padding 위아래 8px 정도, 높이 약 36px).',
+'10-1. 모든 버튼(◀ 이전 / 다음 ▶ / 정답확인)의 색을 아래로 통일해. 버튼마다 색을 다르게 하지 마.',
+'      배경은 "반투명한 흰색"(예: background:rgba(255,255,255,0.85)) — 사진 위에서도 버튼과 글씨가 또렷이 보이게 해.',
+'      테두리는 연한 회색 1px(border:1px solid #cfd8dc), 글씨는 진한 회색(color:#37474f), 모서리는 둥글게(border-radius:10px).',
+'      ※ 완전 투명(transparent)은 쓰지 마. 사진 배경 위에서 안 보여.',
+'11. 요소끼리 절대 겹치지 않게 해. 특히 버튼이 입력칸·안내 문구·문제 내용을 가리면 안 돼.',
+'    입력칸(input·슬라이더)과 버튼 사이에는 충분한 여백을 둬.',
+'12. 문제에 필요한 간단한 안내 문구는 게임 화면 안에 넣어도 돼. 단, 힌트는 넣지 마.',
+'',
+'[사진 규칙 — 쓸 때만]',
+'13. 사진 자리에는 실제 파일명 대신 IMG1, IMG2, IMG3 글자만 그대로 써줘(최대 3장).',
+'    - 작은 그림: <img src="IMG1" style="max-width:100%">',
+'    - 배경: background-image:url(\'IMG1\') 처럼 IMG1 글자를 그대로.',
+'14. 사진 위 점·선은 <canvas>/<svg>로, 위치는 비율(%)로.',
+'',
+'[기타]',
+'15. jQuery 등 외부 라이브러리나 새 인터넷 주소를 가져오지 마.',
+'16. 모바일 터치로도 조작되게. 설명 없이 HTML 코드 블록 하나만. "..."로 줄이지 마.'
+  ].join('\n');
+
+  function togglePrompt(){ document.getElementById('promptText').value=PROMPT; document.getElementById('promptBox').classList.toggle('on'); }
+  function copyPrompt(){ navigator.clipboard.writeText(PROMPT).then(()=>alert('프롬프트를 복사했어요!'),()=>{const t=document.getElementById('promptText');t.select();document.execCommand('copy');alert('복사했어요!');}); }
+
+  function esc(s){ return String(s==null?'':s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;'); }
+  function faceOptions(sel){ return FACES.map(f=>'<option value="'+f.key+'"'+(sel===f.key?' selected':'')+'>'+f.name+'</option>').join(''); }
+
+  /* ---------- 사진 ---------- */
+  function processPicFile(n, file){
+    if(!file || !file.type || !file.type.startsWith('image/')){ alert('이미지 파일만 올릴 수 있어요.'); return; }
+    const reader=new FileReader();
+    reader.onload=e=>{
+      const img=new Image();
+      img.onload=()=>{
+        const maxW=1000; let w=img.width,h=img.height;
+        if(w>maxW){ h=Math.round(h*maxW/w); w=maxW; }
+        const cv=document.createElement('canvas'); cv.width=w; cv.height=h;
+        const ctx=cv.getContext('2d'); ctx.fillStyle='#fff'; ctx.fillRect(0,0,w,h); ctx.drawImage(img,0,0,w,h);
+        const dataUrl=cv.toDataURL('image/jpeg',0.75);
+        pics[n]=dataUrl; invalidateCheckedMission();
+        const im=document.getElementById('pic'+n+'img'); im.src=dataUrl; im.classList.add('on');
+        document.getElementById('pic'+n+'clr').classList.add('on');
+      };
+      img.src=e.target.result;
+    };
+    reader.readAsDataURL(file);
+  }
+  function pickPic(n, inputEl){
+    const file=inputEl.files[0]; if(!file) return;
+    processPicFile(n, file);
+  }
+  function clearPic(n){
+    invalidateCheckedMission();
+    pics[n]=null; picSrc[n]='';
+    const sEl=document.getElementById('pic'+n+'src'); if(sEl) sEl.value='';
+    const fEl=document.getElementById('picFile'+n); if(fEl) fEl.value='';
+    const im=document.getElementById('pic'+n+'img'); im.src=''; im.classList.remove('on');
+    document.getElementById('pic'+n+'clr').classList.remove('on');
+  }
+
+  /* 드래그 앤 드롭 연결 */
+  [1,2,3].forEach(function(n){
+    const cell=document.getElementById('picCell'+n);
+    if(!cell) return;
+    cell.addEventListener('dragover', function(ev){ ev.preventDefault(); cell.classList.add('dragover'); });
+    cell.addEventListener('dragleave', function(ev){ ev.preventDefault(); cell.classList.remove('dragover'); });
+    cell.addEventListener('drop', function(ev){
+      ev.preventDefault(); cell.classList.remove('dragover');
+      const f = ev.dataTransfer && ev.dataTransfer.files && ev.dataTransfer.files[0];
+      if(f) processPicFile(n, f);
+    });
+  });
+
+  /* ---------- 장면 불러오기 (전체 코드 보관) ---------- */
+  let studentStyle = "";
+  let studentScript = "";
+
+  function loadScenes(){
+    gameAssetReadVersion++; gameAsset=null; setAssetMode(false); invalidateCheckedMission();
+    const code=document.getElementById('aiCode').value;
+    const doc=new DOMParser().parseFromString(code,'text/html');
+    const secs=doc.querySelectorAll('section.scene');
+    if(secs.length===0){
+      document.getElementById('sceneList').innerHTML=
+        '<div class="empty-note" style="color:#c62828">장면을 찾지 못했어요.<br>AI 코드에 &lt;section class="scene" data-title="..."&gt; 가 있는지 확인하세요.</div>';
+      scenes=[]; return;
+    }
+    studentStyle = Array.from(doc.querySelectorAll('style')).map(s=>s.textContent).join('\n');
+    studentScript = Array.from(doc.querySelectorAll('script')).map(s=>s.textContent).join('\n');
+
+    const faceKeys = FACES.map(f=>f.key);
+    function safeFace(v){ return faceKeys.indexOf(v)!==-1 ? v : 'stand'; }
+
+    scenes=[];
+    secs.forEach((s,i)=>{
+      // AI가 심어둔 data 속성이 있으면 읽어서 채우고, 없으면 빈 값
+      const boyFace  = safeFace(s.getAttribute('data-boy-face'));
+      const girlFace = safeFace(s.getAttribute('data-girl-face'));
+      const boyText  = s.getAttribute('data-boy-text')  || '';
+      const girlText = s.getAttribute('data-girl-text') || '';
+      const problemAttr = (s.getAttribute('data-problem')||'').trim().toLowerCase();
+      const isProblem = (problemAttr==='true' || problemAttr==='1' || problemAttr==='yes');
+      const hint     = s.getAttribute('data-hint') || '';
+      scenes.push({
+        title: s.getAttribute('data-title') || ('장면'+(i+1)),
+        outer: s.outerHTML,
+        boyFace:boyFace, boyText:boyText,
+        girlFace:girlFace, girlText:girlText,
+        isProblem:isProblem, hint:hint
+      });
+    });
+    renderScenes();
+  }
+
+
+  function renderScenes(){
+    const host=document.getElementById('sceneList'); host.innerHTML='';
+    scenes.forEach((sc,i)=>{
+      const div=document.createElement('div'); div.className='scene-item';
+      div.innerHTML=
+        '<div class="scene-head"><span class="scene-no">장면 '+(i+1)+'</span><span class="scene-title">'+esc(sc.title)+'</span></div>'
+        +'<div class="char-row">'
+          +'<div class="char-side boy"><div class="cs-title">◀ 왼쪽 남학생</div>'
+            +'<select onchange="setV('+i+',\'boyFace\',this.value)">'+faceOptions(sc.boyFace)+'</select>'
+            +'<input placeholder="남학생 대사 (비워도 됨)" value="'+esc(sc.boyText)+'" oninput="setV('+i+',\'boyText\',this.value)"></div>'
+          +'<div class="char-side girl"><div class="cs-title">오른쪽 여학생 ▶</div>'
+            +'<select onchange="setV('+i+',\'girlFace\',this.value)">'+faceOptions(sc.girlFace)+'</select>'
+            +'<input placeholder="여학생 대사 (비워도 됨)" value="'+esc(sc.girlText)+'" oninput="setV('+i+',\'girlText\',this.value)"></div>'
+        +'</div>'
+        +'<div class="q-row"><label style="margin:0;display:flex;align-items:center;gap:6px;cursor:pointer">'
+          +'<input type="checkbox" style="width:auto" '+(sc.isProblem?'checked':'')+' onchange="toggleProblem('+i+',this.checked)"> 이 장면은 문제 장면이에요</label></div>'
+        +'<div class="hint-row'+(sc.isProblem?' on':'')+'" id="hintRow'+i+'">'
+          +'<label style="font-size:13px;margin-top:6px">힌트 문구 (쓰면 여학생 말풍선에 나타나요 / 비우면 힌트 버튼이 안 나와요)</label>'
+          +'<input placeholder="예: 직각을 낀 두 변의 제곱을 더해 보세요" value="'+esc(sc.hint)+'" oninput="setV('+i+',\'hint\',this.value)"></div>';
+      host.appendChild(div);
+    });
+  }
+  function setV(i,f,v){ scenes[i][f]=v; }
+  function toggleProblem(i,on){ scenes[i].isProblem=on; document.getElementById('hintRow'+i).classList.toggle('on',on); }
+
+  /* ---------- 최종 HTML 생성 ---------- */
+  function boyImg(face){ return CHAR_BASE+face+'_boy.webp'; }
+  function girlImg(face){ return CHAR_BASE+face+'_girl.webp'; }
+  function replaceImgTags(text){
+    let out=text;
+    for(let n=1;n<=3;n++){ if(pics[n]) out=out.split('IMG'+n).join(pics[n]); }
+    return out;
+  }
+
+  function buildFullHtml(){
+    const placeId=document.getElementById('placeId').value.trim();
+    const topic=document.getElementById('topic').value.trim();
+    const regionKey=placeId.charAt(0);
+    const regionName=REGION[regionKey]||'';
+    const placeName=PLACE_NAME[placeId]||placeId;
+    const rc=REGION_COLOR[regionKey]||{ grad:'linear-gradient(90deg,#1565c0,#1e88e5)', text:'#ffffff' };
+
+    const charData = scenes.map(sc=>{
+      // 이 장면이 실제로 쓰는 사진 번호만 골라 출처 모으기
+      const used=[1,2,3].filter(n=>pics[n] && picSrc[n] && picSrc[n].trim() && (gameAsset ? gameAsset.html : sc.outer).indexOf('IMG'+n)!==-1);
+      const credit = used.length ? ('사진 출처: '+used.map(n=>picSrc[n].trim()).join(' / ')) : '';
+      return {
+        boy: boyImg(sc.boyFace), boyText: sc.boyText, boyFace: sc.boyFace,
+        girl: girlImg(sc.girlFace), girlText: sc.girlText, girlFace: sc.girlFace,
+        isProblem: sc.isProblem, hint: sc.hint,
+        credit: credit
+      };
+    });
+    const sceneHtml = gameAsset ? '<iframe id="mt-game-asset" title="학생이 만든 게임" sandbox="allow-scripts allow-forms" style="width:100%;height:100%;border:0;display:block"></iframe><div id="mt-game-error" hidden style="position:absolute;inset:0;background:#fff5f5;color:#b71c1c;padding:20px;overflow:auto;z-index:10001"></div>' : replaceImgTags(scenes.map(sc=>sc.outer).join('\n'));
+    const styleCss = gameAsset ? '' : replaceImgTags(studentStyle);
+    const scriptJs = gameAsset ? buildAssetHostScript() : studentScript;
+
+    const titleBar = esc(regionName)+' › '+esc(placeName)+(topic?' › '+esc(topic):'');
+
+    return [
+'<!DOCTYPE html><html lang="ko"><head><meta charset="UTF-8">',
+'<meta name="viewport" content="width=device-width, initial-scale=1.0"><title>매쓰투어 미션</title>',
+'<style>',
+'*{box-sizing:border-box;}html,body{margin:0;height:100%;}',
+'body{font-family:"맑은 고딕","Malgun Gothic",sans-serif;background:#eaf2fb;display:flex;justify-content:center;align-items:center;overflow:hidden;}',
+'#mt-stage{width:100%;height:100%;display:flex;flex-direction:column;position:relative;}',
+/* 상단 권역·장소·주제 띠 — 색상은 권역별로 아래 인라인 style에서 지정, 글자크기 15px */
+'#mt-topbar{flex:0 0 auto;font-size:15px;font-weight:bold;padding:7px 14px;text-align:center;line-height:1.3;word-break:break-word;}',
+'#mt-body{flex:1 1 auto;display:flex;align-items:stretch;min-height:0;}',
+/* 양옆 패널: 22:9 전체에서 16:9 뺀 나머지를 반씩 */
+'.mt-side{flex:1 1 0;background:#fff;display:flex;flex-direction:column;justify-content:flex-end;align-items:center;padding:10px 6px;min-width:70px;overflow:hidden;position:relative;}',
+'.mt-side img.mt-char{width:100%;max-width:240px;object-fit:contain;max-height:80%;}',
+
+/* 사진 출처 — 오른쪽 흰 패널 맨 위, 두 줄까지만, 넘치면 … / 마우스 올리면 title로 전체 보임 — 글자크기 9px */
+'#mt-credit{position:absolute;top:4px;left:4px;right:4px;color:#607d8b;font-size:9px;line-height:1.3;text-align:left;word-break:break-all;overflow:hidden;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;max-height:24px;z-index:5;}',
+'#mt-credit:empty{display:none;}',
+/* 말풍선 — 진한 회색 바탕 + 흰 글씨 (글자크기 14px) */
+'.mt-bubble{background:rgba(55,55,60,.92);border:none;border-radius:16px;padding:9px 12px;font-size:14px;line-height:1.45;color:#ffffff;margin-bottom:8px;width:100%;word-break:break-word;box-shadow:0 2px 6px rgba(0,0,0,.18);}',
+'.mt-bubble:empty{display:none;}',
+'.mt-bubble.mt-hinting{background:rgba(93,64,55,.95);color:#fff3e0;}',
+/* 가운데 게임: 세로 높이를 꽉 쓰고 16:9 비율 유지 */
+'.mt-center{flex:0 0 auto;height:100%;aspect-ratio:16/9;align-self:center;position:relative;overflow:hidden;}',
+/* 힌트 버튼 — 가운데 아래로 이동 — 글자크기 */
+'#mt-hintBtn{position:absolute;left:50%;bottom:8px;transform:translateX(-50%);background:#ffb300;color:#fff;border:none;border-radius:10px;padding:6px 14px;font-size:13px;cursor:pointer;z-index:9999;white-space:nowrap;}',
+'#mt-hintBtn.mt-on{background:#f57c00;}',
+/* 미션 완료 — 글자크기 */
+'#mt-clear{position:absolute;inset:0;background:rgba(232,245,233,.97);display:none;flex-direction:column;justify-content:center;align-items:center;font-size:22px;font-weight:bold;color:#2e7d32;z-index:10000;}',
+'#mt-center-host{width:100%;height:100%;position:relative;}',
+'#mt-center-host > #stage, #mt-center-host > div{width:100%;height:100%;max-width:100%!important;}',
+'</style>',
+'<style>'+styleCss+'</style>',
+'</head><body>',
+'<div id="mt-stage">',
+'<div id="mt-topbar" style="background:'+rc.grad+';color:'+rc.text+';">'+titleBar+'</div>',
+'<div id="mt-body">',
+'<div class="mt-side"><div class="mt-bubble" id="mt-boyBubble"></div><img class="mt-char" id="mt-boyImg" src=""></div>',
+'<div class="mt-center"><div id="mt-center-host">'+sceneHtml+'</div>',
+'<button id="mt-hintBtn" style="display:none" onclick="mtToggleHint()">💡 힌트 보기</button>',
+'<div id="mt-clear">✨ 미션 완료! ✨<div style="font-size:15px;margin-top:8px;">보석을 받았어요</div></div>',
+'</div>',
+'<div class="mt-side"><div id="mt-credit"></div><div class="mt-bubble" id="mt-girlBubble"></div><img class="mt-char" id="mt-girlImg" src=""></div>',
+'</div>',
+'</div>',
+'<script>',
+'var MT_CHAR='+JSON.stringify(charData)+';',
+'var CHAR_BASE='+JSON.stringify(CHAR_BASE)+';',
+'var mt_done=false;',
+/* 학생(AI) 코드가 호출만 하면 되도록 window에 명시적으로 정의 */
+'window.missionClear=function(){if(mt_done)return;mt_done=true;var m=document.getElementById("mt-clear");if(m)m.style.display="flex";try{window.parent.postMessage({type:"MISSION_CLEAR"},"*");}catch(e){}};',
+/* 힌트 토글: 여학생 말풍선에 띄우고 표정을 생각중으로 */
+'var mt_hintOn=false;',
+'function mtToggleHint(){',
+'  var i=mtVisibleIndex();var c=MT_CHAR[i]||{};',
+'  var gb=document.getElementById("mt-girlBubble");',
+'  var gi=document.getElementById("mt-girlImg");',
+'  var hb=document.getElementById("mt-hintBtn");',
+'  mt_hintOn=!mt_hintOn;',
+'  if(mt_hintOn && c.hint && c.hint.trim()){',
+'    gb.textContent="💡 "+c.hint;',
+'    gb.classList.add("mt-hinting");',
+'    gi.src=CHAR_BASE+"thinking_girl.webp";',
+'    if(hb)hb.classList.add("mt-on");',
+'  }else{',
+'    gb.textContent=c.girlText||"";',
+'    gb.classList.remove("mt-hinting");',
+'    gi.src=c.girl||"";',
+'    if(hb)hb.classList.remove("mt-on");',
+'  }',
+'}',
+'function mtSceneList(){return Array.from(document.querySelectorAll("section.scene"));}',
+'function mtVisibleIndex(){var ss=mtSceneList();for(var i=0;i<ss.length;i++){var st=getComputedStyle(ss[i]);if(st.display!=="none"&&st.visibility!=="hidden"&&ss[i].offsetParent!==null){return i;}}return 0;}',
+'function mtPaint(){var i=mtVisibleIndex();var c=MT_CHAR[i]||MT_CHAR[0]||{};',
+'  mt_hintOn=false;',
+'  document.getElementById("mt-boyImg").src=c.boy||"";',
+'  document.getElementById("mt-girlImg").src=c.girl||"";',
+'  document.getElementById("mt-boyBubble").textContent=c.boyText||"";',
+'  var gb=document.getElementById("mt-girlBubble");gb.textContent=c.girlText||"";gb.classList.remove("mt-hinting");',
+'  var cr=document.getElementById("mt-credit");if(cr){cr.textContent=c.credit||"";cr.title=c.credit||"";}',
+'  var hb=document.getElementById("mt-hintBtn");',
+'  if(hb){hb.classList.remove("mt-on");if(c.isProblem&&c.hint&&c.hint.trim()){hb.style.display="block";}else{hb.style.display="none";}}',
+'}',
+'var mtObs=new MutationObserver(function(){mtPaint();});',
+'mtSceneList().forEach(function(s){mtObs.observe(s,{attributes:true,attributeFilter:["class","style"]});});',
+scriptJs,
+'setTimeout(mtPaint,60);',
+gameAsset ? '' : 'if(mtSceneList().length===0){missionClear();}',
+'<\/script></body></html>'
+    ].join('\n');
+  }
+
+  /* ---------- 검사 ---------- */
+  function buildErrorHtml(title){
+    return '<!DOCTYPE html><html lang="ko"><head><meta charset="UTF-8"><style>body{margin:0;font-family:"맑은 고딕",sans-serif;display:flex;justify-content:center;align-items:center;height:100vh;background:#fff5f5;}.b{text-align:center;color:#c62828;}</style></head><body><div class="b"><div style="font-size:40px">🚫</div><p style="font-size:16px">'+title+'</p></div></body></html>';
+  }
+  function showErrors(list){
+    const m=document.getElementById('msg'); m.className='msg bad';
+    m.innerHTML='고칠 점이 있어요. 아래를 확인하세요:<ul>'+list.map(x=>'<li>'+esc(x)+'</li>').join('')+'</ul>';
+    const b=document.getElementById('upBtn'); b.disabled=true; b.classList.remove('ready');
+  }
+  function clearUpMsg(){ const u=document.getElementById('upMsg'); u.className='msg'; u.textContent=''; }
+  function runCheck(){
+    if(gameAsset){runAssetCheck();return;}
+    lastFullHtml='';
+    clearUpMsg();
+    const upBtn=document.getElementById('upBtn'); upBtn.disabled=true; upBtn.classList.remove('ready');
+    const pv=document.getElementById('preview'); const errs=[];
+    const code=document.getElementById('aiCode').value;
+
+    if(scenes.length===0){
+      showErrors(['장면이 없어요. 왼쪽에 AI 코드를 붙여넣고 "장면 불러오기"를 누르세요.']);
+      pv.srcdoc=buildErrorHtml('장면이 없어요'); return;
+    }
+    if(code.indexOf('missionClear')===-1){
+      errs.push('성공해도 보석이 안 나와요. AI에게 "성공하면 missionClear()를 딱 한 번 불러줘"라고 다시 요청하세요.');
+    }
+    const clearCount=(code.match(/missionClear\s*\(/g)||[]).length;
+    if(clearCount>1){ errs.push('missionClear()가 '+clearCount+'번 불려요. AI에게 "성공 순간에 딱 한 번만 호출해줘"라고 요청하세요.'); }
+    const doc=new DOMParser().parseFromString(code,'text/html'); let synErr=null;
+    doc.querySelectorAll('script').forEach(sc=>{ if(synErr)return; const t=sc.textContent||''; if(t.trim()){ try{ new Function(t);}catch(e){ synErr=e.message; } } });
+    if(synErr){ errs.push('코드에 문법 오류가 있어요: ('+synErr+') 그 부분을 AI에게 다시 요청하세요.'); }
+    for(let n=1;n<=3;n++){
+      const used=code.indexOf('IMG'+n)!==-1;
+      if(used && !pics[n]) errs.push('코드에 IMG'+n+'을 썼는데 사진'+n+'을 안 올렸어요. 왼쪽 "사진 넣기"에서 사진'+n+'을 올리세요.');
+      if(!used && pics[n]) errs.push('사진'+n+'을 올렸는데 코드에 IMG'+n+'이 없어요. AI에게 "IMG'+n+' 자리를 넣어줘"라고 하거나 "지우기"를 누르세요.');
+      if(pics[n] && (!picSrc[n] || !picSrc[n].trim())) errs.push('사진'+n+'의 출처를 안 적었어요. 저작권을 위해 "사진'+n+' 출처"칸에 출처를 적어 주세요.');
+    }
+    if(errs.length){ showErrors(errs); pv.srcdoc=buildErrorHtml('고칠 점이 있어요'); return; }
+
+    lastFullHtml=buildFullHtml();
+    pv.srcdoc=lastFullHtml;
+    const m=document.getElementById('msg'); m.className='msg ok';
+    m.textContent='✅ 1차 검사 통과! 아래 미리보기에서 끝까지 풀어 "미션 완료"가 뜨는지, 버튼이 겹치지 않고 화면을 넘치지 않는지 확인한 뒤 업로드하세요.';
+    upBtn.disabled=false; upBtn.classList.add('ready');
+  }
+
+  /* ---------- 업로드 (메시지는 업로드 버튼 바로 아래 #upMsg에) ---------- */
+  async function doUpload(){
+    const placeId=document.getElementById('placeId').value.trim();
+    const topic=document.getElementById('topic').value.trim();
+    const id=document.getElementById('sid').value.trim();
+    const name=document.getElementById('sname').value.trim();
+    const u=document.getElementById('upMsg');
+    const uploadCode=document.getElementById('uploadCode').value.trim();
+    if(!SCRIPT_URL){u.className='msg bad';u.textContent='아직 저장소가 연결되지 않았어요. 선생님께 알려 주세요.';return;}
+    if(!uploadCode){u.className='msg bad';u.textContent='개인 제출코드를 입력해 주세요.';return;}
+    if(!id||!name){ u.className='msg bad'; u.textContent='❌ 학번과 이름을 입력해 주세요.'; return; }
+    if(!topic){ u.className='msg bad'; u.textContent='❌ 탐구 주제를 입력해 주세요.'; return; }
+    if(!lastFullHtml){ u.className='msg bad'; u.textContent='❌ 먼저 검사하기를 눌러 통과해 주세요.'; return; }
+    const htmlWithTopic=lastFullHtml;
+    if(new Blob([htmlWithTopic]).size>5*1024*1024){u.className='msg bad';u.textContent='게임과 사진을 합친 크기가 5MB를 넘어요. 사진 크기를 줄여 주세요.';return;}
+    const upBtn=document.getElementById('upBtn'); upBtn.disabled=true; upBtn.classList.remove('ready');
+    u.className='msg ok'; u.textContent='⏳ 업로드 중이에요...';
+    try{
+      const res=await fetch(SCRIPT_URL,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({ action:'mission_save', id, name, placeId, topic, uploadCode, html:htmlWithTopic })});
+      const data=await res.json();
+      if(res.ok && data.ok){ u.className='msg ok'; u.textContent='🎉 업로드 완료! ('+(data.saved||'')+')\n이제 매쓰투어에서 내 미션이 보여요.'; }
+      else{ let msg='❌ 업로드 실패: '+(data.error||'알 수 없는 오류'); if(data.error==='unauthorized') msg='❌ 학번·이름·제출코드를 확인해 주세요.'; u.className='msg bad'; u.textContent=msg; upBtn.disabled=false; upBtn.classList.add('ready'); }
+    }catch(e){ u.className='msg bad'; u.textContent='❌ 전송 오류가 발생했어요. 잠시 후 다시 시도해 주세요.'; upBtn.disabled=false; upBtn.classList.add('ready'); }
+  }
+/* 단일 HTML 게임 에셋: 기존 코드 입력·저장 API는 유지한다. */
+let gameAsset = null;
+let gameAssetReadVersion = 0;
+let activeAssetPreview = '';
+
+const GAME_ASSET_PROMPT = [
+  '아래 기획을 바탕으로 매쓰투어에 넣을 단일 HTML 게임을 만들어 줘.',
+  '',
+  '[게임 기획]',
+  '[여기에 문제 내용, 조작 방법, 성공 조건을 입력]',
+  '',
+  '[필수 규칙]',
+  '1. HTML, CSS, JavaScript를 하나의 HTML 파일에 모두 포함해 줘. 외부 라이브러리·별도 파일·localStorage는 사용하지 마. 진행 상태는 게임 안의 변수로 관리해.',
+  '2. 가운데 게임 영역은 16:9야. 고정 픽셀 크기 대신 주어진 영역에 맞춰 크기가 조절되게 해. 640×360처럼 작은 화면에서도 글자·입력칸·버튼이 잘리거나 겹치지 않게 해. 스크롤을 숨기기만 해서 내용을 잘라내지 마.',
+  '3. 아래쪽에는 제작기가 표시하는 공통 힌트 버튼을 위해 약 48px의 여유를 남겨. 게임의 입력칸이나 이동 버튼이 힌트 버튼과 겹치지 않게 해.',
+  '4. 캐릭터·말풍선·공통 힌트 버튼·보석 효과·업로드 화면은 제작기가 제공하므로 게임에 만들지 마.',
+  '5. 사진이 필요하면 실제 사용하는 IMG1, IMG2, IMG3만 넣어. 사진은 제작기에서 연결할 거야. 내 컴퓨터의 파일 경로는 넣지 마.',
+  '6. 여러 장면은 각각 <section class="scene" data-title="장면 이름">으로 감싸고, 한 번에 한 장면만 보여 줘. 장면 요소는 처음부터 HTML에 두고 class·style·hidden으로 전환해 줘.',
+  '7. 문제 장면의 다음 버튼은 처음에 disabled 상태로 만들어. 성공하면 화면 안에 성공 안내를 표시하고 다음 버튼을 활성화해. 성공 직후 자동으로 장면을 넘기거나 미션을 완료하지 마.',
+  '8. 첫 장면을 제외한 장면에 이전 버튼을 넣어. 이전 장면으로 돌아가도 이미 성공한 상태와 다음 버튼 활성화 상태를 유지해. 빈 입력은 정답으로 처리하지 말고, 소수 계산이 필요하면 허용 오차를 명확히 정해.',
+  '9. 마지막에는 결과나 풀이를 확인하는 장면과 미션 완료 버튼을 만들어. 전체 활동이 끝난 뒤 마지막 미션 완료 버튼을 눌렀을 때만 아래 코드를 한 번 실행해. 정답을 맞힌 순간이나 다음 버튼에서는 호출하지 마.',
+  '   if (typeof window.missionClear === "function") { window.missionClear(); }',
+  '   missionClear 함수 자체는 정의하지 마. 연속 클릭해도 완료 처리가 한 번만 실행되게 해. 제작기 밖에서도 결과 확인까지 실행할 수 있게 해.',
+  '10. 마우스와 터치로 조작할 수 있게 해. 마우스를 올려야만 보이는 설명에 의존하지 마. 안내와 오류는 alert나 새 창 대신 게임 화면 안에 표시해.',
+  '',
+  '[표정·대사 연결 — 선택 사항]',
+  '표정·대사·힌트는 제작기에서 설정할 거야. 각 section.scene에 data-boy-face, data-boy-text, data-girl-face, data-girl-text, data-problem, data-hint를 미리 넣어도 돼.',
+  '문제 장면에는 data-problem="true", 나머지에는 data-problem="false"를 써 줘.',
+  '표정 이름은 stand, how, thinking, finding, aha, thumb, lookmap 중 하나만 사용해.',
+  '',
+  '완성된 HTML 전체를 생략 없이 제공해 줘.'
+].join('\n');
+
+function invalidateCheckedMission() {
+  lastFullHtml = '';
+  activeAssetPreview = '';
+  const up = document.getElementById('upBtn');
+  up.disabled = true;
+  up.classList.remove('ready');
+  clearUpMsg();
+}
+
+function showAssetStatus(message, bad) {
+  const node = document.getElementById('gameAssetStatus');
+  node.className = 'msg ' + (bad ? 'bad' : 'ok');
+  node.textContent = message;
+}
+
+function setAssetMode(on) {
+  document.getElementById('legacyCodeFields').hidden = on;
+  document.getElementById('clearGameAssetBtn').hidden = !on;
+}
+
+function clearGameAsset() {
+  gameAssetReadVersion++;
+  gameAsset = null;
+  scenes = [];
+  studentStyle = '';
+  studentScript = '';
+  document.getElementById('gameAssetFile').value = '';
+  document.getElementById('gameAssetStatus').className = 'msg';
+  document.getElementById('sceneList').innerHTML = '<div class="empty-note">게임 HTML 파일을 선택하거나 기존 코드를 붙여넣고 장면을 불러오세요.</div>';
+  setAssetMode(false);
+  invalidateCheckedMission();
+  document.getElementById('preview').srcdoc = '';
+}
+
+async function pickGameAsset(input) {
+  const file = input.files && input.files[0];
+  if (!file) return;
+  const version = ++gameAssetReadVersion;
+  invalidateCheckedMission();
+  gameAsset = null;
+  scenes = [];
+  setAssetMode(false);
+  document.getElementById('preview').srcdoc = '';
+  document.getElementById('sceneList').innerHTML = '<div class="empty-note">게임 파일을 읽는 중이에요.</div>';
+  try {
+    if (!/\.html?$/i.test(file.name)) throw new Error('단일 HTML 게임 파일(.html 또는 .htm)을 선택해 주세요.');
+    const html = await file.text();
+    if (version !== gameAssetReadVersion) return;
+    if (!html.trim()) throw new Error('파일 내용이 비어 있어요.');
+    const doc = new DOMParser().parseFromString(html, 'text/html');
+    if (!doc.body || !doc.body.textContent.trim() && !doc.body.querySelector('canvas,svg,img,input,button,section,div')) {
+      throw new Error('게임 화면을 찾지 못했어요. 완성된 HTML 파일인지 확인해 주세요.');
+    }
+    const sections = Array.from(doc.querySelectorAll('section.scene'));
+    const faceKeys = FACES.map(f => f.key);
+    const safeFace = value => faceKeys.includes(value) ? value : 'stand';
+    scenes = (sections.length ? sections : [doc.body]).map((s, index) => ({
+      title: s.getAttribute('data-title') || (sections.length ? '장면' + (index + 1) : file.name.replace(/\.html?$/i, '')),
+      outer: sections.length ? s.outerHTML : html,
+      boyFace: safeFace(s.getAttribute('data-boy-face')),
+      boyText: s.getAttribute('data-boy-text') || '',
+      girlFace: safeFace(s.getAttribute('data-girl-face')),
+      girlText: s.getAttribute('data-girl-text') || '',
+      isProblem: sections.length ? /^(true|1|yes)$/i.test(s.getAttribute('data-problem') || '') : true,
+      hint: s.getAttribute('data-hint') || ''
+    }));
+    gameAsset = { name: file.name, html, hasScenes: sections.length > 0 };
+    studentStyle = '';
+    studentScript = '';
+    renderScenes();
+    setAssetMode(true);
+    showAssetStatus('📎 ' + file.name + ' · ' + scenes.length + '개 장면을 불러왔어요.\n표정·대사·힌트를 설정하고 검사하기를 누르세요.', false);
+  } catch (error) {
+    if (version !== gameAssetReadVersion) return;
+    input.value = '';
+    showAssetStatus(error.message || '파일을 읽지 못했어요.', true);
+    document.getElementById('sceneList').innerHTML = '<div class="empty-note">게임 HTML 파일을 다시 선택해 주세요.</div>';
+  }
+}
+
+/* 함수 본문을 문자열로 넣어 게임 문서의 첫 스크립트로 실행한다. */
+function gameAssetBridge(channel) {
+  let completed = false;
+  let previousIndex = -1;
+  const send = (event, detail) => window.parent.postMessage(Object.assign({ type: 'MT_GAME_ASSET', channel, event }, detail || {}), '*');
+  window.missionClear = function () {
+    if (completed) return;
+    completed = true;
+    send('complete');
+  };
+  // 게임의 submit 이벤트는 실행하되 페이지 이동은 하지 않는다.
+  document.addEventListener('submit', function (event) { event.preventDefault(); });
+  window.addEventListener('error', function (event) {
+    send('error', { message: event.message || '게임에서 실행 오류가 발생했어요.' });
+  });
+  window.addEventListener('unhandledrejection', function (event) {
+    send('error', { message: String(event.reason && event.reason.message || event.reason || '게임 실행 오류') });
+  });
+  function reportScene() {
+    const list = Array.from(document.querySelectorAll('section.scene'));
+    let index = list.findIndex(function (section) {
+      const style = getComputedStyle(section);
+      return style.display !== 'none' && style.visibility !== 'hidden' && section.getClientRects().length > 0;
+    });
+    if (!list.length) index = 0;
+    if (index >= 0 && index !== previousIndex) {
+      previousIndex = index;
+      send('scene', { index });
+    }
+  }
+  function ready() {
+    reportScene();
+    new MutationObserver(reportScene).observe(document.body, { subtree: true, childList: true, attributes: true, attributeFilter: ['class', 'style', 'hidden'] });
+    window.addEventListener('resize', reportScene);
+    send('ready');
+  }
+  if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', ready, { once: true });
+  else ready();
+}
+
+function scriptJSON(value) {
+  return JSON.stringify(value).replace(/</g, '\\u003c').replace(/\u2028/g, '\\u2028').replace(/\u2029/g, '\\u2029');
+}
+
+function buildAssetDocument(channel) {
+  const doc = new DOMParser().parseFromString(replaceImgTags(gameAsset.html), 'text/html');
+  const bridge = doc.createElement('script');
+  bridge.textContent = '(' + gameAssetBridge.toString() + ')(' + JSON.stringify(channel) + ');';
+  doc.head.prepend(bridge);
+  return '<!DOCTYPE html>\n' + doc.documentElement.outerHTML;
+}
+
+function buildAssetHostScript() {
+  const channel = 'mt-' + Date.now().toString(36) + '-' + Math.random().toString(36).slice(2);
+  const source = buildAssetDocument(channel);
+  return [
+    'var mt_assetScene=0;',
+    'mtVisibleIndex=function(){return mt_assetScene;};',
+    '(function(){',
+    'var frame=document.getElementById("mt-game-asset");',
+    'var channel=' + scriptJSON(channel) + ';',
+    'var previewRun=' + scriptJSON(activeAssetPreview) + ';',
+    'var failed=false;',
+    'function report(state,message){window.parent.postMessage({type:"MT_ASSET_PREVIEW",run:previewRun,state:state,message:message||""},"*");}',
+    'window.addEventListener("message",function(event){',
+    ' var d=event.data;',
+    ' if(event.source!==frame.contentWindow||!d||d.type!=="MT_GAME_ASSET"||d.channel!==channel)return;',
+    ' if(d.event==="scene"&&Number.isInteger(d.index)&&d.index>=0&&d.index<MT_CHAR.length){mt_assetScene=d.index;mtPaint();}',
+    ' if(d.event==="ready")report("ready");',
+    ' if(d.event==="error"){failed=true;var box=document.getElementById("mt-game-error");box.textContent="게임 실행 오류: "+String(d.message||"");box.hidden=false;report("error",String(d.message||""));}',
+    ' if(d.event==="complete"&&!failed){report("complete");window.missionClear();}',
+    '});',
+    'frame.srcdoc=' + scriptJSON(source) + ';',
+    '})();'
+  ].join('\n');
+}
+
+function assetErrors() {
+  const errors = [];
+  const code = gameAsset.html;
+  const doc = new DOMParser().parseFromString(code, 'text/html');
+  if (!/\bmissionClear\s*\(/.test(code)) {
+    errors.push('게임의 성공 처리에 window.missionClear() 호출이 필요해요. 왼쪽의 게임용 프롬프트를 참고해 AI에게 추가를 요청하세요.');
+  }
+  doc.querySelectorAll('script').forEach(function (script) {
+    if (script.hasAttribute('src')) return;
+    const type = (script.getAttribute('type') || '').trim().toLowerCase();
+    if (type === 'module' || type && !['text/javascript', 'application/javascript'].includes(type)) return;
+    try { new Function(script.textContent); }
+    catch (error) { errors.push('게임 코드 문법 오류: ' + error.message); }
+  });
+  if (doc.querySelector('script[src],link[rel~="stylesheet"][href],iframe,object,embed,base')) {
+    errors.push('다른 파일을 불러오는 코드가 있어요. 외부 스크립트·스타일·다른 페이지 없이 실행되는 단일 HTML로 만들어 주세요.');
+  }
+  const resources = Array.from(doc.querySelectorAll('img[src],audio[src],video[src],source[src],video[poster],input[type="image"][src]'));
+  const isEmbedded = value => !value || /^(data:|IMG[123]$|#)/i.test(value.trim());
+  if (resources.some(el => !isEmbedded(el.getAttribute('src')) || !isEmbedded(el.getAttribute('poster'))) || doc.querySelector('[srcset]')) {
+    errors.push('게임에 별도 이미지·미디어 파일 주소가 있어요. 이미지는 IMG1·IMG2·IMG3를 사용하거나 파일 내용을 HTML 안에 포함해 주세요.');
+  }
+  const css = Array.from(doc.querySelectorAll('style')).map(el => el.textContent).join('\n') + '\n' + Array.from(doc.querySelectorAll('[style]')).map(el => el.getAttribute('style')).join('\n');
+  if (/@import\b/i.test(css) || Array.from(css.matchAll(/url\(\s*(['"]?)(.*?)\1\s*\)/gi)).some(match => !isEmbedded(match[2]))) {
+    errors.push('게임의 스타일에 외부 파일 주소가 있어요. 배경은 IMG1·IMG2·IMG3로 지정해 주세요.');
+  }
+  for (let n = 1; n <= 3; n++) {
+    const used = code.includes('IMG' + n);
+    if (used && !pics[n]) errors.push('게임에서 IMG' + n + '을 사용해요. 사진 ' + n + '을 선택해 주세요.');
+    if (!used && pics[n]) errors.push('사진 ' + n + '을 사용하려면 게임에 IMG' + n + '을 넣거나 해당 사진을 지워 주세요.');
+    if (pics[n] && !picSrc[n].trim()) errors.push('사진 ' + n + '의 출처를 적어 주세요.');
+  }
+  return Array.from(new Set(errors));
+}
+
+function runAssetCheck() {
+  invalidateCheckedMission();
+  const errors = assetErrors();
+  const preview = document.getElementById('preview');
+  if (errors.length) {
+    showErrors(errors);
+    preview.srcdoc = buildErrorHtml('게임 파일을 확인해 주세요');
+    return;
+  }
+  activeAssetPreview = 'preview-' + Date.now().toString(36) + '-' + Math.random().toString(36).slice(2);
+  lastFullHtml = buildFullHtml();
+  const msg = document.getElementById('msg');
+  msg.className = 'msg ok';
+  msg.textContent = '✅ 파일 검사 통과! 아래 미리보기에서 게임을 끝까지 풀어 주세요. 성공 신호가 확인되면 업로드할 수 있어요.';
+  preview.srcdoc = lastFullHtml;
+}
+
+window.addEventListener('message', function (event) {
+  const data = event.data;
+  if (event.source !== document.getElementById('preview').contentWindow || !data || data.type !== 'MT_ASSET_PREVIEW' || !activeAssetPreview || data.run !== activeAssetPreview || !lastFullHtml) return;
+  if (data.state === 'error') {
+    invalidateCheckedMission();
+    showErrors(['게임 실행 오류: ' + String(data.message || '알 수 없는 오류')]);
+  } else if (data.state === 'complete') {
+    const up = document.getElementById('upBtn');
+    up.disabled = false;
+    up.classList.add('ready');
+    const msg = document.getElementById('msg');
+    msg.className = 'msg ok';
+    msg.textContent = '✅ 게임 성공 신호 확인! 표정·대사·사진과 화면 배치를 확인한 뒤 업로드하세요.';
+  }
+});
+
+document.getElementById('gameAssetPrompt').value = GAME_ASSET_PROMPT;
+async function copyGameAssetPrompt() {
+  const textarea = document.getElementById('gameAssetPrompt');
+  try { await navigator.clipboard.writeText(textarea.value); }
+  catch (_) { textarea.focus(); textarea.select(); document.execCommand('copy'); }
+  document.getElementById('copyGameAssetPromptBtn').textContent = '복사했어요';
+}
+
+document.querySelector('.wrap').addEventListener('input', function (event) {
+  if (event.target.matches('input,select,textarea') && event.target.id !== 'uploadCode' && !event.target.readOnly) invalidateCheckedMission();
+});
+document.querySelector('.wrap').addEventListener('change', function (event) {
+  if (event.target.matches('input,select,textarea') && event.target.id !== 'uploadCode' && !event.target.readOnly) invalidateCheckedMission();
+});
+
+</script>
+
+</body>
+</html>

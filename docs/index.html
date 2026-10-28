@@ -1,0 +1,1431 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>인천 MATH TOUR — 별빛을 되찾아라</title>
+<style>
+  *{box-sizing:border-box;}
+  html,body{margin:0;}
+  body{font-family:"Malgun Gothic","Apple SD Gothic Neo",system-ui,sans-serif; background:#0b1b33; color:#fff;}
+
+ /* ===== 상단 bar (사이트 공통 디자인과 통일) ===== */
+.topbar{
+  position:sticky; top:0; z-index:20;
+  display:flex; gap:8px; align-items:center;
+  padding:6px 14px;
+  background:rgba(255,255,255,0.9);
+  box-shadow:0 2px 8px rgba(0,0,0,0.08);
+}
+/* 왼쪽 브랜드명 */
+.topbar .brand{
+  font-weight:bold; color:#7a4a2e; font-size:0.85em;
+  margin-right:6px;
+}
+/* 포기 버튼 (갈색 둥근 버튼) */
+.topbar #giveupBtn{
+  border:none; background:#b07a52; color:#fff;
+  font-weight:bold; font-size:0.85em;
+  padding:7px 14px; border-radius:20px; cursor:pointer;
+  display:inline-flex; align-items:center; gap:5px;
+}
+.topbar #giveupBtn:hover{ background:#9c6842; }
+.topbar #giveupBtn:active{ transform:scale(0.96); }
+
+/* ▼▼▼ [작업용 임시] 최종 완료 후 .reset-dev 관련 전체 삭제 ▼▼▼ */
+.topbar .reset-dev{
+  margin:0 auto;
+  border:none; background:#c0392b; color:#fff;
+  font-weight:bold; font-size:0.85em;
+  padding:7px 14px; border-radius:20px; cursor:pointer;
+}
+.topbar .reset-dev:hover{ background:#a5302a; }
+/* ▲▲▲ [작업용 임시] 여기까지 삭제 ▲▲▲ */
+
+/* 오른쪽 상태 문구 */
+.topbar .status{
+  margin-left:auto; margin-right:10px;
+  font-weight:bold; color:#7a4a2e; font-size:0.85em;
+}
+/* 포기 횟수 · 보석 카운트 (연한 갈색 배지) */
+.topbar .giveup-count,
+.topbar .count{
+  background:#f3e7db; color:#7a4a2e;
+  padding:6px 14px; border-radius:20px;
+  font-weight:bold; font-size:0.85em;
+}
+
+/* ===== 좁은 휴대폰(≤480px): bar 축소 (공통바와 동일) ===== */
+@media (max-width:480px){
+  .topbar{ padding:6px 8px; gap:4px; }
+  .topbar .brand{ font-size:0.72em; margin-right:4px; white-space:nowrap; }
+  .topbar #giveupBtn{ font-size:0.72em; padding:6px 8px; gap:3px; white-space:nowrap; }
+  .topbar .reset-dev{ font-size:0.72em; padding:6px 8px; white-space:nowrap; }
+  .topbar .status{ font-size:0.74em; margin-right:4px; }
+  .topbar .giveup-count,
+  .topbar .count{ font-size:0.72em; padding:6px 8px; white-space:nowrap; }
+}
+
+
+  /* ===== 무대(모든 화면이 들어가는 16:9 박스) =====
+     · [무대 최대 크기 조절] 아래 #stage 의 max-width:1000px 숫자만 바꾸면 됨 */
+  #stageWrap{display:flex; justify-content:center; background:#0b1b33; padding:8px;}
+  #stage{position:relative; width:100%; max-width:1000px; aspect-ratio:16/9;   /* ← 이 max-width 숫자로 무대 최대 크기 조절 */
+    background:#ffffff; overflow:hidden; border-radius:10px;
+    container-type:inline-size;}
+
+  .layer{position:absolute; inset:0; display:none;}
+  .layer.show{display:block;}
+  .layer.flex.show{display:flex;}
+
+  /* ===== 지도 화면 ===== */
+  #mapLayer{background:#ffffff;}
+  #mapwrap{position:absolute; top:50%; left:50%; transform:translate(-50%,-50%);
+    height:100%; aspect-ratio:1/1; max-width:100%;}
+  #mapimg{width:100%; height:100%; object-fit:fill; display:block;}
+
+  /* ===== 지도 좌우 안내 캐릭터 + 말풍선 (가로 띠 대신) ===== */
+  .map-char{position:absolute; bottom:0; z-index:12; height:62%; pointer-events:none;}
+
+  /* ▼▼▼ [지도 화면 캐릭터 위치 변경] ▼▼▼
+     원리: left = 화면 왼쪽 끝에서 떨어진 거리, right = 화면 오른쪽 끝에서 떨어진 거리.
+          숫자가 작을수록(또는 음수) 화면 바깥쪽 끝, 숫자가 클수록 화면 안쪽(중앙)으로 이동.
+          남↔여를 좌우로 맞바꾸려면 man의 left와 woman의 right를 서로 바꾸면 됨.
+     ※ 캐릭터를 옮기면 아래 [지도 화면 말풍선 위치 변경]도 같이 맞춰야 자연스러움. */
+  .map-char.man{left:-3%;}      /* 왼쪽 남학생(수천) — 바깥으로: 더 작게 / 안쪽으로: 더 크게 */
+  .map-char.woman{right:-3%;}   /* 오른쪽 여학생(수인) — 바깥으로: 더 작게 / 안쪽으로: 더 크게 */
+  /* ▲▲▲ [지도 화면 캐릭터 위치 변경] 여기까지 ▲▲▲ */
+
+
+  .map-bubble{position:absolute; z-index:13; background:rgba(0,0,0,.72); color:#fff;
+    padding:0.9cqw 1.4cqw; border-radius:1.6cqw; font-size:1.5cqw; font-weight:700;
+    line-height:1.4; backdrop-filter:blur(4px); box-shadow:0 0.4cqw 1.2cqw rgba(0,0,0,.35);
+    display:-webkit-box; -webkit-box-orient:vertical; -webkit-line-clamp:2;
+    overflow:hidden; text-overflow:ellipsis;}
+
+  /* ▼▼▼ [지도 화면 말풍선 위치 변경] ▼▼▼
+     원리: man은 right 값으로 "오른쪽 모서리"를 고정 → 글이 길어지면 왼쪽(바깥)으로 자람.
+          woman은 left 값으로 "왼쪽 모서리"를 고정 → 글이 길어지면 오른쪽(바깥)으로 자람.
+          right/left 숫자를 키우면 말풍선이 화면 바깥쪽으로, 줄이면 중앙쪽으로 이동.
+          bottom = 아래에서 띄운 높이(키우면 위로). max-width = 말풍선 최대 가로폭.
+     ※ 위 캐릭터를 좌우로 바꿨다면 man의 right와 woman의 left도 서로 바꿔야 함. */
+  .map-bubble.man{right:80%; bottom:62%; max-width:24cqw; text-align:left;}
+  .map-bubble.woman{left:80%; bottom:62%; max-width:24cqw; text-align:left;}
+  /* ▲▲▲ [지도 화면 말풍선 위치 변경] 여기까지 ▲▲▲ */
+
+
+  .map-bubble::after{display:none;}
+  .map-bubble:empty{display:none;}
+
+  /* ===== 권역 버튼 ===== */
+  .region-btn{position:absolute; transform:translate(-50%,-50%); z-index:10;
+    width:18%; aspect-ratio:1/1; border:none; background:transparent; cursor:pointer; padding:0;
+    display:flex; align-items:center; justify-content:center; transition:transform .15s;}
+  .region-btn:hover{transform:translate(-50%,-50%) scale(1.08);}
+  .region-btn.locked{cursor:not-allowed;}
+  .region-btn.locked:hover{transform:translate(-50%,-50%);}
+  .region-circle{width:100%; height:100%; border-radius:50%; display:flex; align-items:center; justify-content:center;
+    border:0.3cqw solid #fff; box-shadow:0 0.3cqw 1cqw rgba(0,0,0,.35);}
+  .rc-green{background:#7fcf93;} .rc-blue{background:#79bdf0;}
+  .rc-yellow{background:#f2d965;} .rc-pink{background:#f29ab2;} .rc-purple{background:#b79ae8;}
+  .region-circle img{width:90%; height:90%; object-fit:contain;}
+
+  /* ===== 장소 버튼 (지도 + 권역 도착 화면 공용) ===== */
+  .place-btn{position:absolute; transform:translate(-50%,-50%); z-index:5;
+    width:9%; border:none; background:transparent; cursor:pointer; padding:0;
+    display:flex; flex-direction:column; align-items:center; transition:transform .15s, opacity .2s;}
+  .place-btn:hover{transform:translate(-50%,-50%) scale(1.1);}
+  .place-btn.dim{opacity:.7;}
+  .place-btn.cleared{pointer-events:none;}
+  .place-btn.gaveup{pointer-events:none; opacity:.55;}
+  .place-wrap{position:relative; width:100%;}
+  .place-img{width:100%; aspect-ratio:1/1; object-fit:contain; display:block;}
+  .place-label{margin-top:-0.4cqw; background:#fff; color:#223;
+    font-size:1.4cqw; font-weight:700;
+    padding:0.2cqw 0.6cqw; border-radius:1cqw; white-space:nowrap; box-shadow:0 0.15cqw 0.4cqw rgba(0,0,0,.25);}
+  .place-label.long{font-size:1.15cqw;}
+  /* 전체 지도 화면에서는 장소 이름표를 숨김 (권역 도착 화면은 그대로 둠) */
+  #mapwrap .place-label{display:none;}
+
+
+  /* 권역 도착 화면 안의 장소 버튼은 조금 더 크게 */
+  #arrivePlaces .place-btn{width:13%;}
+  #arrivePlaces .place-label{font-size:1.2cqw;}
+  #arrivePlaces .place-label.long{font-size:0.9cqw;}
+
+  .gem-badge{position:absolute; top:50%; left:50%; transform:translate(-50%,-50%); width:75%;
+    animation:gemGlow 1.6s ease-in-out infinite; z-index:3;
+    filter:drop-shadow(0 0 0.4cqw rgba(255,255,255,.9));}
+  @keyframes gemGlow{0%,100%{filter:drop-shadow(0 0 0.3cqw rgba(255,255,255,.7));} 50%{filter:drop-shadow(0 0 0.8cqw rgba(255,255,255,1));}}
+  .glow-green  .place-label{box-shadow:0 0 1cqw 0.2cqw #7fcf93;}
+  .glow-blue   .place-label{box-shadow:0 0 1cqw 0.2cqw #79bdf0;}
+  .glow-yellow .place-label{box-shadow:0 0 1cqw 0.2cqw #f2d965;}
+  .glow-pink   .place-label{box-shadow:0 0 1cqw 0.2cqw #f29ab2;}
+  .glow-purple .place-label{box-shadow:0 0 1cqw 0.2cqw #b79ae8;}
+ 
+    /* 포기한 장소 표시 — 선명한 빨간 원 안의 ✗ */
+  .gaveup-mark{position:absolute; top:50%; left:50%; transform:translate(-50%,-50%);
+    width:48%; aspect-ratio:1/1; z-index:4; border-radius:50%;
+    background:#e23b3b; border:0.35cqw solid #fff; color:#fff;
+    display:flex; align-items:center; justify-content:center;
+    font-size:2.6cqw; line-height:1; font-weight:900;
+    box-shadow:0 0.3cqw 0.8cqw rgba(0,0,0,.45);}
+
+
+
+  /* ===== 이동 영상 ===== */
+  #videoLayer{background:#000; z-index:60;}
+  #videoLayer video{width:100%; height:100%; object-fit:cover;}
+  #skipBtn{position:absolute; bottom:3cqw; right:3cqw; z-index:61;
+    background:rgba(255,255,255,.85); color:#223; border:none; padding:1cqw 2.4cqw; border-radius:3cqw;
+    font-weight:700; cursor:pointer; font-size:1.8cqw;}
+
+  /* ===== 권역 도착 화면 ===== */
+  #arriveLayer{background:#ffffff center/contain no-repeat; z-index:55;}
+  #arriveLayer .veil{position:absolute; inset:0; background:rgba(0,0,0,.04);}
+
+  /* 권역 도착 화면 안에서 장소 버튼이 올라갈 영역 (배경 지도와 같은 크기로 중앙 정렬) */
+  #arrivePlaces{position:absolute; top:0; left:50%; transform:translateX(-50%);
+    height:100%; aspect-ratio:1/1; max-width:100%; z-index:6;}
+
+  .char{position:absolute; bottom:0; height:62%; z-index:2;}
+
+  /* ▼▼▼ [권역 도착 화면 캐릭터 위치 변경] ▼▼▼
+     원리는 지도 화면과 동일: left/right 숫자가 작을수록 바깥, 클수록 안쪽.
+     남↔여 좌우 교체는 man의 left와 woman의 right를 서로 바꾸면 됨.
+     ※ 바꾸면 아래 [권역 도착 화면 말풍선 위치 변경]도 함께 조정. */
+  .char.man{left:-1%;} .char.woman{right:-1%;}
+  /* ▲▲▲ [권역 도착 화면 캐릭터 위치 변경] 여기까지 ▲▲▲ */
+
+  .bubble{position:absolute; z-index:3; background:#eaf3fb; color:#223;
+    padding:0.9cqw 1.3cqw; border-radius:1.8cqw;
+    font-size:1.5cqw; font-weight:700; max-width:28%;
+    box-shadow:0 0.4cqw 1.4cqw rgba(0,0,0,.18); border:0.15cqw solid #cdddee;}
+  .bubble::after{display:none;}
+
+  /* ▼▼▼ [권역 도착 화면 말풍선 위치 변경] ▼▼▼
+     원리: man은 left로 왼쪽 위치, woman은 right로 오른쪽 위치를 잡음.
+          숫자를 키우면 화면 안쪽(중앙), 줄이면 바깥쪽 끝으로 이동.
+          bottom = 아래에서 띄운 높이(키우면 캐릭터 머리 위로 올라감).
+     ※ 캐릭터를 좌우로 바꿨다면 man의 left와 woman의 right도 서로 바꿔야 함. */
+  .bubble.man{left:3%; bottom:58%;}
+  .bubble.woman{right:3%; bottom:58%;}
+  /* ▲▲▲ [권역 도착 화면 말풍선 위치 변경] 여기까지 ▲▲▲ */
+
+
+  /* ▼▼▼ [장소 도착 화면 캐릭터 위치 변경] ▼▼▼
+     이 화면은 배경 그림 안에 인물이 이미 그려져 있어 캐릭터 이미지는 숨김(display:none).
+     만약 캐릭터 이미지를 다시 보이게 하려면 display:none 을 지우고,
+     위 .char.man / .char.woman 과 같은 방식(left/right)으로 위치를 잡으면 됨. */
+  #placeLayer{background:#ffffff center/contain no-repeat; z-index:55;}
+  #placeLayer .char{display:none;}
+  /* ▲▲▲ [장소 도착 화면 캐릭터 위치 변경] 여기까지 ▲▲▲ */
+
+  #placeLayer .bubble{position:absolute; z-index:3; background:#ffffff; color:#223;
+    padding:0.7cqw 1.1cqw; border-radius:1.6cqw;
+    font-size:1.35cqw; font-weight:700; max-width:26%;
+    box-shadow:0 0.4cqw 1.4cqw rgba(0,0,0,.18); border:0.15cqw solid #e2e2e2;}
+  #placeLayer .bubble::after{display:none;}
+
+  /* ▼▼▼ [장소 도착 화면 말풍선 위치 변경] ▼▼▼
+     ★ 중요: 장소마다 말풍선 위치가 다르면 여기(CSS)가 아니라
+       아래 JS의 PLACES 배열에서 각 장소의 mPos(남)/wPos(여) 값으로 조정함.
+       예) mPos:{left:"10%", bottom:"55%"}, wPos:{right:"16%", bottom:"55%"}
+       left/right = 좌우 위치(키우면 안쪽), bottom = 높이(키우면 위로).
+     아래 CSS 값은 mPos/wPos가 없을 때 쓰는 "기본 위치"임. */
+  #placeLayer .bubble.man{left:7%; bottom:60%;}
+  #placeLayer .bubble.woman{right:7%; bottom:60%;}
+  /* ▲▲▲ [장소 도착 화면 말풍선 위치 변경] 여기까지 ▲▲▲ */
+
+  #placeGoBtn{position:absolute; bottom:5%; left:50%; transform:translateX(-50%); z-index:4;
+    background:#4a6cf7; color:#fff; border:none; padding:0.9cqw 3.2cqw; border-radius:2.4cqw;
+    font-size:1.5cqw; font-weight:800; cursor:pointer; box-shadow:0 0.4cqw 1.4cqw rgba(0,0,0,.4);}
+  #placeGoBtn:hover{filter:brightness(1.1); transform:translateX(-50%) scale(1.05);}
+
+  /* ===== 미션 팝업(테스트용) ===== */
+  #missionLayer{background:rgba(0,0,0,.6); z-index:70; align-items:center; justify-content:center;}
+  .mission-box{background:#fff; color:#223; border-radius:2cqw; padding:3cqw 4cqw; max-width:60%; text-align:center;}
+  .mission-box h3{margin:0 0 1cqw; color:#1a4a8a; font-size:2.6cqw;}
+  .mission-box p{font-size:1.9cqw;}
+  .mission-box button{margin-top:1.6cqw; background:#4a6cf7; color:#fff; border:none; padding:1.2cqw 2.8cqw;
+    border-radius:1.2cqw; font-weight:700; cursor:pointer; font-size:1.8cqw;}
+
+  /* ===== 공용 안내 / 확인 팝업 ===== */
+  #noticeLayer{background:rgba(0,0,0,.55); z-index:88; align-items:center; justify-content:center;}
+  .notice-box{background:#fff; color:#223; border-radius:2.4cqw; padding:3.4cqw 4cqw; max-width:66%; text-align:center;}
+  .notice-box p{font-size:2.2cqw; font-weight:700; margin:0 0 2cqw; line-height:1.5; white-space:pre-line;}
+  .notice-box .btn-row{display:flex; gap:1.2cqw; justify-content:center;}
+  .notice-box button{background:#b07a52; color:#fff; border:none; padding:1.3cqw 3.6cqw;
+    border-radius:2.4cqw; font-weight:800; cursor:pointer; font-size:1.9cqw;}
+  .notice-box button:hover{filter:brightness(1.07);}
+  .notice-box button.cancel{background:#999;}
+
+  /* ===== 잠김 안내 토스트 ===== */
+  #toast{position:absolute; top:50%; left:50%; transform:translate(-50%,-50%);
+    z-index:90; background:rgba(0,0,0,.82); color:#fff; padding:2cqw 3.4cqw;
+    border-radius:2cqw; font-size:2cqw; font-weight:700; text-align:center;
+    box-shadow:0 0.8cqw 2.4cqw rgba(0,0,0,.4); display:none; max-width:80%;}
+  #toast.show{display:block; animation:toastFade 2.2s ease;}
+  @keyframes toastFade{0%{opacity:0;} 12%{opacity:1;} 80%{opacity:1;} 100%{opacity:0;}}
+
+  /* ===== 보석판 팝업 ===== */
+  #boardLayer{background:rgba(5,12,28,.88); z-index:75;
+    flex-direction:column; align-items:center; justify-content:center; gap:1.5cqw; padding:2cqw;}
+  #boardLayer h2{margin:0; font-size:2.4cqw; color:#ffe9a8; text-shadow:0 0 1cqw rgba(255,220,120,.6); text-align:center;}
+  #boardWrap{position:relative; height:62%; aspect-ratio:1/1; max-width:90%;}
+  #boardImg{width:100%; height:100%; object-fit:contain; display:block;}
+  #boardWrap .slot{position:absolute; transform:translate(-50%,-50%); width:14%; aspect-ratio:1/1;}
+  #boardWrap .slot img{width:100%; height:100%; object-fit:contain;
+    filter:drop-shadow(0 0 0.8cqw rgba(255,255,255,.85)); animation:gemGlow 1.8s ease-in-out infinite;}
+  #boardLayer .board-btn{margin-top:0; background:#e0458e; color:#fff; border:none;
+    padding:1cqw 4cqw; border-radius:3cqw; font-size:1.8cqw; font-weight:800; cursor:pointer;
+    box-shadow:0 0.5cqw 1.8cqw rgba(0,0,0,.4);}
+  #boardLayer .board-btn:hover{filter:brightness(1.1);}
+
+  /* ===== 소감 작성 화면 ===== */
+  #feedbackLayer{background:rgba(5,12,28,.94); z-index:80;
+    align-items:center; justify-content:center; padding:2cqw; overflow:auto;}
+  .fb-box{background:#fff; color:#223; border-radius:2.2cqw; padding:3.4cqw 3.8cqw; width:min(88%,52cqw);
+    box-shadow:0 1cqw 4cqw rgba(0,0,0,.5);}
+  .fb-box h2{margin:0 0 0.6cqw; color:#1a4a8a; font-size:2.6cqw;text-align:center;}
+  .fb-box p.sub{margin:0 0 2cqw; color:#667; font-size:1.7cqw;text-align:center;}
+  .fb-box label{display:block; font-weight:700; margin:1.4cqw 0 0.6cqw; font-size:1.6cqw;}
+  .fb-box input, .fb-box textarea{width:100%; border:0.2cqw solid #ccd; border-radius:1.2cqw;
+    padding:1.2cqw 1.4cqw; font-size:1.7cqw; font-family:inherit;}
+  .fb-box textarea{min-height:12cqw; resize:vertical;}
+  .fb-row{display:flex; gap:1.2cqw;}
+  .fb-row > div{flex:1;}
+  .fb-box .submit{margin-top:2.2cqw; width:100%; background:#4a6cf7; color:#fff; border:none;
+    padding:1.6cqw; border-radius:1.4cqw; font-size:1.9cqw; font-weight:800; cursor:pointer;}
+  .fb-box .submit:hover{filter:brightness(1.1);}
+  .fb-box .submit:disabled{background:#aab; cursor:default;}
+  .fb-msg{margin-top:1.4cqw; text-align:center; font-weight:700; font-size:1.6cqw; min-height:2cqw;}
+
+  /* ===== 결과(미완주) 화면 ===== */
+  #resultLayer{background:rgba(5,12,28,.94); z-index:82; flex-direction:column;
+    align-items:center; justify-content:center; text-align:center; padding:4cqw;}
+  #resultLayer h2{font-size:3.2cqw; color:#ffd9a8; margin:0 0 1.6cqw;}
+  #resultLayer p{font-size:2.2cqw; font-weight:700; line-height:1.6; max-width:80%; white-space:pre-line;}
+  #resultLayer .res-btn{margin-top:2.6cqw; background:#b07a52; color:#fff; border:none;
+    padding:1.3cqw 4.5cqw; border-radius:3cqw; font-size:2cqw; font-weight:800; cursor:pointer;}
+  #resultLayer .res-btn:hover{background:#9c6842;}
+
+  /* ===== 엔딩 기록(영상 위에 겹침) ===== */
+  #endCard{position:absolute; inset:0; z-index:86; display:none;
+    flex-direction:column; align-items:center; justify-content:center;
+    background:rgba(5,12,28,.55); text-align:center;}
+  #endCard.show{display:flex;}
+  #endCard .rec-box{background:rgba(255,255,255,.92); color:#223;
+    border-radius:2.4cqw; padding:3cqw 4.5cqw; box-shadow:0 1cqw 4cqw rgba(0,0,0,.5);}
+  #endCard h2{margin:0 0 1.6cqw; color:#1a4a8a; font-size:2.6cqw;}
+  #endCard .rec-line{font-size:2cqw; font-weight:700; line-height:1.9; color:#334;}
+  #endCard .rec-name{color:#1a4a8a;}
+  #endCard .the-end{margin-top:2.4cqw; font-size:3.4cqw; font-weight:900;
+    color:#fff; text-shadow:0 0 1.2cqw rgba(0,0,0,.6); letter-spacing:0.4cqw;}
+  #endLayer{background:#000; z-index:85;}
+
+  #lastLayer{background:#000; z-index:84;}
+  #lastLayer video{width:100%; height:100%; object-fit:cover;}
+  #lastSkipBtn{position:absolute; bottom:3cqw; right:3cqw; z-index:85;
+    background:rgba(255,255,255,.85); color:#223; border:none; padding:1cqw 2.4cqw; border-radius:3cqw;
+    font-weight:700; cursor:pointer; font-size:1.8cqw;}
+
+  
+/* ===== 오프닝 영상 ===== */
+  #openLayer{background:#000; z-index:95;}
+  #openLayer video{width:100%; height:100%; object-fit:cover;}
+  #openStartBtn{position:absolute; top:50%; left:50%; transform:translate(-50%,-50%); z-index:97;
+    background:#e0458e; color:#fff; border:none; padding:1.6cqw 5cqw; border-radius:4cqw;
+    font-weight:800; cursor:pointer; font-size:2.6cqw; box-shadow:0 0.6cqw 2cqw rgba(0,0,0,.5);}
+  #openStartBtn:hover{filter:brightness(1.1);}
+  
+#openSkipBtn{position:absolute; bottom:3cqw; right:3cqw; z-index:96;
+    background:rgba(255,255,255,.85); color:#223; border:none; padding:1cqw 2.4cqw; border-radius:3cqw;
+    font-weight:700; cursor:pointer; font-size:1.8cqw;}
+
+  #endLayer video{width:100%; height:100%; object-fit:cover;}
+
+  /* ===== 말풍선 어절(단어) 단위 줄바꿈 — 모든 말풍선 공통 ===== */
+  .map-bubble,
+  .bubble,
+  #placeLayer .bubble {
+    word-break: keep-all;
+    overflow-wrap: break-word;
+  }
+
+   /* ===== 미션 실행 중: 닫기·제목 숨기고 iframe만 단독 표시 =====
+     (iframe 실제 크기는 아래 자바스크립트 fitMissionFrame()이 무대 높이에 맞춰 지정) */
+  #studentMissionLayer.running #smCloseBtn{ display:none !important; }
+  #studentMissionLayer.running #smTitle{ display:none !important; }
+
+  /* 흰 박스(껍데기) 제약 완전 해제 — 크기는 iframe이 결정 */
+  #studentMissionLayer.running > div{
+    background:transparent !important;
+    padding:0 !important;
+    border-radius:0 !important;
+    width:auto !important;
+    max-width:none !important;
+    max-height:none !important;
+    overflow:visible !important;
+  }
+  #studentMissionLayer.running #smRun{
+    margin:0 !important;
+    flex:none !important;
+    display:block !important;
+    width:auto !important;
+    max-width:none !important;
+  }
+  #smFrame{ border:none; background:#fff; }
+
+  /* 미션 실행 중엔 무대(#stage) 밖, 화면 전체로 띄워 좌우 잘림 방지 */
+  #studentMissionLayer.running{
+    position:fixed !important;
+    inset:0 !important;
+    z-index:9999 !important;
+    width:100vw !important;
+    height:100vh !important;
+    background:rgba(0,0,0,.75) !important;
+  }
+
+/* 미션 실행 중: 흰 창을 뒤 무대 윗변과 같은 선에서 시작(위쪽 고정) */
+#studentMissionLayer.running{
+  align-items:flex-start !important;      /* 세로 가운데 → 위쪽 정렬 */
+  justify-content:center !important;      /* 가로는 가운데 유지 */
+  padding-top:54px !important;
+  overflow-y:auto !important;             /* 내용이 길면 세로 스크롤 */
+}
+
+
+
+</style>
+<script src="./config.js"></script>
+<script src="./mission-catalog.js"></script>
+<script src="./site-common.js" defer></script>
+</head>
+<body>
+
+  <!-- 상단 공통 bar (독립 실행용 — 사이트 bar와 동일 디자인) -->
+  <div class="topbar" id="devTopbar">
+    <span class="brand">인천 MATH TOUR</span>
+    <button class="giveup-btn" id="giveupBtn"> 포기</button>
+
+    <!-- ▼▼▼ [작업용 임시] 최종 완료 후 이 버튼 한 줄을 삭제하세요 ▼▼▼ -->
+    <button class="reset-dev" id="resetBtn">⟳ 처음부터(작업용)</button>
+    <!-- ▲▲▲ [작업용 임시] 여기까지 삭제 ▲▲▲ -->
+
+    <span class="status" id="status">어느 권역을 여행할까?</span>
+    <span class="giveup-count" id="giveupCount">포기 0</span>
+    <span class="count" id="count">보석 0 / 19</span>
+  </div>
+
+  <!-- 무대: 모든 화면이 이 안에 들어감 -->
+  <div id="stageWrap">
+    <div id="stage">
+
+        <!-- 오프닝 영상 -->
+      <div class="layer" id="openLayer">
+        <video id="openVideo" src="video/opening.mp4" playsinline></video>
+        <button id="openStartBtn">인천 MATHTOUR 시작!</button>
+      </div>
+
+
+
+      <!-- 지도 화면 -->
+<div class="layer" id="mapLayer">
+
+        <div id="mapwrap">
+          <img id="mapimg" src="" alt="인천 지도">
+        </div>
+        <!-- 좌우 안내 캐릭터 + 말풍선 (가로 띠 대체) -->
+        <img class="map-char man"   src="images/character/man.webp"   alt="수천">
+        <img class="map-char woman" src="images/character/woman.webp" alt="수인">
+        <div class="map-bubble man"   id="guideM"></div>
+        <div class="map-bubble woman" id="guideW"></div>
+      </div>
+
+      <!-- 이동 영상 -->
+      <div class="layer" id="videoLayer">
+        <video id="moveVideo" src="video/moving.mp4" playsinline muted></video>
+        <button id="skipBtn">건너뛰기 ▶</button>
+      </div>
+
+      <!-- 권역 도착 화면 (여기서 바로 장소 선택) -->
+      <div class="layer" id="arriveLayer">
+        <div class="veil"></div>
+        <!-- 권역 배경지도 위에 올라가는 장소 버튼 영역 -->
+        <div id="arrivePlaces"></div>
+        <img class="char man"   src="images/character/man.webp"   alt="수천">
+        <img class="char woman" src="images/character/woman.webp" alt="수인">
+        <div class="bubble man"   id="bubbleM"></div>
+        <div class="bubble woman" id="bubbleW"></div>
+      </div>
+
+      <!-- 장소 도착 화면 -->
+      <div class="layer" id="placeLayer">
+        <div class="veil"></div>
+        <img class="char man"   src="images/character/man.webp"   alt="수천">
+        <img class="char woman" src="images/character/woman.webp" alt="수인">
+        <div class="bubble man"   id="placeBubbleM"></div>
+        <div class="bubble woman" id="placeBubbleW"></div>
+        <button id="placeGoBtn">시작!</button>
+      </div>
+
+      <!-- 미션 팝업(테스트용) -->
+      <div class="layer flex" id="missionLayer">
+        <div class="mission-box">
+          <h3 id="missionTitle">미션</h3>
+          <p id="missionBody">여기에 실제 미션(문제/활동)이 들어갑니다.</p>
+          <button onclick="clearMission()">미션 완료 (보석 획득)</button>
+          <button onclick="closeMission()" style="background:#999;">닫기</button>
+        </div>
+      </div>
+   
+
+           <!-- 학생 미션 선택/실행 레이어 -->
+      <div class="layer flex" id="studentMissionLayer"
+           style="background:rgba(0,0,0,.6); z-index:72; align-items:center; justify-content:center;">
+<div style="background:#fff; color:#223; border-radius:2cqw; padding:2cqw;
+            width:auto; max-width:96cqw; max-height:92%; display:inline-flex; flex-direction:column;">
+
+          <h3 id="smTitle" style="margin:0 0 1cqw; color:#1a4a8a; font-size:2.2cqw; text-align:center;"></h3>
+
+          <!-- (가) 미션을 고르는 목록 화면 -->
+          <div id="smList" style="overflow:auto;"></div>
+
+          <!-- (나) 고른 미션을 실행하는 iframe 화면 -->
+          <div id="smRun" style="display:none; flex:1; min-height:0; flex-direction:column;">
+
+     <iframe id="smFrame" title="학생 미션" sandbox="allow-scripts allow-forms" style="border:none; border-radius:1.2cqw; background:#fff;"></iframe>
+
+
+          </div>
+
+          <div style="text-align:center; margin-top:1.2cqw;">
+            <button id="smCloseBtn" style="background:#999; color:#fff; border:none;
+                    padding:1cqw 2.6cqw; border-radius:1.2cqw; font-weight:700;
+                    cursor:pointer; font-size:1.6cqw;">닫기</button>
+          </div>
+        </div>
+      </div>
+
+
+      <!-- 공용 안내 / 확인 팝업 -->
+      <div class="layer flex" id="noticeLayer">
+        <div class="notice-box">
+          <p id="noticeText"></p>
+          <div class="btn-row">
+            <button id="noticeBtn">확인</button>
+            <button id="noticeCancelBtn" class="cancel" style="display:none;">취소</button>
+          </div>
+        </div>
+      </div>
+
+      <!-- 보석판 팝업 -->
+      <div class="layer flex" id="boardLayer">
+        <h2 id="boardTitle">보석을 얻었어요!</h2>
+        <div id="boardWrap">
+          <img id="boardImg" src="" alt="보석판">
+        </div>
+        <button class="board-btn" id="boardBtn">다음 ▶</button>
+      </div>
+
+      <!-- 소감 작성 화면 -->
+      <div class="layer flex" id="feedbackLayer">
+        <div class="fb-box">
+          <h2 id="fbTitle">🎉 투어를 마쳤어요!</h2>
+          <p class="sub" id="fbSub">투어 소감을 남겨주세요.</p>
+          <div class="fb-row">
+            <div>
+              <label for="fbSchool">학교</label>
+              <input id="fbSchool" type="text" placeholder="○○중학교">
+            </div>
+            <div>
+              <label for="fbSid">학번</label>
+              <input id="fbSid" type="text" placeholder="1-2-3">
+            </div>
+          </div>
+          <label for="fbName">이름</label>
+          <input id="fbName" type="text" placeholder="홍길동">
+          <label for="fbText">소감</label>
+          <textarea id="fbText" placeholder="투어를 하며 느낀 점을 자유롭게 써보세요."></textarea>
+          <button class="submit" id="fbSubmit">제출하기</button>
+          <div class="fb-msg" id="fbMsg"></div>
+        </div>
+      </div>
+
+      <!-- 결과(미완주) 화면 -->
+      <div class="layer flex" id="resultLayer">
+        <h2 id="resultTitle">아쉽습니다…</h2>
+        <p id="resultText"></p>
+        <button class="res-btn" id="resultBtn">처음 화면으로</button>
+      </div>
+
+      <!-- 한 곳 남았을 때 영상 -->
+      <div class="layer" id="lastLayer">
+        <video id="lastVideo" src="video/lastone.mp4" playsinline></video>
+        <button id="lastSkipBtn">건너뛰기 ▶</button>
+      </div>
+
+
+      <!-- 엔딩 영상 -->
+      <div class="layer" id="endLayer">
+        <video id="endVideo" src="video/ending.mp4" playsinline></video>
+        <!-- 엔딩 기록 카드 (영상 위에 겹쳐서 표시) -->
+        <div id="endCard">
+          <div class="rec-box">
+            <h2>🏆 나의 투어 기록</h2>
+            <div class="rec-line" id="endRecord"></div>
+          </div>
+          <div class="the-end">끝</div>
+        </div>
+
+      </div>
+
+      <!-- 토스트 -->
+      <div id="toast"></div>
+
+    </div>
+  </div>
+
+<script>
+/* ========= 경로 ========= */
+const PATH     = "images/map/";
+const GEM_PATH = "images/jem/";
+const BG_PATH  = "images/background/";
+const MAP_IMG  = PATH + "incheon_map.webp";
+
+const SCRIPT_URL = window.MATHTOUR_CONFIG?.apiUrl || "";
+
+const MISSION_MODE = "multi";   // "single" = 장소당 한 명(말풍선에 주제 표시) / "multi" = 여러 명(일반 문구)
+
+const ENDING_VIDEO = "video/ending.mp4";
+const OPENING_VIDEO = "video/opening.mp4";
+const LASTONE_VIDEO = "video/lastone.mp4";   // ← 이 줄 추가 (한 곳 남았을 때)
+
+
+window.MATHTOUR_USER = null;
+
+
+/* ========= 레이어 전환 유틸 ========= */
+function showLayer(id){
+  document.querySelectorAll("#stage > .layer").forEach(l=>l.classList.remove("show"));
+  document.getElementById(id).classList.add("show");
+}
+function openOverlay(id){ document.getElementById(id).classList.add("show"); }
+function closeOverlay(id){ document.getElementById(id).classList.remove("show"); }
+
+/* 공용 안내 팝업 */
+function showNotice(text, onOk){
+  document.getElementById("noticeText").textContent = text;
+  const btn = document.getElementById("noticeBtn");
+  const cancel = document.getElementById("noticeCancelBtn");
+  btn.textContent = "확인";
+  cancel.style.display = "none";
+  btn.onclick = ()=>{ closeOverlay("noticeLayer"); onOk && onOk(); };
+  openOverlay("noticeLayer");
+}
+
+/* 확인/취소 팝업 (브라우저 confirm 대체) */
+function showConfirm(text, onOk){
+  document.getElementById("noticeText").textContent = text;
+  const btn = document.getElementById("noticeBtn");
+  const cancel = document.getElementById("noticeCancelBtn");
+  btn.textContent = "확인";
+  cancel.style.display = "inline-block";
+  btn.onclick = ()=>{ closeOverlay("noticeLayer"); onOk && onOk(); };
+  cancel.onclick = ()=>{ closeOverlay("noticeLayer"); };
+  openOverlay("noticeLayer");
+}
+
+/* ========= 권역 ========= */
+const REGIONS = {
+  green:  {name:"검단·강화",     img:"region_green.webp",  rc:"rc-green",  bg:"K.webp", spots:[{x:24,y:22},{x:58,y:22}]},
+  yellow: {name:"서해·영종",     img:"region_yellow.webp", rc:"rc-yellow", bg:"S.webp", spots:[{x:24,y:62},{x:55,y:41}]},
+  blue:   {name:"계양·부평",     img:"region_blue.webp",   rc:"rc-blue",   bg:"B.webp", spots:[{x:74,y:46}]},
+  pink:   {name:"미추홀·제물포", img:"region_pink.webp",   rc:"rc-pink",   bg:"M.webp", spots:[{x:59,y:62}]},
+  purple: {name:"남동·연수",     img:"region_purple.webp", rc:"rc-purple", bg:"N.webp", spots:[{x:70,y:84}]},
+};
+
+/* ========= 장소 19개 =========
+   ▼ [장소 도착 화면 말풍선 위치 변경]
+   각 장소의 말풍선 위치는 여기(mPos/wPos)에서 장소별로 따로 조정합니다.
+     · mPos = 남학생(수천) 말풍선,  wPos = 여학생(수인) 말풍선
+     · left  = 화면 왼쪽 끝에서 떨어진 거리 (숫자 키우면 오른쪽=안쪽으로)
+     · right = 화면 오른쪽 끝에서 떨어진 거리 (숫자 키우면 왼쪽=안쪽으로)
+     · bottom = 화면 아래에서 띄운 높이 (숫자 키우면 위로 올라감)
+
+   ▼ [권역 도착 화면 장소 버튼 위치 변경] — ax, ay
+     · ax, ay = 권역 도착 화면(확대 지도) 위에서의 장소 버튼 위치(%)
+     · ax: 작을수록 왼쪽 / 클수록 오른쪽,  ay: 작을수록 위 / 클수록 아래
+     · 전체 지도의 x, y 와는 별개이며, 미세조정은 ax/ay 숫자만 고치면 됨.
+   ========================================= */
+const PLACES = [
+  {id:"K01", name:"강화고인돌",        region:"green",  x:22, y:14, ax:20, ay:32, topic:"부피와 무게",
+  mPos:{left:"15%", bottom:"55%"}, wPos:{right:"26%", bottom:"55%"}},
+  {id:"K02", name:"마니산",            region:"green",  x:22, y:23, ax:30, ay:47, topic:"피타고라스 정리",
+  mPos:{left:"40%", bottom:"65%"}, wPos:{right:"5%", bottom:"75%"}},
+  {id:"K03", name:"보문사",            region:"green",  x:10, y:22, ax:10, ay:44, topic:"계단과 비율",
+  mPos:{left:"6%", bottom:"60%"}, wPos:{right:"35%", bottom:"45%"}},
+  {id:"K04", name:"검단선사박물관",    region:"green",  x:60, y:25, ax:78, ay:40, topic:"규칙과 패턴",
+  mPos:{left:"14%", bottom:"70%"}, wPos:{right:"5%", bottom:"74%"}},
+  {id:"K05", name:"정서진",            region:"green",  x:46, y:26, ax:58, ay:50, topic:"방위와 각도",
+  mPos:{left:"37%", bottom:"75%"}, wPos:{right:"5%", bottom:"83%"}},
+  {id:"B01", name:"부평지하상가·굴포천", region:"blue", x:78, y:55, ax:53, ay:65, topic:"최단 경로",
+  mPos:{left:"13%", bottom:"60%"}, wPos:{right:"15%", bottom:"60%"}},
+  {id:"B02", name:"부평향교",          region:"blue",   x:72, y:47, ax:45, ay:48, topic:"대칭",
+  mPos:{left:"26%", bottom:"50%"}, wPos:{right:"17%", bottom:"35%"}},
+  {id:"B03", name:"계양산성·계양산",   region:"blue",  x:68, y:37, ax:48, ay:30, topic:"비율과 축척",
+  mPos:{left:"29%", bottom:"40%"}, wPos:{right:"10%", bottom:"59%"}},
+  {id:"S01", name:"인천국제공항",      region:"yellow", x:28, y:60, ax:30, ay:65, topic:"시차와 속력",
+  mPos:{left:"28%", bottom:"40%"}, wPos:{right:"12%", bottom:"53%"}},
+  {id:"S02", name:"아라뱃길",          region:"yellow", x:55, y:34, ax:75, ay:35, topic:"유속과 비율",
+  mPos:{left:"38%", bottom:"45%"}, wPos:{right:"2%", bottom:"34%"}},
+  {id:"S03", name:"청라호수공원·음악분수", region:"yellow", x:50, y:43, ax:68, ay:55, topic:"이차함수",
+  mPos:{left:"2%", bottom:"60%"}, wPos:{right:"35%", bottom:"40%"}},
+  {id:"M01", name:"SSG랜더스필드",     region:"pink",   x:61, y:62, ax:60, ay:55, topic:"확률과 통계",
+  mPos:{left:"21%", bottom:"50%"}, wPos:{right:"16%", bottom:"67%"}},
+  {id:"M02", name:"문학산",            region:"pink",   x:60, y:70, ax:58, ay:76, topic:"높이와 삼각비",
+  mPos:{left:"40%", bottom:"63%"}, wPos:{right:"12%", bottom:"77%"}},
+  {id:"M03", name:"수봉공원·수봉별마루", region:"pink", x:58, y:54, ax:45, ay:40, topic:"둘레와 넓이",
+  mPos:{left:"6%", bottom:"68%"}, wPos:{right:"30%", bottom:"53%"}},
+  {id:"M04", name:"차이나타운·홍예문", region:"pink",   x:48, y:63, ax:30, ay:60, topic:"아치와 곡선",
+  mPos:{left:"17%", bottom:"48%"}, wPos:{right:"16%", bottom:"58%"}},
+  {id:"N01", name:"인천대공원",        region:"purple", x:80, y:70, ax:70, ay:37, topic:"속력과 시간",
+  mPos:{left:"23%", bottom:"38%"}, wPos:{right:"16%", bottom:"35%"}},
+  {id:"N02", name:"소래포구 어시장", region:"purple", x:77, y:88, ax:62, ay:58, topic:"비례식과 단위",
+     mPos:{left:"18%", bottom:"68%"}, wPos:{right:"13%", bottom:"70%"}},
+  {id:"N03", name:"센트럴파크·문보트", region:"purple", x:58, y:85, ax:45, ay:65, topic:"좌표평면",
+     mPos:{left:"24%", bottom:"75%"}, wPos:{right:"12%", bottom:"67%"}},
+  {id:"N04", name:"인천대교",          region:"purple", x:50, y:76, ax:28, ay:58, topic:"거리와 길이",
+     mPos:{left:"35%", bottom:"69%"}, wPos:{right:"12%", bottom:"64%"}},
+];
+
+/* ========= 보석판 20칸 매핑 (8번=DIAMOND, 색 교차 배치) ========= */
+const SLOT_PLACE = {
+  1: "K01", 2: "N01", 3: "M01", 4: "B01", 5: "S01",
+  6: "K02", 7: "N02", 8: "DIAMOND", 9: "M02", 10: "B02",
+  11: "S02", 12: "K03", 13: "N03", 14: "M03", 15: "B03",
+  16: "S03", 17: "K04", 18: "N04", 19: "K05", 20: "M04"
+};
+const COLS = [25, 37.5, 50, 62.5, 75];
+const ROWS = [29, 43, 57, 70];
+function slotXY(n){ const idx=n-1; return {x:COLS[idx%5], y:ROWS[Math.floor(idx/5)]}; }
+function placeRegion(id){ const p=PLACES.find(pp=>pp.id===id); return p?p.region:null; }
+function gemSrcFor(id){
+  if(id==="DIAMOND") return GEM_PATH + "gem_white.webp";
+  return GEM_PATH + "gem_" + placeRegion(id) + ".webp";
+}
+
+/* ========= 상태 ========= */
+let cleared = JSON.parse(localStorage.getItem("incheon_own_math_cleared") || "[]");
+let gaveup  = JSON.parse(localStorage.getItem("incheon_own_math_gaveup")  || "[]");
+let giveupCount = parseInt(localStorage.getItem("incheon_own_math_giveup_count") || "0", 10);
+let finalDone = localStorage.getItem("incheon_own_math_final") === "1";
+let currentRegion = null;
+let pendingPlace  = null;
+
+const mapimg = document.getElementById("mapimg");
+mapimg.src = MAP_IMG;
+mapimg.onerror = ()=>{ mapimg.style.background="#163a66"; };
+
+/* ========= 유틸 ========= */
+function regionPlaces(key){ return PLACES.filter(p=>p.region===key); }
+function isDone(id){ return cleared.includes(id) || gaveup.includes(id); }
+function regionAllDone(key){ return regionPlaces(key).every(p=>isDone(p.id)); }
+function allVisited(){ return PLACES.every(p=>isDone(p.id)); }
+function isCompleted(){ return giveupCount <= 3; }
+function save(){
+  localStorage.setItem("incheon_own_math_cleared", JSON.stringify(cleared));
+  localStorage.setItem("incheon_own_math_gaveup",  JSON.stringify(gaveup));
+  localStorage.setItem("incheon_own_math_giveup_count", String(giveupCount));
+}
+
+/* ========= 장소 버튼 하나 만들기 (지도·권역 도착 공용) =========
+   mode: "map" = 전체 지도용(x,y / dim 처리) , "arrive" = 권역 도착용(ax,ay) */
+function makePlaceButton(p, mode){
+  const done     = cleared.includes(p.id);
+  const didGiveup= gaveup.includes(p.id);
+
+  const b = document.createElement("button");
+  b.className = "place-btn";
+  if(mode === "arrive"){
+    b.style.left = (p.ax!=null?p.ax:50) + "%";
+    b.style.top  = (p.ay!=null?p.ay:50) + "%";
+  }else{
+    b.style.left = p.x + "%";
+    b.style.top  = p.y + "%";
+    if(!done && !didGiveup){
+      if(currentRegion === null) b.classList.add("dim");
+      else if(currentRegion !== p.region) b.classList.add("dim");
+    }
+  }
+  if(done){ b.classList.add("cleared","glow-"+p.region); }
+  if(didGiveup){ b.classList.add("gaveup"); }
+
+  const w = document.createElement("div"); w.className="place-wrap";
+  const img = document.createElement("img"); img.className="place-img";
+  img.src = PATH + p.id + ".webp"; img.alt = p.name;
+  img.onerror = ()=>{ img.style.display="none"; };
+  w.appendChild(img);
+
+  if(done){
+    const gem = document.createElement("img"); gem.className="gem-badge";
+    gem.src = GEM_PATH + "gem_" + p.region + ".webp"; gem.alt="보석";
+    gem.onerror = ()=>{ gem.style.display="none"; };
+    w.appendChild(gem);
+     }else if(didGiveup){
+    const mark = document.createElement("div"); mark.className="gaveup-mark";
+    mark.textContent = "✗";
+    w.appendChild(mark);
+  }
+
+
+  b.appendChild(w);
+
+  const lab = document.createElement("div");
+  lab.className = "place-label" + (p.name.length>=7 ? " long":"");
+  lab.textContent = p.name;
+  b.appendChild(lab);
+
+  b.onclick = ()=>{
+    if(done || didGiveup) return;
+    if(mode === "map"){
+      if(currentRegion === null){ selectRegion(p.region); }
+      else if(currentRegion === p.region){ showPlaceArrive(p); }
+    }else{ /* arrive */
+      showPlaceArrive(p);
+    }
+  };
+  return b;
+}
+
+/* ========= 렌더(지도) ========= */
+function render(){
+  document.querySelectorAll("#mapwrap .region-btn, #mapwrap .place-btn").forEach(e=>e.remove());
+  const wrap = document.getElementById("mapwrap");
+
+  for(const p of PLACES){
+    wrap.appendChild(makePlaceButton(p, "map"));
+  }
+
+  for(const key in REGIONS){
+    if(regionAllDone(key)) continue;
+    if(key === currentRegion) continue;
+    const r = REGIONS[key];
+    const locked = (currentRegion !== null);
+    for(const s of r.spots){
+      const b = document.createElement("button");
+      b.className = "region-btn" + (locked ? " locked" : "");
+      b.style.left = s.x + "%";
+      b.style.top  = s.y + "%";
+      const c = document.createElement("div");
+      c.className = "region-circle " + r.rc;
+      const img = document.createElement("img");
+      img.src = PATH + r.img; img.alt = r.name;
+      img.onerror = ()=>{ img.style.display="none"; };
+      c.appendChild(img);
+      b.appendChild(c);
+      if(!locked){ b.onclick = ()=> selectRegion(key); }
+      else{ b.onclick = ()=> showToast("현재 권역의 장소를 모두 끝내야 다른 권역으로 갈 수 있어요."); }
+      wrap.appendChild(b);
+    }
+  }
+
+  updateGuide();
+  updateCount();
+}
+
+/* ========= 권역 도착 화면의 장소 버튼 렌더 ========= */
+function renderArrivePlaces(key){
+  const host = document.getElementById("arrivePlaces");
+  host.innerHTML = "";
+  for(const p of regionPlaces(key)){
+    host.appendChild(makePlaceButton(p, "arrive"));
+  }
+  updateCount();
+}
+
+/* ========= 권역 선택 → 영상 → 도착 ========= */
+function selectRegion(key){
+  if(regionAllDone(key)) return;
+  currentRegion = key;
+  playMoveVideo(()=> showArrive(key));
+}
+function playMoveVideo(onEnd){
+  const v = document.getElementById("moveVideo");
+  showLayer("videoLayer");
+  v.currentTime = 0;
+  const finish = ()=>{ v.onended=null; onEnd && onEnd(); };
+  v.onended = finish;
+  document.getElementById("skipBtn").onclick = finish;
+  const pr = v.play(); if(pr && pr.catch) pr.catch(()=>{});
+}
+function showArrive(key){
+  const r = REGIONS[key];
+  document.getElementById("arriveLayer").style.backgroundImage = `url('${BG_PATH + r.bg}')`;
+  document.getElementById("bubbleM").textContent = r.name + "권역에 도착했어!";
+  document.getElementById("bubbleW").textContent = "장소를 선택해볼까?";
+   renderArrivePlaces(key);
+  showLayer("arriveLayer");
+  updateGuide();
+}
+
+
+/* ========= 장소 도착 → 미션 ========= */
+function showPlaceArrive(p){
+  document.getElementById("placeLayer").style.backgroundImage = `url('${BG_PATH + p.id + ".webp"}')`;
+  pendingPlace = p;
+  const bm = document.getElementById("placeBubbleM");
+  const bw = document.getElementById("placeBubbleW");
+   bm.textContent = p.name + "에 도착했네!";
+  if(MISSION_MODE === "single"){
+    bw.textContent = "여기서 " + p.topic + "을 알아보자!";   // 한 명 버전: 주제 표시
+  }else{
+    bw.textContent = "여기서 보석을 찾아보자!";               // 여러 명 버전: 일반 문구
+  }
+
+  const m = p.mPos || {left:"7%",  bottom:"60%"};
+  const w = p.wPos || {right:"7%", bottom:"60%"};
+  bm.style.left = m.left || ""; bm.style.right = ""; bm.style.bottom = m.bottom || "60%";
+  bw.style.right = w.right || ""; bw.style.left = ""; bw.style.bottom = w.bottom || "60%";
+   showLayer("placeLayer");
+  updateGuide();
+  document.getElementById("placeGoBtn").onclick = ()=>{ openMission(p); };
+}
+
+
+/* ========= 미션 (학생이 만든 파일 불러오기) ========= */
+async function openMission(p){
+  pendingPlace = p;
+  const layer = document.getElementById("studentMissionLayer");
+  const title = document.getElementById("smTitle");
+  const listBox = document.getElementById("smList");
+  const runBox  = document.getElementById("smRun");
+  const frame   = document.getElementById("smFrame");
+
+  // 화면 초기화: 목록 보이기 / 실행창 숨기기
+  listBox.style.display = "block";
+  runBox.style.display  = "none";
+  document.getElementById("studentMissionLayer").classList.remove("running");
+  frame.removeAttribute("srcdoc"); frame.src = "about:blank";
+  title.textContent = p.name + " 미션 선택";
+  listBox.innerHTML = "<p style='text-align:center; font-size:1.6cqw;'>미션 목록을 불러오는 중...</p>";
+  openOverlay("studentMissionLayer");
+
+  if(!SCRIPT_URL && !window.MATHTOUR_CONFIG?.sharedSources?.length){listBox.textContent="아직 저장소가 연결되지 않았어요. 선생님께 알려 주세요.";return;}
+  // 이 장소에 올라온 미션 목록 조회
+  try{
+    const data = await window.loadMissionCatalog(p.id);
+    if(pendingPlace !== p) return;
+
+    if(!data.missions || data.missions.length === 0){
+      listBox.innerHTML =
+        "<p style='text-align:center; font-size:1.6cqw; line-height:1.6;'>" +
+        (data.partial ? "일부 저장소를 불러오지 못했어요. 잠시 후 다시 시도해 주세요.</p>" : "아직 이 장소에 등록된 미션이 없어요.</p>");
+      return;
+    }
+
+    // 이름 버튼 목록 만들기 (화면엔 이름만, 내부로는 학번 사용)
+    listBox.innerHTML =
+      "<p style='text-align:center; font-size:1.5cqw; color:#667; margin:0 0 1cqw;'>" +
+      "풀어볼 친구의 미션을 골라보세요</p>" +
+      "<div style='display:flex; flex-wrap:wrap; gap:1cqw; justify-content:center;'></div>";
+    const grid = listBox.querySelector("div");
+    if(data.partial){const note=document.createElement("p");note.textContent="일부 저장소를 불러오지 못했어요. 표시된 작품은 체험할 수 있어요.";listBox.prepend(note);}
+
+    data.missions.forEach(m=>{
+      const btn = document.createElement("button");
+      const nm  = m.name || "(이름 없음)";
+      if(m.topic){const topic=document.createElement('span');topic.style.cssText='display:block;font-weight:800;font-size:1.7cqw;';topic.textContent=m.topic;btn.appendChild(topic);}
+      const name=document.createElement('span');name.style.cssText='display:block;font-size:1.25cqw;font-weight:500;opacity:.9;margin-top:.3cqw;';name.textContent=nm;btn.appendChild(name);
+
+      btn.style.cssText =
+        "background:#4a6cf7; color:#fff; border:none; padding:1.1cqw 2.2cqw;" +
+        "border-radius:1.4cqw; cursor:pointer; line-height:1.3; text-align:center;";
+      btn.onclick = ()=> runStudentMission(p, m.id, m.sourceApi);
+      grid.appendChild(btn);
+    });
+
+
+  }catch(e){
+    listBox.innerHTML =
+      "<p style='text-align:center; font-size:1.6cqw;'>미션을 불러오지 못했어요. 잠시 후 다시 시도해 주세요.</p>";
+  }
+}
+
+/* 고른 학생의 미션 HTML을 iframe에 띄우기 */
+async function runStudentMission(p, sid, sourceApi = SCRIPT_URL){
+  const listBox = document.getElementById("smList");
+  const runBox  = document.getElementById("smRun");
+  const frame   = document.getElementById("smFrame");
+  const title   = document.getElementById("smTitle");
+
+  listBox.style.display = "none";
+  runBox.style.display  = "flex";
+  document.getElementById("studentMissionLayer").classList.add("running");
+fitMissionFrame();                 // ← 추가: 무대 높이에 맞춰 iframe 크기 지정
+  title.textContent = p.name + " 미션";
+  frame.srcdoc = "<p style='font-family:sans-serif; padding:20px;'>미션을 불러오는 중...</p>";
+
+  try{
+    const res = await fetch(sourceApi + "?action=mission_load&placeId="
+                + encodeURIComponent(p.id) + "&sid=" + encodeURIComponent(sid));
+    const data = await res.json();
+    if(data.ok && data.html){
+      frame.srcdoc = data.html;   // 학생이 만든 완성 HTML 그대로 실행
+    }else{
+      frame.srcdoc = "<p style='font-family:sans-serif; padding:20px;'>미션 파일을 찾지 못했어요.</p>";
+    }
+  }catch(e){
+    frame.srcdoc = "<p style='font-family:sans-serif; padding:20px;'>불러오기 오류가 발생했어요.</p>";
+  }
+}
+
+/* 닫기 버튼: 미션 중단하고 권역 화면으로 복귀 */
+document.getElementById("smCloseBtn").onclick = ()=>{
+  const frame = document.getElementById("smFrame");
+  frame.removeAttribute("srcdoc"); frame.src = "about:blank";
+  closeOverlay("studentMissionLayer");
+  pendingPlace = null;
+  backToCurrentRegionOrMap();
+};
+
+
+function clearMission(){
+  if(pendingPlace && !cleared.includes(pendingPlace.id)){
+    cleared.push(pendingPlace.id);
+    save();
+  }
+  closeOverlay("missionLayer");
+  pendingPlace = null;
+  afterPlaceDone(true);
+}
+
+/* 현재 권역이 안 끝났으면 권역 도착 화면으로, 끝났으면 전체 지도로 */
+function backToCurrentRegionOrMap(){
+  if(currentRegion && !regionAllDone(currentRegion)){
+    renderArrivePlaces(currentRegion);
+    showLayer("arriveLayer");
+  }else{
+    currentRegion = null;
+    showLayer("mapLayer");
+    render();
+  }
+}
+
+function afterPlaceDone(passed){
+  if(allVisited()){
+    if(isCompleted()) showBoard(false);
+    else showFeedback();
+    return;
+  }
+  const key = currentRegion;
+  if(key && regionAllDone(key)){
+    /* 이 권역 끝 → 보석판 보여주고 전체 지도로 */
+    currentRegion = null;
+    if(passed){ showBoard(true, false, "map"); }
+    else { showLayer("mapLayer"); render(); }
+  }else{
+    /* 권역 아직 진행 중 → 보석판 보여주고 권역 도착 화면으로 복귀 */
+    if(passed){ showBoard(true, false, "arrive", key); }
+    else { renderArrivePlaces(key); showLayer("arriveLayer"); }
+  }
+}
+
+/* ========= 포기 ========= */
+function giveUpCurrent(){
+  if(!pendingPlace){ showToast("포기할 장소를 먼저 선택해 주세요."); return; }
+  const p = pendingPlace;
+
+  showConfirm(p.name + " 미션을 포기할까요?", ()=>{
+    if(!gaveup.includes(p.id)) gaveup.push(p.id);
+    giveupCount += 1;
+    save();
+
+    closeOverlay("missionLayer");
+    closeOverlay("studentMissionLayer");
+    document.getElementById("studentMissionLayer").classList.remove("running");
+    pendingPlace = null;
+
+    let msg;
+    if(giveupCount <= 3){
+      msg = "힘을 내세요! 이번에 포기하더라도 앞으로 열심히 하면 보석들을 다 찾을 수 있어요. 💪";
+    }else{
+      msg = "끝까지 힘을 내기 바랍니다. 계속 투어를 진행할 수 있습니다. 🙂";
+    }
+    showNotice(msg, ()=>{ afterPlaceDone(false); });
+  });
+}
+
+/* bar의 포기 버튼 */
+document.getElementById("giveupBtn").onclick = ()=>{
+  const inPlace   = document.getElementById("placeLayer").classList.contains("show");
+  const inMission = document.getElementById("missionLayer").classList.contains("show");
+  const inStudent = document.getElementById("studentMissionLayer").classList.contains("show");
+  if(pendingPlace && (inPlace || inMission || inStudent)){ giveUpCurrent(); }
+  else{ showToast("장소에 입장한 뒤에 포기할 수 있어요."); }
+};
+
+/* ========= 보석판 =========
+   nextMode: "arrive"면 권역 도착 화면으로, "map"이면 전체 지도로 복귀
+   backRegion: nextMode가 arrive일 때 돌아갈 권역 key */
+function showBoard(normalProgress, showDiamond, nextMode, backRegion){
+  const wrap  = document.getElementById("boardWrap");
+  const img   = document.getElementById("boardImg");
+  const title = document.getElementById("boardTitle");
+  const btn   = document.getElementById("boardBtn");
+
+  img.src = GEM_PATH + "jembox.webp";
+  img.onerror = ()=>{ img.style.display="none"; };
+
+  wrap.querySelectorAll(".slot").forEach(e=>e.remove());
+  for(let n=1; n<=20; n++){
+    const id = SLOT_PLACE[n];
+    let filled = (id==="DIAMOND") ? !!showDiamond : cleared.includes(id);
+    if(!filled) continue;
+    const pos = slotXY(n);
+    const slot = document.createElement("div");
+    slot.className = "slot";
+    slot.style.left = pos.x + "%";
+    slot.style.top  = pos.y + "%";
+    const g = document.createElement("img");
+    g.src = gemSrcFor(id); g.alt = "보석";
+    g.onerror = ()=>{ g.style.display="none"; };
+    slot.appendChild(g);
+    wrap.appendChild(slot);
+  }
+
+  if(showDiamond){
+    title.textContent = "💎 마지막 보석까지 모두 모았어요!";
+    btn.style.display = "none";                 // 피날레 버튼 숨김
+    setTimeout(()=>{                            // 2초 뒤 자동으로 엔딩 영상
+      closeOverlay("boardLayer");
+      btn.style.display = "";                   // (버튼 원상복구)
+      playEnding();
+    }, 2000);                                   // ← 보석판 보여주는 시간(ms). 숫자로 조절
+  }else if(allVisited() && isCompleted() && !finalDone){
+
+    title.textContent = "✨ 미션을 모두 마쳤어요!";
+    btn.textContent = "다음 ▶";
+    btn.onclick = ()=>{ closeOverlay("boardLayer"); showFeedback(); };
+    }else{
+    title.textContent = "보석을 얻었어요! (" + cleared.length + " / 19)";
+    btn.textContent = "다음 ▶";
+    btn.onclick = ()=>{
+      closeOverlay("boardLayer");
+
+      // 돌아갈 화면(지도 or 권역 도착)을 함수로 정의
+      const goNext = ()=>{
+        if(nextMode === "arrive" && backRegion){
+          renderArrivePlaces(backRegion);
+          showLayer("arriveLayer");
+        }else{
+          showLayer("mapLayer");
+          render();
+        }
+      };
+
+      // 처리한 장소(보석+포기)가 18개 = 딱 한 곳 남았으면 영상 먼저 재생
+      const doneCount = cleared.length + gaveup.length;
+      if(doneCount === 18){
+        playLastOne(goNext);
+      }else{
+        goNext();
+      }
+    };
+  }
+
+
+  openOverlay("boardLayer");
+}
+
+/* ========= 소감 ========= */
+function getLoginUser(){
+  return (typeof window.MATHTOUR_USER === "object" && window.MATHTOUR_USER) ? window.MATHTOUR_USER : null;
+}
+function showFeedback(){
+  const user = getLoginUser();
+  if(user){
+    document.getElementById("fbSchool").value = user.school || "";
+    document.getElementById("fbSid").value    = user.sid    || "";
+    document.getElementById("fbName").value   = user.name   || "";
+  }
+  const completed = isCompleted();
+  document.getElementById("fbTitle").textContent = completed ? "🎉 투어를 완주했어요!" : "투어를 마무리할게요";
+  document.getElementById("fbSub").textContent   = completed
+      ? "마지막 보석을 얻으려면 투어 소감을 남겨주세요."
+      : "포기한 미션이 있지만 괜찮아요. 투어 소감을 남겨주세요.";
+  document.getElementById("fbMsg").textContent = "";
+  document.getElementById("fbSubmit").disabled = false;
+  openOverlay("feedbackLayer");
+}
+document.getElementById("fbSubmit").onclick = function(){
+  const school = document.getElementById("fbSchool").value.trim();
+  const sid    = document.getElementById("fbSid").value.trim();
+  const name   = document.getElementById("fbName").value.trim();
+  const text   = document.getElementById("fbText").value.trim();
+  const msg    = document.getElementById("fbMsg");
+  if(!name){ msg.style.color="#c0392b"; msg.textContent="이름을 입력해주세요."; return; }
+
+  if(!SCRIPT_URL){msg.textContent="아직 저장소가 연결되지 않았어요.";return;}
+  const btn = this; btn.disabled = true;
+  msg.style.color="#223"; msg.textContent = "저장 중...";
+
+  const completed = isCompleted();
+  const user = getLoginUser();
+  const isLogin = user ? "로그인" : "비로그인";
+  const params = new URLSearchParams({
+    action: "feedback_save",
+    login: isLogin,
+    loginSid: (user && user.loginSid) ? user.loginSid : "",
+    school: school, sid: sid, name: name, feedback: text,
+    result: completed ? "완주" : "미완주",
+    giveup: String(giveupCount),
+    gems:   String(cleared.length)
+  });
+
+  fetch(SCRIPT_URL, {method:"POST", body:params})
+    .then(async res=>{const data=await res.json();if(!res.ok||!data.ok)throw new Error("feedback_failed");msg.style.color="#1e7d34";msg.textContent="소감이 저장되었어요!";})
+    .then(()=>{
+            setTimeout(()=>{
+        closeOverlay("feedbackLayer");
+        if(completed){
+          finalDone = true;
+          localStorage.setItem("incheon_own_math_final","1");
+          showLayer("mapLayer");   // 뒤 배경을 지도로 정리 (시작!·캐릭터 겹침 방지)
+          render();
+          showBoard(false, true);
+        }else{
+          showResult();
+        }
+      }, 1100);
+    }).catch(()=>{msg.style.color="#c0392b";msg.textContent="소감을 저장하지 못했어요. 내용을 확인한 뒤 다시 눌러 주세요.";btn.disabled=false;});
+};
+
+/* ========= 결과(미완주) 화면 ========= */
+function showResult(){
+  document.getElementById("resultTitle").textContent = "아쉽습니다…";
+  document.getElementById("resultText").textContent =
+    "보석을 모두 찾지는 못했어요. (찾은 보석 " + cleared.length + "개 / 포기 " + giveupCount + "회)\n" +
+    "다음엔 끝까지 도전해서 모든 보석을 모아보세요!";
+  const btn = document.getElementById("resultBtn");
+  btn.onclick = ()=>{ closeOverlay("resultLayer"); showLayer("mapLayer"); render(); };
+  openOverlay("resultLayer");
+}
+
+/* ========= 한 곳 남았을 때 영상 =========
+   onEnd 콜백을 받아, 영상이 끝나면(또는 건너뛰면) 그 동작을 이어서 실행 */
+function playLastOne(onEnd){
+  const v = document.getElementById("lastVideo");
+  v.src = LASTONE_VIDEO;
+  showLayer("lastLayer");
+  v.currentTime = 0;
+  const finish = ()=>{ v.onended = null; onEnd && onEnd(); };
+  v.onended = finish;
+  document.getElementById("lastSkipBtn").onclick = finish;
+  const pr = v.play(); if(pr && pr.catch) pr.catch(()=>{});
+}
+
+
+/* ========= 엔딩 ========= */
+function playEnding(){
+  const v = document.getElementById("endVideo");
+  const card = document.getElementById("endCard");
+  card.classList.remove("show");            // 시작 땐 숨김
+  v.src = ENDING_VIDEO;
+  showLayer("endLayer");
+  v.currentTime = 0;
+  v.onended = ()=>{ showEndCard(); };        // 영상 끝나면 기록 카드 표시
+  const pr = v.play(); if(pr && pr.catch) pr.catch(()=>{});
+}
+
+/* 엔딩 기록 카드 내용 채우고 표시 */
+function showEndCard(){
+  const user = getLoginUser();
+  const name = (user && user.name) ? user.name
+             : (document.getElementById("fbName").value.trim() || "");
+  let html = "";
+  if(name) html += '<span class="rec-name">' + name + '</span> 님의 기록<br>';
+  html += "모은 보석 " + cleared.length + " / 19<br>";
+  html += "포기 횟수 " + giveupCount + "회";
+  document.getElementById("endRecord").innerHTML = html;
+  document.getElementById("endCard").classList.add("show");
+}
+
+
+/* ========= 안내(좌우 말풍선) / 카운트 ========= */
+
+/* 아직 안 끝난(장소가 남은) 권역 목록 / 개수 */
+function remainingRegions(){
+  return Object.keys(REGIONS).filter(key=>!regionAllDone(key));
+}
+function remainingRegionCount(){ return remainingRegions().length; }
+function lastRemainingRegion(){ return remainingRegions()[0]; }
+
+function updateGuide(){
+  const gm = document.getElementById("guideM");   /* 왼쪽(남학생) */
+  const gw = document.getElementById("guideW");   /* 오른쪽(여학생) */
+  const s  = document.getElementById("status");
+  let manText, womanText, statusText;
+
+  if(allVisited() && isCompleted()){
+    manText = "미션을 모두 마쳤어!"; womanText = "정말 멋졌어! "; statusText = "모든 미션 완료! 🎉";
+   }else if(cleared.length + gaveup.length === 18){
+    manText = "이제 단 한 곳만 남았어..."; womanText = "마지막 보석을 찾으러 가자!"; statusText = "이제 단 한 곳만 남았어요!";
+
+  }else if(currentRegion === null && remainingRegionCount()===1){
+    const last = lastRemainingRegion();
+    manText = "이제 하나의 권역이 남았네.";
+    womanText = REGIONS[last].name + " 권역에 가서 마지막 보석들을 찾자!";
+    statusText = "마지막 권역이 남았어요!";
+  }else if(currentRegion === null){
+    manText = "어느 권역을 여행할까?"; womanText = "원하는 권역 버튼을 눌러보자!"; statusText = "어느 권역을 여행할까?";
+  }else{
+
+
+    manText = REGIONS[currentRegion].name + " 권역을 탐험 중!"; womanText = "이곳의 장소를 모두 끝내보자."; statusText = REGIONS[currentRegion].name + " 권역 탐험 중";
+  }
+  gm.textContent = manText;
+  gw.textContent = womanText;
+  if(s) s.textContent = statusText;
+}
+function updateCount(){
+  document.getElementById("count").textContent = "보석 " + cleared.length + " / 19";
+  document.getElementById("giveupCount").textContent = "포기 " + giveupCount;
+}
+
+/* ========= 토스트 ========= */
+let toastTimer = null;
+function showToast(msg){
+  const t = document.getElementById("toast");
+  t.textContent = msg;
+  t.classList.remove("show");
+  void t.offsetWidth;
+  t.classList.add("show");
+  clearTimeout(toastTimer);
+  toastTimer = setTimeout(()=>{ t.classList.remove("show"); }, 2200);
+}
+
+/* ▼▼▼ [작업용 임시] 리셋 버튼 동작 — 최종 완료 후 이 블록 전체를 삭제하세요 ▼▼▼ */
+(function(){
+  const rb = document.getElementById("resetBtn");
+  if(rb){
+    rb.onclick = ()=>{
+      if(confirm("처음부터 다시 시작할까요? 모은 보석과 포기 기록이 모두 사라집니다.")){
+        cleared = []; gaveup = []; giveupCount = 0; currentRegion = null; finalDone = false;
+        save(); localStorage.removeItem("incheon_own_math_final"); localStorage.removeItem("incheon_own_math_intro_shown");
+        showLayer("mapLayer"); render();
+
+
+      }
+    };
+  }
+})();
+
+/* ▲▲▲ [작업용 임시] 여기까지 삭제 ▲▲▲ */
+
+/* ========= 오프닝 ========= */
+function playOpening(){
+  const v = document.getElementById("openVideo");
+  const startBtn = document.getElementById("openStartBtn");
+  v.src = OPENING_VIDEO;
+  showLayer("openLayer");
+  v.currentTime = 0;
+  v.muted = false;
+
+  startBtn.style.display = "";   // 시작 버튼 보이기
+
+  const finish = ()=>{ v.onended=null; startGame(); };
+
+  // "시작하기" 누르면 소리와 함께 재생
+  startBtn.onclick = ()=>{
+    startBtn.style.display = "none";
+    const pr = v.play(); if(pr && pr.catch) pr.catch(()=>{});
+  };
+  v.onended = finish;   // 영상이 끝나면 게임 시작
+}
+
+/* 오프닝이 끝난 뒤 지도 + 시작 안내 */
+function startGame(){
+  showLayer("mapLayer");
+  render();
+  if(!localStorage.getItem("incheon_own_math_intro_shown") && cleared.length===0 && gaveup.length===0){
+    showNotice(
+      "인천 MATH TOUR에 온 걸 환영해요! 🌟\n" +
+      "각 장소의 수학 미션을 풀면 보석을 얻어요.\n" +
+      "너무 어려우면 상단의 '포기' 버튼으로 그 미션을 건너뛸 수 있어요. " +
+      "포기한 장소에는 빨간 ✗ 표시가 남고, 투어는 계속할 수 있답니다!",
+      ()=>{ localStorage.setItem("incheon_own_math_intro_shown","1"); }
+    );
+  }
+}
+
+/* 처음 실행: 오프닝 영상부터 */
+render();          // 지도 미리 그려두기(뒤에서 준비)
+playOpening();     // 오프닝 영상 먼저 재생
+
+/* ========= 학생 미션 성공 신호 수신 ========= */
+window.addEventListener("message", (ev)=>{
+  const d = ev.data;
+  if(d && d.type === "MISSION_CLEAR" && ev.source === document.getElementById("smFrame").contentWindow){
+    // 미션 실행창이 열려 있고, 처리 중인 장소가 있을 때만 인정
+    const layer = document.getElementById("studentMissionLayer");
+    if(!layer.classList.contains("show") || !pendingPlace) return;
+
+    const frame = document.getElementById("smFrame");
+    frame.removeAttribute("srcdoc"); frame.src = "about:blank";
+    closeOverlay("studentMissionLayer");
+    document.getElementById("studentMissionLayer").classList.remove("running");
+    clearMission();   // ★ 기존 보석 지급 로직 그대로 재사용
+  }
+});
+
+
+
+/* ========= 미션 iframe 크기 맞추기 =========
+   세로는 잘리지 않게 무대 높이만큼 확보, 가로는 화면 폭에 맞춰 22:9로.
+   글자도 화면이 줄어든 만큼 같은 비율로 축소(transform scale). */
+function fitMissionFrame(){
+  const layer = document.getElementById("studentMissionLayer");
+  if(!layer || !layer.classList.contains("running")) return;   // 미션 실행 중일 때만
+  const frame = document.getElementById("smFrame");
+  const stage = document.getElementById("stage");
+  if(!frame || !stage) return;
+
+  const h     = stage.clientHeight;         // 무대 높이
+  const maxW  = window.innerWidth * 0.98;   // 화면 가로의 98%
+  const ratio = 22 / 9;
+
+  // 1) 세로 기준 22:9 가로 계산
+  let w = h * ratio;
+
+  // 2) 화면 폭을 넘으면, 폭에 맞추고 세로도 비율대로 줄임(좌우 안 잘림)
+  let fh = h;
+  if(w > maxW){
+    w  = maxW;
+    fh = w / ratio;
+  }
+
+  // iframe 실제 크기를 직접 지정 → 내부 페이지가 그 크기에 맞게 그려져
+  //   글자도 같은 비율로 작아지고, 레이아웃 폭도 실제로 줄어 좌우가 안 잘림
+  frame.style.width        = w  + "px";
+  frame.style.height       = fh + "px";
+  frame.style.maxWidth     = "none";
+  frame.style.aspectRatio  = "auto";
+  frame.style.border       = "none";
+  frame.style.borderRadius = "12px";
+  frame.style.background   = "#fff";
+  frame.style.display      = "block";
+  frame.style.transform    = "none";        // scale 방식 제거
+
+
+}
+
+/* 화면 크기가 바뀌면 다시 맞춤 */
+window.addEventListener("resize", fitMissionFrame);
+window.addEventListener("orientationchange", ()=>{ setTimeout(fitMissionFrame, 300); });
+
+</script>
+
+</body>
+</html>

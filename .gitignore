@@ -1,0 +1,9 @@
+node_modules/
+.env
+.env.*
+!.env.example
+.private/
+onedrive-target.json
+*.log
+students.json
+test-results/

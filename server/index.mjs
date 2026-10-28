@@ -69,6 +69,18 @@ export function createApplication({ config, store, auth, readRoster }) {
         if (req.method !== 'POST') throw httpError(405, 'method_not_allowed');
         const data = await bodyOf(req);
         if (data.action === 'mission_save') {
+          // School/name are labels; only a matching personal code may select a roster ID.
+          if (data.school !== undefined) {
+            rates.check('school-save:' + ip, 100);
+            if (typeof data.school !== 'string' || !data.school.trim() || data.school.length > 40 || typeof data.name !== 'string') throw httpError(400, 'invalid_school');
+            data.school = data.school.normalize('NFC').trim();
+            data.name = data.name.normalize('NFC').trim();
+            const suppliedHash = codeHash(String(data.uploadCode || ''), config.encryptionKey);
+            const roster = await readRoster();
+            const student = roster.students?.find(item => item.school === data.school && item.name === data.name && item.uploadCodeHash && same(item.uploadCodeHash, suppliedHash));
+            if (!student) throw httpError(403, 'unauthorized');
+            data.id = student.id;
+          }
           validateMission(data);
           rates.check('save:' + ip + ':' + data.id, 20);
           const roster = await readRoster();

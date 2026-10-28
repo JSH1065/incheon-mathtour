@@ -117,7 +117,7 @@ export class DriveStore {
       // HTML을 먼저 완전히 저장한 뒤 작은 목록 파일을 갱신한다.
       // 다른 학생의 저장은 서로 다른 파일을 사용하므로 공용 index 덮어쓰기가 없다.
       const item = await this.put(files, revision + '.html', data.html, 'text/html; charset=utf-8');
-      const metadata = { schemaVersion: 1, id: data.id, name: data.name.trim(), placeId: data.placeId, topic: data.topic.trim(), htmlFileId: item.id, projectFolderId, revision, updatedAt: new Date().toISOString() };
+      const metadata = { schemaVersion: 1, id: data.id, school: data.school, name: data.name.trim(), placeId: data.placeId, topic: data.topic.trim(), htmlFileId: item.id, projectFolderId, revision, updatedAt: new Date().toISOString() };
       await this.put(folder, entryName(data.id), JSON.stringify(metadata), 'application/json');
       return { ok: true, saved: data.placeId + ' / ' + data.id, revision };
     });

@@ -8,7 +8,7 @@
   }
   function gameName(place, number) { return place + '-G' + gameNumber(number) + '.html'; }
   function parseGameName(name) {
-    const m = /^([BKMNS]\d{2})-G(\d{1,3})\.html?$/i.exec(name);
+    const m = /^([BKMNS]\d{2})(?:-G|_[^<>:"/\\|?*\x00-\x1f]+_G)(\d{1,3})\.html?$/i.exec(name);
     return m ? { place: m[1].toUpperCase(), number: gameNumber(m[2]) } : null;
   }
   function json(value) { return JSON.stringify(value).replace(/</g, '\\u003c').replace(/\u2028/g, '\\u2028').replace(/\u2029/g, '\\u2029'); }

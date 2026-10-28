@@ -10,6 +10,54 @@
   const nameOf = n => core.gameName(place(), n);
   const size = value => new Blob([value]).size;
   const originalRender = renderScenes;
+  const downloadUrls = [];
+  function refreshSubmissionName() {
+    const target = document.getElementById('submissionNamePreview');
+    try {
+      const base = window.MathTourSubmission.prefix(place(), document.getElementById('school').value, document.getElementById('sname').value);
+      target.textContent = '제출 파일명: ' + base + '_본문.html · ' + base + '_G1.html';
+    } catch (error) {
+      target.textContent = '제출 파일명: ' + place() + '_학교이름_본문.html · ' + place() + '_학교이름_G1.html';
+    }
+  }
+  ['school', 'sname'].forEach(id => document.getElementById(id).addEventListener('input', refreshSubmissionName));
+  document.getElementById('placeId').addEventListener('change', refreshSubmissionName);
+  window.clearSubmissionDownloads = function () {
+    downloadUrls.splice(0).forEach(url => URL.revokeObjectURL(url));
+    document.getElementById('submissionFileLinks').replaceChildren();
+    document.getElementById('submissionDownloads').hidden = true;
+  };
+  window.prepareSubmissionDownloads = function () {
+    const status = document.getElementById('upMsg');
+    window.clearSubmissionDownloads();
+    try {
+      if (!previewReviewed) throw new Error('먼저 스토리보드 미리보기에서 확인 완료를 눌러 주세요.');
+      const author = window.MathTourSubmission.identity(document.getElementById('school').value, document.getElementById('sname').value);
+      const topic = document.getElementById('topic').value.trim();
+      if (!topic) throw new Error('탐구 주제를 입력해 주세요.');
+      const prepared = window.prepareProjectUpload();
+      if (prepared.errors.length) throw new Error(prepared.errors.join('\n'));
+      const exported = window.MathTourSubmission.buildFiles({ placeId: place(), ...author, topic, project: prepared.project, html: prepared.html, submissionId: crypto.randomUUID() });
+      const host = document.getElementById('submissionFileLinks');
+      exported.forEach(file => {
+        const content = file.dataUrl ? Uint8Array.from(atob(file.content.split(',')[1]), char => char.charCodeAt(0)) : file.content;
+        const url = URL.createObjectURL(new Blob([content], { type: file.type })); downloadUrls.push(url);
+        const row = document.createElement('li'), link = document.createElement('a');
+        link.href = url; link.download = file.name; link.textContent = file.name;
+        row.appendChild(link); host.appendChild(row);
+      });
+      document.getElementById('submissionDownloads').hidden = false;
+      status.className = 'msg ok';
+      status.textContent = '제출용 파일 ' + exported.length + '개를 준비했어요. 아래 파일명을 눌러 모두 저장해 주세요.\n아직 OneDrive에 제출되지 않았어요. 선생님이 안내한 제출 링크에서 파일을 함께 선택해 주세요.';
+    } catch (error) {
+      status.className = 'msg bad'; status.textContent = error.message || '제출 파일을 만들지 못했어요.';
+    }
+  };
+  if (!SCRIPT_URL) {
+    document.getElementById('uploadCodeFields').hidden = true;
+    document.getElementById('upBtn').textContent = '⬇ 제출 파일 준비 (개별 파일)';
+  }
+  refreshSubmissionName();
 
   window.getProgramPrompt = function () {
     return [
@@ -258,7 +306,7 @@
       return;
     }
     const msg = document.getElementById('msg'); msg.className = 'msg ok';
-    msg.textContent = '✅ 스토리보드 미리보기예요. 게임 장면은 빈 화면·완료 상태로 표시해요. 표정·대사·순서를 확인하고 마지막 미리보기 확인 완료를 눌러 주세요. 실제 게임 파일은 업로드할 때 검사해요.';
+    msg.textContent = '✅ 스토리보드 미리보기예요. 게임 장면은 빈 화면·완료 상태로 표시해요. 표정·대사·순서를 확인하고 마지막 미리보기 확인 완료를 눌러 주세요. 실제 게임 파일은 제출 준비 때 검사해요.';
     document.getElementById('preview').srcdoc = previewDocument;
   };
   document.getElementById('loadExampleProject').onclick = async () => {

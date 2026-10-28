@@ -1,0 +1,20 @@
+{
+  "format": "mathtour-submission",
+  "schemaVersion": 1,
+  "submissionId": "5935c2f1-e22c-4d2a-ac70-24c1f80a284a",
+  "placeId": "K02",
+  "school": "연결검사",
+  "name": "공통제작기",
+  "topic": "임시 공통 파일 검사",
+  "program": "K02_연결검사공통제작기_본문.html",
+  "games": [],
+  "pictures": [],
+  "storyboard": [
+    {
+      "title": "공통 제작기 검사",
+      "gameNumber": null
+    }
+  ],
+  "playback": "source-files",
+  "studentId": "M7075b61faed5972cf1e54742cdcc3804"
+}

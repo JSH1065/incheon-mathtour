@@ -11,8 +11,11 @@
 현재 상태
 공유 폴더 '11월 14일 코딩수업(3학년)'가 열리고 업로드 메뉴가 보이는 것을 확인했습니다.
 이 링크는 학교 Microsoft 365 OneDrive입니다. 이전 개인 Microsoft 계정용 안내를 변경했습니다.
-파일 제작과 로컬 검사를 마쳤습니다. 실제 OneDrive 계정 연결, 운영 서버 배포,
-GitHub 저장소 생성 및 Pages 게시는 별도로 완료해야 합니다.
+파일 제작과 로컬 검사를 마쳤고, GitHub 저장소 생성 및 Pages 게시를 완료했습니다.
+체험 사이트: https://jsh1065.github.io/incheon-mathtour/
+게임 제작기: https://jsh1065.github.io/incheon-mathtour/make.html
+저장소: https://github.com/JSH1065/incheon-mathtour
+실제 OneDrive 계정 연결과 운영 서버 배포는 아직 남아 있습니다.
 서버의 Microsoft 계정 정보와 운영 주소는 아직 입력하지 않았습니다.
 로컬 검사는 Microsoft에 접속하지 않는 모의 저장소를 사용합니다.
 공유 폴더에는 아직 파일을 올리지 않았으며 자동 업로드 권한도 승인하지 않았습니다.

@@ -254,14 +254,14 @@
     <p class="hint">본문 HTML 1개와 게임 HTML 여러 개를 한 번에 선택할 수 있어요. 예: <b>K02.html, K02-G1.html, K02-G2.html</b><br>다시 선택하면 같은 이름의 파일만 교체하고 나머지는 유지해요. 파일 가져오기는 이 브라우저에서만 처리되며, 아래 업로드를 눌러야 제출돼요.</p>
     <input id="projectFiles" type="file" multiple accept=".html,.htm,text/html">
     <div id="projectFileList" role="status" aria-live="polite" style="font-size:13px;line-height:1.8;margin:10px 0"></div>
-    <button class="btn btn-check" onclick="runCheck()">🔍 전체 파일 검사하기 → 미리보기</button>
+    <button class="btn btn-check" onclick="runCheck()">🔍 스토리보드 미리보기</button>
     <div class="msg" id="msg"></div>
-    <label style="margin-top:20px">5단계 · 미리보기 (실제 매쓰투어에 들어갈 그대로 · 22:9)</label>
-    <p class="hint">실제 사이트와 똑같은 크기예요. 끝까지 직접 풀어 "미션 완료"가 뜨는지, 버튼이 겹치거나 화면을 넘치지 않는지 확인하세요.</p>
+    <label style="margin-top:20px">5단계 · 스토리보드 미리보기 (22:9)</label>
+    <p class="hint">표정·대사·사진과 장면 순서를 확인해요. <b>게임 장면은 가운데를 비우고 완료 상태로 넘겨요.</b> 게임 파일이 없어도 미리볼 수 있으며, 게임 코드는 실행하지 않아요. 실제 체험에서는 게임을 풀어야 다음 장면으로 이동해요.</p>
     <iframe id="preview" title="미션 미리보기" sandbox="allow-scripts allow-forms"></iframe>
     <div class="pv-guide">
-      🔧 <b>고칠 게 있으면</b> 위에서 표정·대사·힌트를 고치고 <b>다시 "검사하기"</b>를 누르세요.<br>
-      ✅ 이대로 괜찮으면 아래 <b>업로드</b>를 누르세요.
+      🔧 <b>고칠 게 있으면</b> 위에서 표정·대사·힌트를 고치고 <b>다시 "스토리보드 미리보기"</b>를 누르세요.<br>
+      ✅ 마지막 <b>미리보기 확인 완료</b>를 누른 뒤 업로드하세요. 실제 게임 파일은 업로드할 때 검사해요.
     </div>
     <button class="btn btn-up" id="upBtn" onclick="doUpload()" disabled>⬆ 본문과 게임 파일 전부 업로드</button>
     <div class="msg" id="upMsg"></div>
@@ -397,7 +397,7 @@
     return out;
   }
 
-  function buildFullHtml(){
+  function buildFullHtml({ preview = false } = {}){
     const placeId=document.getElementById('placeId').value.trim();
     const topic=document.getElementById('topic').value.trim();
     const regionKey=placeId.charAt(0);
@@ -461,7 +461,7 @@
 '<div class="mt-side"><div class="mt-bubble" id="mt-boyBubble"></div><img class="mt-char" id="mt-boyImg" src=""></div>',
 '<div class="mt-center"><div id="mt-center-host">'+sceneHtml+'</div>',
 '<button id="mt-hintBtn" style="display:none" onclick="mtToggleHint()">💡 힌트 보기</button>',
-'<div id="mt-clear">✨ 미션 완료! ✨<div style="font-size:15px;margin-top:8px;">보석을 받았어요</div></div>',
+'<div id="mt-clear">'+(preview ? '미리보기 확인 완료' : '✨ 미션 완료! ✨')+'<div style="font-size:15px;margin-top:8px;">'+(preview ? '표정·대사·장면 순서를 확인했어요' : '보석을 받았어요')+'</div></div>',
 '</div>',
 '<div class="mt-side"><div id="mt-credit"></div><div class="mt-bubble" id="mt-girlBubble"></div><img class="mt-char" id="mt-girlImg" src=""></div>',
 '</div>',
@@ -536,9 +536,14 @@ gameAsset ? '' : 'if(mtSceneList().length===0){missionClear();}',
     if(!uploadCode){u.className='msg bad';u.textContent='개인 제출코드를 입력해 주세요.';return;}
     if(!id||!name){ u.className='msg bad'; u.textContent='❌ 학번과 이름을 입력해 주세요.'; return; }
     if(!topic){ u.className='msg bad'; u.textContent='❌ 탐구 주제를 입력해 주세요.'; return; }
-    if(!lastFullHtml || document.getElementById('upBtn').disabled){ u.className='msg bad'; u.textContent='❌ 먼저 미리보기에서 전체 미션 완료까지 진행해 주세요.'; return; }
-    const project = window.buildProjectSubmission();
-    const htmlWithTopic=lastFullHtml;
+    if(!previewReviewed || document.getElementById('upBtn').disabled){ u.className='msg bad'; u.textContent='❌ 먼저 미리보기 확인 완료를 눌러 주세요.'; return; }
+    let prepared;
+    try { prepared = window.prepareProjectUpload(); }
+    catch (error) { u.className='msg bad'; u.textContent='파일을 준비하지 못했어요. 본문과 게임 파일을 다시 확인해 주세요.'; return; }
+    if(prepared.errors.length){u.className='msg bad';u.textContent='업로드 전에 확인해 주세요:\n'+prepared.errors.join('\n');return;}
+    const project = prepared.project;
+    const htmlWithTopic = prepared.html;
+    lastFullHtml = htmlWithTopic;
     if(new Blob([htmlWithTopic]).size>5*1024*1024){u.className='msg bad';u.textContent='게임과 사진을 합친 크기가 5MB를 넘어요. 사진 크기를 줄여 주세요.';return;}
     const upBtn=document.getElementById('upBtn'); upBtn.disabled=true; upBtn.classList.remove('ready');
     u.className='msg ok'; u.textContent='⏳ 업로드 중이에요...';
@@ -552,6 +557,8 @@ gameAsset ? '' : 'if(mtSceneList().length===0){missionClear();}',
 /* 스토리보드 실행 문서와 개별 게임의 완료 신호를 연결한다. */
 let gameAsset = null;
 let activeAssetPreview = '';
+let previewDocument = '';
+let previewReviewed = false;
 
 const GAME_ASSET_PROMPT = [
   '아래 기획을 바탕으로 매쓰투어에 넣을 단일 HTML 게임을 만들어 줘.',
@@ -584,6 +591,8 @@ const GAME_ASSET_PROMPT = [
 function invalidateCheckedMission() {
   lastFullHtml = '';
   activeAssetPreview = '';
+  previewDocument = '';
+  previewReviewed = false;
   const up = document.getElementById('upBtn');
   up.disabled = true;
   up.classList.remove('ready');
@@ -675,17 +684,18 @@ function buildAssetHostScript() {
 
 window.addEventListener('message', function (event) {
   const data = event.data;
-  if (event.source !== document.getElementById('preview').contentWindow || !data || data.type !== 'MT_ASSET_PREVIEW' || !activeAssetPreview || data.run !== activeAssetPreview || !lastFullHtml) return;
+  if (event.source !== document.getElementById('preview').contentWindow || !data || data.type !== 'MT_ASSET_PREVIEW' || !activeAssetPreview || data.run !== activeAssetPreview || !previewDocument) return;
   if (data.state === 'error') {
     invalidateCheckedMission();
     showErrors(['게임 실행 오류: ' + String(data.message || '알 수 없는 오류')]);
   } else if (data.state === 'complete') {
+    previewReviewed = true;
     const up = document.getElementById('upBtn');
     up.disabled = false;
     up.classList.add('ready');
     const msg = document.getElementById('msg');
     msg.className = 'msg ok';
-    msg.textContent = '✅ 전체 미션 완료 확인! 본문과 연결한 게임 파일을 함께 업로드할 수 있어요.';
+    msg.textContent = '✅ 스토리보드 미리보기 확인 완료! 게임 실행은 생략했어요. 업로드할 때 본문과 실제 게임 파일을 검사해요.';
   }
 });
 

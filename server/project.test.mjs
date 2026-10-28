@@ -93,3 +93,32 @@ test('story runtime requires every game, rejects foreign completion and preserve
   message(1,'two');ids.tourNext.click();assert.equal(ids.tourFinish.disabled,false);assert.equal(completed,0);
   ids.tourFinish.click();ids.tourFinish.click();assert.equal(completed,1);
 });
+
+test('preview leaves game centers empty and can finish without loading or executing a game', async () => {
+  class Element {
+    constructor(){this.hidden=false;this.disabled=false;this.events={};this.children=[];this.contentWindow={};}
+    addEventListener(name,fn){this.events[name]=fn;}
+    appendChild(child){this.children.push(child);}
+    setAttribute(){}
+    click(){this.events.click?.();}
+  }
+  const screens=[new Element(),new Element(),new Element()];
+  const ids=Object.fromEntries(['tourPrevious','tourNext','tourFinish','tourStatus','tourTitle'].map(id=>[id,new Element()]));
+  let created=0,completed=0;
+  const context={document:{querySelectorAll:()=>screens,getElementById:id=>ids[id],createElement:()=>{created++;return new Element();}},window:{addEventListener:()=>{},missionClear:()=>completed++}};
+  vm.runInNewContext(await readFile(new URL('../docs/project-core.js',import.meta.url),'utf8'),context);
+  const core=context.window.MathTourProject;
+  const steps=[{title:'게임 1',game:1,html:'<script>throw Error("MUST_NOT_RUN")</script>'},{title:'게임 2',game:2},{title:'이야기',game:null,html:'<p>끝</p>'}];
+  const preview=core.tourDocument(steps,{preview:true});
+  assert.equal(preview.includes('MUST_NOT_RUN'),false);
+  assert.match(preview,/미리보기 확인 완료/);
+  assert.equal(core.tourDocument(steps).includes('MUST_NOT_RUN'),true);
+  const script=[...preview.matchAll(/<script>([\s\S]*?)<\/script>/gi)][0][1];
+  vm.runInNewContext(script,context);
+  assert.equal(created,0);assert.equal(ids.tourNext.disabled,false);
+  ids.tourNext.click();assert.equal(created,0);assert.equal(ids.tourNext.disabled,false);
+  ids.tourPrevious.click();assert.equal(ids.tourNext.disabled,false);
+  ids.tourNext.click();ids.tourNext.click();assert.equal(created,1);
+  assert.equal(screens[0].children.length,0);assert.equal(screens[1].children.length,0);
+  assert.equal(ids.tourFinish.disabled,false);ids.tourFinish.click();ids.tourFinish.click();assert.equal(completed,1);
+});

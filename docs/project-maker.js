@@ -150,7 +150,7 @@
       if (programs.length) setProgram(programs[0].html, programs[0].name, parsed);
       loaded.filter(f => f.game).forEach(f => { files.set(core.gameName(selectedPlace, f.game.number), f.html); numbers.add(f.game.number); });
       renderNumbers(); renderScenes();
-      showAssetStatus(selected.length + '개 파일을 가져왔어요. 아직 제출하지 않았어요. 전체 파일 검사하기를 눌러 주세요.', false);
+      showAssetStatus(selected.length + '개 파일을 가져왔어요. 아직 제출하지 않았어요. 스토리보드 미리보기를 눌러 주세요.', false);
     } catch (error) { if (version === readVersion) showAssetStatus(error.message || '파일을 읽지 못했어요.', true); }
     finally { if (version === readVersion) { reading = false; this.value = ''; } }
   });
@@ -195,13 +195,16 @@
     section.style.cssText += ';display:block!important;visibility:visible!important;position:relative!important;height:auto!important;min-height:100%;';
     return replaceImgTags('<!doctype html><html lang="ko"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width"><style>*{box-sizing:border-box}html,body{margin:0;min-height:100%;font-family:Malgun Gothic,sans-serif}body{padding:14px}img{max-width:100%}' + studentStyle + '</style></head><body>' + section.outerHTML + '</body></html>');
   }
-  runCheck = function () {
-    invalidateCheckedMission();
+  function storyboardErrors() {
     const errors = [];
     if (reading) errors.push('파일을 읽는 중이에요. 잠시 후 다시 검사해 주세요.');
     if (!scenes.length) errors.push('본문 HTML이나 예시 스토리보드를 먼저 불러와 주세요.');
-    if (document.getElementById('aiCode').value !== '' && programName && document.getElementById('aiCode').value.trim() !== lastImportedSource.trim()) errors.push('본문 코드를 고쳤어요. 장면 불러오기를 눌러 변경 내용을 반영해 주세요.');
-    if (!document.getElementById('topic').value.trim()) errors.push('탐구 주제를 입력해 주세요.');
+    if (programName && document.getElementById('aiCode').value.trim() !== lastImportedSource.trim()) errors.push('본문 코드를 고쳤어요. 장면 불러오기를 눌러 변경 내용을 반영해 주세요.');
+    if (scenes.length) errors.push(...embeddedErrors(programDocument()).map(e => '본문: ' + e));
+    return errors;
+  }
+  function uploadErrors() {
+    const errors = storyboardErrors();
     sorted().forEach(n => {
       const html = files.get(nameOf(n));
       if (!html) { errors.push(nameOf(n) + ' 파일이 없어요. 4단계에서 함께 가져와 주세요.'); return; }
@@ -210,28 +213,53 @@
       const doc = new DOMParser().parseFromString(html, 'text/html');
       doc.querySelectorAll('script').forEach(s => { if (s.type && !['text/javascript', 'application/javascript'].includes(s.type)) return; try { new Function(s.textContent); } catch (e) { errors.push(nameOf(n) + ': ' + e.message); } });
     });
-    if (scenes.length) errors.push(...embeddedErrors(programDocument()).map(e => '본문: ' + e));
     scenes.forEach((sc, i) => { if (sc.gameNumber && !numbers.has(sc.gameNumber)) errors.push('장면 ' + (i + 1) + '의 게임 번호가 등록되지 않았어요.'); });
     const allSource = (scenes.length ? programDocument() : '') + sorted().map(n => files.get(nameOf(n)) || '').join('\n');
     for (let n = 1; n <= 3; n++) {
       if (allSource.includes('IMG' + n) && !pics[n]) errors.push('IMG' + n + '에 사용할 사진을 넣어 주세요.');
       if (pics[n] && !picSrc[n].trim()) errors.push('사진 ' + n + '의 출처를 입력해 주세요.');
     }
-    if (errors.length) { showErrors(Array.from(new Set(errors))); document.getElementById('preview').srcdoc = buildErrorHtml('본문과 게임 파일을 확인해 주세요'); return; }
-    const submission = window.buildProjectSubmission();
-    if (size(JSON.stringify(submission)) > 8 * 1024 * 1024) { showErrors(['본문·게임·사진의 합이 8MB를 넘어요. 파일 크기를 줄여 주세요.']); return; }
+    return Array.from(new Set(errors));
+  }
+  function compileProject({ preview }) {
     const steps = scenes.map((sc, i) => {
-      sc.creditSource = sc.gameNumber ? files.get(nameOf(sc.gameNumber)) : sc.outer;
+      sc.creditSource = sc.gameNumber ? (preview ? ' ' : files.get(nameOf(sc.gameNumber))) : sc.outer;
       const channel = 'game-' + i + '-' + Date.now().toString(36) + '-' + Math.random().toString(36).slice(2);
-      return { title: sc.title, game: sc.gameNumber, channel, html: sc.gameNumber ? bridgeDocument(files.get(nameOf(sc.gameNumber)), channel) : storyDocument(sc) };
+      return { title: sc.title, game: sc.gameNumber, channel, html: sc.gameNumber ? (preview ? '' : bridgeDocument(files.get(nameOf(sc.gameNumber)), channel)) : storyDocument(sc) };
     });
-    gameAsset = { name: 'storyboard.html', html: core.tourDocument(steps), hasScenes: true };
-    activeAssetPreview = 'project-' + Date.now().toString(36) + '-' + Math.random().toString(36).slice(2);
-    lastFullHtml = buildFullHtml();
-    if (size(lastFullHtml) > 5 * 1024 * 1024) { invalidateCheckedMission(); showErrors(['실행 파일이 5MB를 넘어요. 게임·사진 크기를 줄여 주세요.']); return; }
+    const previousAsset = gameAsset, previousRun = activeAssetPreview;
+    try {
+      gameAsset = { name: 'storyboard.html', html: core.tourDocument(steps, { preview }), hasScenes: true };
+      if (!preview) activeAssetPreview = '';
+      return buildFullHtml({ preview });
+    } finally { gameAsset = previousAsset; activeAssetPreview = previousRun; }
+  }
+  // Always compile a fresh playable document for submission. Preview HTML is never saved.
+  window.prepareProjectUpload = function () {
+    const errors = uploadErrors();
+    if (errors.length) return { errors };
+    const project = window.buildProjectSubmission();
+    if (size(JSON.stringify(project)) > 8 * 1024 * 1024) return { errors: ['본문·게임·사진의 합이 8MB를 넘어요. 파일 크기를 줄여 주세요.'] };
+    const html = compileProject({ preview: false });
+    if (size(html) > 5 * 1024 * 1024) return { errors: ['실행 파일이 5MB를 넘어요. 게임·사진 크기를 줄여 주세요.'] };
+    return { errors: [], project, html };
+  };
+  runCheck = function () {
+    invalidateCheckedMission();
+    try {
+      const errors = storyboardErrors();
+      if (errors.length) { showErrors(errors); document.getElementById('preview').srcdoc = buildErrorHtml('스토리보드 본문을 먼저 확인해 주세요'); return; }
+      activeAssetPreview = 'preview-' + Date.now().toString(36) + '-' + Math.random().toString(36).slice(2);
+      previewDocument = compileProject({ preview: true });
+    } catch (error) {
+      invalidateCheckedMission();
+      showErrors(['미리보기 본문을 만들지 못했어요. 본문 HTML을 다시 불러와 주세요.']);
+      document.getElementById('preview').srcdoc = buildErrorHtml('스토리보드 본문을 확인해 주세요');
+      return;
+    }
     const msg = document.getElementById('msg'); msg.className = 'msg ok';
-    msg.textContent = '✅ 본문과 게임 파일 검사 통과! 미리보기에서 게임을 차례로 완료하고 마지막 전체 미션 완료를 눌러 주세요.';
-    document.getElementById('preview').srcdoc = lastFullHtml;
+    msg.textContent = '✅ 스토리보드 미리보기예요. 게임 장면은 빈 화면·완료 상태로 표시해요. 표정·대사·순서를 확인하고 마지막 미리보기 확인 완료를 눌러 주세요. 실제 게임 파일은 업로드할 때 검사해요.';
+    document.getElementById('preview').srcdoc = previewDocument;
   };
   document.getElementById('loadExampleProject').onclick = async () => {
     if (scenes.length) { showAssetStatus('현재 본문이 있어요. 예시를 사용하려면 예시 본문 HTML을 4단계에서 가져와 주세요.', true); return; }
@@ -241,7 +269,7 @@
       const html = await response.text(); if (version !== readVersion) return;
       setProgram(html, place() + '.html', parseProgram(html));
       invalidateCheckedMission(); renderNumbers(); renderScenes();
-      showAssetStatus('게임 1·게임 2가 있는 예시 스토리보드예요. 아래에서 두 게임 파일을 함께 가져와 주세요.', false);
+      showAssetStatus('게임 1·게임 2가 있는 예시 스토리보드예요. 게임 파일 없이도 미리볼 수 있어요. 실제 업로드 전에는 두 게임 파일을 가져와 주세요.', false);
     } catch (error) { showAssetStatus(error.message, true); }
   };
   renderNumbers();

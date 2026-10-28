@@ -1,0 +1,77 @@
+{
+  "format": "mathtour-submission",
+  "schemaVersion": 1,
+  "submissionId": "fbcf4445-692c-44c9-a33a-aad8858a09ea",
+  "placeId": "K02",
+  "school": "교사예시",
+  "name": "업로드확인",
+  "topic": "마니산에서 만난 삼각형의 비밀 · 업로드 예시",
+  "program": "K02_교사예시업로드확인_본문.html",
+  "games": [
+    {
+      "number": 1,
+      "name": "K02_교사예시업로드확인_G1.html"
+    }
+  ],
+  "pictures": [
+    {
+      "number": 1,
+      "source": "OpenAI imagegen 생성 · 마니산을 모티브로 한 가상 일러스트",
+      "name": "K02_교사예시업로드확인_IMG1.jpg"
+    }
+  ],
+  "storyboard": [
+    {
+      "title": "관광지 소개 · 마니산과 참성단",
+      "gameNumber": null,
+      "boyFace": "lookmap",
+      "girlFace": "stand",
+      "boyText": "강화도 마니산에 도착했어!",
+      "girlText": "산과 바다가 함께 보이는 곳이야. 참성단도 만나 보자.",
+      "isProblem": false,
+      "hint": ""
+    },
+    {
+      "title": "탐구 준비 · 산길을 삼각형으로",
+      "gameNumber": null,
+      "boyFace": "finding",
+      "girlFace": "how",
+      "boyText": "비스듬한 길의 길이는 어떻게 구할까?",
+      "girlText": "수평 거리와 높이를 알면 직각삼각형으로 생각할 수 있어.",
+      "isProblem": false,
+      "hint": ""
+    },
+    {
+      "title": "게임 1 · 두 개의 길이 열쇠",
+      "gameNumber": 1,
+      "boyFace": "thinking",
+      "girlFace": "how",
+      "boyText": "두 문제를 풀어 길이 열쇠를 모아 보자!",
+      "girlText": "정답 확인 → 다음 → 마지막 미션 완료 순서야.",
+      "isProblem": true,
+      "hint": "빗변을 구할 때는 두 변의 제곱을 더하고, 나머지 변은 빗변의 제곱에서 다른 변의 제곱을 빼요. 마지막에는 제곱근을 구해요."
+    },
+    {
+      "title": "풀이 연결 · 더할까, 뺄까?",
+      "gameNumber": null,
+      "boyFace": "aha",
+      "girlFace": "thumb",
+      "boyText": "10과 12를 구했어. 마지막에 제곱근을 잊으면 안 되네!",
+      "girlText": "직각을 마주 보는 가장 긴 변이 빗변이야.",
+      "isProblem": false,
+      "hint": ""
+    },
+    {
+      "title": "배운 수학 정리 · 탐험 노트",
+      "gameNumber": null,
+      "boyFace": "thumb",
+      "girlFace": "aha",
+      "boyText": "직각삼각형이라면 두 변으로 나머지 길이를 찾을 수 있어!",
+      "girlText": "직각인지 확인하고, 빗변을 찾는 것이 먼저야.",
+      "isProblem": false,
+      "hint": ""
+    }
+  ],
+  "playback": "source-files",
+  "studentId": "TEACHER01"
+}

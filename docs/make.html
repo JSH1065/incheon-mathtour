@@ -268,6 +268,7 @@
       ✅ 마지막 <b>미리보기 확인 완료</b>를 누른 뒤 제출을 준비하세요. 실제 게임 파일은 제출 준비 때 검사해요.
     </div>
     <button class="btn btn-up" id="upBtn" onclick="doUpload()" disabled>⬆ 본문과 게임 파일 전부 업로드</button>
+    <button class="btn btn-prompt" type="button" style="margin-top:8px" onclick="prepareSubmissionDownloads()">제출 파일을 내 컴퓨터에도 보관</button>
     <div class="msg" id="upMsg"></div>
     <div id="submissionDownloads" hidden>
       <p class="hint">아래 파일을 모두 저장한 뒤 OneDrive 제출 화면에서 함께 선택해 주세요. ZIP으로 묶지 않아도 돼요. 파일 저장만으로 제출되지는 않아요.</p>
@@ -279,7 +280,7 @@
 <script>
   /* ===== 선생님 설정 ===== */
   const SCRIPT_URL = window.MATHTOUR_CONFIG?.apiUrl || "";
-  const CHAR_BASE = new URL("./student_images/", location.href).href;
+  const CHAR_BASE = new URL("./student_images/", window.MATHTOUR_CONFIG?.siteBase || location.href).href;
   const FACES = [
     { key:'stand', name:'기본' },{ key:'how', name:'궁금' },{ key:'thinking', name:'생각중' },
     { key:'finding', name:'찾기' },{ key:'aha', name:'깨달음' },{ key:'thumb', name:'칭찬' },{ key:'lookmap', name:'지도보기' }
@@ -534,7 +535,10 @@ gameAsset ? '' : 'if(mtSceneList().length===0){missionClear();}',
   function runCheck(){} // Assigned by project-maker.js.
 
   async function doUpload(){
-    if(!SCRIPT_URL){ window.prepareSubmissionDownloads(); return; }
+    if(!SCRIPT_URL){
+      if(window.MATHTOUR_CONFIG?.storageProvider === 'github') { const msg=document.getElementById('upMsg');msg.className='msg bad';msg.textContent='GitHub 업로드 연결을 준비하고 있어요. 아직 제출되지 않았어요. 아래 보관 버튼으로 작업 파일을 저장해 주세요.';return; }
+      window.prepareSubmissionDownloads(); return;
+    }
     const placeId=document.getElementById('placeId').value.trim();
     const topic=document.getElementById('topic').value.trim();
     const school=document.getElementById('school').value.trim();
@@ -554,11 +558,11 @@ gameAsset ? '' : 'if(mtSceneList().length===0){missionClear();}',
     lastFullHtml = htmlWithTopic;
     if(new Blob([htmlWithTopic]).size>5*1024*1024){u.className='msg bad';u.textContent='게임과 사진을 합친 크기가 5MB를 넘어요. 사진 크기를 줄여 주세요.';return;}
     const upBtn=document.getElementById('upBtn'); upBtn.disabled=true; upBtn.classList.remove('ready');
-    u.className='msg ok'; u.textContent='⏳ 업로드 중이에요...';
+    u.className='msg ok'; u.textContent='⏳ 업로드 중이에요. 여러 명이 함께 제출하면 순서대로 저장하므로 잠시 기다려 주세요.';
     try{
-      const res=await fetch(SCRIPT_URL,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({ action:'mission_save', school, name, placeId, topic, uploadCode, html:htmlWithTopic, project })});
+      const res=await fetch(SCRIPT_URL,{method:'POST',headers:{'Content-Type':'application/json'},signal:AbortSignal.timeout(300000),body:JSON.stringify({ action:'mission_save', school, name, placeId, topic, uploadCode, html:htmlWithTopic, project })});
       const data=await res.json();
-      if(res.ok && data.ok){ u.className='msg ok'; u.textContent='🎉 업로드 완료! ('+(data.saved||'')+')\n이제 매쓰투어에서 내 미션이 보여요.'; }
+      if(res.ok && data.ok){ u.className='msg ok'; u.textContent='🎉 '+(data.provider==='github'?'GitHub 저장 완료!':'업로드 완료!')+' ('+(data.saved||'')+')\n'+(data.provider==='github'?'사이트 반영까지 몇 분 걸릴 수 있어요. 반영 후 지도에서 작품을 선택해 주세요.':'이제 매쓰투어에서 내 미션이 보여요.'); }
       else{ let msg='❌ 업로드 실패: '+(data.error||'알 수 없는 오류'); if(data.error==='unauthorized') msg='❌ 학교·이름·제출코드를 확인해 주세요.'; u.className='msg bad'; u.textContent=msg; upBtn.disabled=false; upBtn.classList.add('ready'); }
     }catch(e){ u.className='msg bad'; u.textContent='❌ 전송 오류가 발생했어요. 잠시 후 다시 시도해 주세요.'; upBtn.disabled=false; upBtn.classList.add('ready'); }
   }

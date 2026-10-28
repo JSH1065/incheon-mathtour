@@ -1,0 +1,31 @@
+services:
+  - type: web
+    name: incheon-mathtour-upload
+    runtime: node
+    plan: free
+    buildCommand: npm ci --ignore-scripts
+    startCommand: node server/index.mjs
+    healthCheckPath: /api?action=status
+    envVars:
+      - key: NODE_VERSION
+        value: "24"
+      - key: NODE_ENV
+        value: production
+      - key: HOST
+        value: 0.0.0.0
+      - key: STORAGE_PROVIDER
+        value: github
+      - key: BASE_URL
+        sync: false
+      - key: PAGES_ORIGIN
+        value: https://jsh1065.github.io
+      - key: GITHUB_REPOSITORY
+        value: JSH1065/incheon-mathtour
+      - key: GITHUB_BRANCH
+        value: main
+      - key: GITHUB_TOKEN
+        sync: false
+      - key: CACHE_ENCRYPTION_KEY
+        sync: false
+      - key: ROSTER_JSON
+        sync: false

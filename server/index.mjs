@@ -40,7 +40,7 @@ export function loadConfig(env = process.env) {
   const storageMode = env.STORAGE_MODE || 'app-folder';
   if (!['app-folder','shared-folder'].includes(storageMode)) throw new Error('Invalid STORAGE_MODE.');
   const dataDir = resolve(projectRoot, env.DATA_DIR || '.private');
-  return { baseUrl, local, host: env.HOST || '127.0.0.1', port: Number(env.PORT || 8787), origins: new Set((env.PAGES_ORIGIN || baseUrl).split(',').map(x => new URL(x.trim()).origin)), clientId: env.MS_CLIENT_ID, clientSecret: env.MS_CLIENT_SECRET, tenant: env.MS_TENANT || (storageMode === 'shared-folder' ? 'organizations' : 'consumers'), storageMode, targetConfigFile: env.TARGET_CONFIG_FILE ? resolve(projectRoot,env.TARGET_CONFIG_FILE) : join(dataDir,'onedrive-target.json'), encryptionKey: env.CACHE_ENCRYPTION_KEY, adminPassword: env.ADMIN_PASSWORD, dataDir, mock: env.MOCK_ONEDRIVE === '1' };
+  return { provider: env.STORAGE_PROVIDER || 'onedrive', githubToken: env.GITHUB_TOKEN, githubRepository: env.GITHUB_REPOSITORY, githubBranch: env.GITHUB_BRANCH || 'main', rosterJson: env.ROSTER_JSON, baseUrl, local, host: env.HOST || '127.0.0.1', port: Number(env.PORT || 8787), origins: new Set((env.PAGES_ORIGIN || baseUrl).split(',').map(x => new URL(x.trim()).origin)), clientId: env.MS_CLIENT_ID, clientSecret: env.MS_CLIENT_SECRET, tenant: env.MS_TENANT || (storageMode === 'shared-folder' ? 'organizations' : 'consumers'), storageMode, targetConfigFile: env.TARGET_CONFIG_FILE ? resolve(projectRoot,env.TARGET_CONFIG_FILE) : join(dataDir,'onedrive-target.json'), encryptionKey: env.CACHE_ENCRYPTION_KEY, adminPassword: env.ADMIN_PASSWORD, dataDir, mock: env.MOCK_ONEDRIVE === '1' };
 }
 
 export function createApplication({ config, store, auth, readRoster }) {
@@ -55,13 +55,13 @@ export function createApplication({ config, store, auth, readRoster }) {
     const ip = req.socket.remoteAddress || 'unknown';
     try {
       if (url.pathname === '/api') {
-        if (origin && !config.origins.has(origin)) throw httpError(403, 'origin_not_allowed');
+        if (origin && !config.origins.has(origin) && !(origin === 'null' && config.provider === 'github')) throw httpError(403, 'origin_not_allowed');
         if (origin) { res.setHeader('Access-Control-Allow-Origin', origin); res.setHeader('Vary', 'Origin'); }
         if (req.method === 'OPTIONS') { res.setHeader('Access-Control-Allow-Methods', 'GET, POST, OPTIONS'); res.setHeader('Access-Control-Allow-Headers', 'Content-Type'); res.writeHead(204); res.end(); return; }
         rates.check('api:' + ip, 600);
         if (req.method === 'GET') {
           const action = url.searchParams.get('action');
-          if (action === 'status') { json(res, 200, { ok: true, mode: config.mock ? 'local-test' : 'onedrive', storage: 'OneDrive' }); return; }
+          if (action === 'status') { json(res, 200, { ok: true, mode: config.mock ? 'local-test' : config.provider, storage: config.provider === 'github' ? 'GitHub' : 'OneDrive' }); return; }
           if (action === 'mission_list') { json(res, 200, await store.list(url.searchParams.get('placeId'))); return; }
           if (action === 'mission_load') { json(res, 200, await store.load(url.searchParams.get('placeId'), url.searchParams.get('sid'))); return; }
           throw httpError(400, 'unknown_action');
@@ -69,6 +69,18 @@ export function createApplication({ config, store, auth, readRoster }) {
         if (req.method !== 'POST') throw httpError(405, 'method_not_allowed');
         const data = await bodyOf(req);
         if (data.action === 'mission_save') {
+          if (config.provider === 'github') {
+            rates.check('github-save:' + ip, 100);
+            const roster = await readRoster();
+            const suppliedHash = codeHash(String(data.uploadCode || ''), config.encryptionKey);
+            const student = roster.students?.find(item => item.uploadCodeHash && same(item.uploadCodeHash, suppliedHash));
+            if (!student || (student.school && student.school !== data.school) || (student.name && student.name !== data.name)) throw httpError(403, 'unauthorized');
+            // The server-issued code determines the folder, never a browser-supplied ID.
+            data.id = student.id;
+            validateMission(data);
+            rates.check('github-student:' + data.id, 10);
+            json(res, 200, await store.save(data)); return;
+          }
           // School/name are labels; only a matching personal code may select a roster ID.
           if (data.school !== undefined) {
             rates.check('school-save:' + ip, 100);
@@ -151,13 +163,17 @@ async function start() {
     const { LocalTestStore } = await import('./local-test-store.mjs');
     store = new LocalTestStore(join(config.dataDir, 'local-test'));
     config.encryptionKey = randomBytes(32).toString('base64');
+  } else if (config.provider === 'github') {
+    if (Buffer.from(config.encryptionKey || '', 'base64').length !== 32 || !config.rosterJson) throw new Error('GitHub upload codes are not configured');
+    const { GitHubStore } = await import('./github-store.mjs');
+    store = new GitHubStore({ token: config.githubToken, repository: config.githubRepository, branch: config.githubBranch });
   } else {
     const readTarget = async () => { try { return JSON.parse(await readFile(config.targetConfigFile, 'utf8')); } catch { throw httpError(503, 'target_folder_not_configured'); } };
     store = new DriveStore(createGraph(auth || { token: async () => { throw httpError(503, 'microsoft_app_not_configured'); } }), { storageMode: config.storageMode, readTarget });
   }
   const readRoster = config.mock
     ? async () => ({ students: [{ id:'TEST01', name:'테스트', uploadCodeHash:codeHash('LOCAL-DEMO-ONLY',config.encryptionKey) }] })
-    : async () => { try { return JSON.parse(await readFile(join(config.dataDir,'roster.json'),'utf8')); } catch { throw httpError(503,'roster_not_configured'); } };
+    : async () => { try { return JSON.parse(config.rosterJson || await readFile(join(config.dataDir,'roster.json'),'utf8')); } catch { throw httpError(503,'roster_not_configured'); } };
   const server = createApplication({ config, store, auth, readRoster });
   server.listen(config.port, config.host, () => console.log('MathTour server ready at ' + config.baseUrl + (config.mock ? ' (LOCAL TEST: no OneDrive writes)' : '')));
 }

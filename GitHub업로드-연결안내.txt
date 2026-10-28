@@ -1,0 +1,58 @@
+학생의 사용 방식
+학생용_매스투어_제작기.html 한 개를 배부합니다. 학생은 인터넷이 연결된 컴퓨터에서 열고
+학교·이름·개인 제출코드를 입력한 뒤 본문과 게임을 가져와 미리보기 후 업로드를 누릅니다.
+학생의 GitHub 계정, Render 계정, 프로그램 설치는 필요하지 않습니다.
+
+현재 상태
+GitHub 저장 모듈, 한 번에 파일과 목록 저장, 원본 파일 재생, 학생용 단일 HTML을 준비했습니다.
+실제 접수 서버 주소와 GitHub 저장 권한은 아직 연결 전입니다. apiUrl은 비어 있습니다.
+연결 전에는 업로드 성공으로 표시하지 않습니다.
+
+파일명과 지도 연결
+docs/submissions/K02/S01/K02_구월중정승헌_본문.html
+docs/submissions/K02/S01/K02_구월중정승헌_G1.html
+docs/submissions/K02/S01/K02_구월중정승헌_G2.html
+docs/submissions/K02/S01/K02_구월중정승헌_IMG1.jpg
+docs/submissions/K02/S01/K02_구월중정승헌_스토리보드.json
+학교·이름이 같더라도 제출코드마다 S01, S02 등 다른 폴더를 사용합니다.
+docs/submissions/catalog.json이 장소별 작품의 정확한 경로를 연결합니다.
+학생이 제출한 식별자나 경로로 폴더를 선택하지 않으며 서버가 제출코드로 확인합니다.
+
+GitHub에서 직접 수정
+본문.html: 이야기, 스타일, data-boy-text/data-girl-text, 표정, data-game 번호 수정.
+G1.html/G2.html: 해당 게임의 문제, 정답, 동작 수정.
+IMG1.jpg: 같은 이름으로 사진 교체.
+스토리보드.json: 게임 파일명, 사진 파일명, 출처 등을 연결합니다.
+본문의 장면과 data- 속성이 실제 재생 기준입니다. JSON의 storyboard 배열은 제출 기록입니다.
+파일 내용만 수정하면 원래 파일명은 그대로 유지합니다. 이름을 바꾸면 JSON의 연결도 바꿔야 합니다.
+주제·학교·이름 표시를 바꾸면 스토리보드 JSON과 catalog.json의 표시 정보도 수정합니다.
+원본 파일을 읽어서 실행하므로 별도의 매스투어.html을 다시 만들 필요가 없습니다.
+GitHub Pages 배포 후 지도를 다시 열어 작품을 선택하면 수정 내용을 불러옵니다.
+이미 열려 진행 중인 게임은 자동으로 바뀌지 않습니다.
+
+선생님이 한 번 할 연결
+1. GitHub fine-grained personal access token을 만듭니다.
+   대상 저장소는 JSH1065/incheon-mathtour 하나, Contents 권한 Read and write만 사용합니다.
+   토큰은 HTML, 공개 config.js, GitHub 파일, 채팅에 붙여 넣지 않습니다.
+2. Render에 이 저장소로 Web Service를 만들고 Free 플랜을 선택합니다. 디스크는 추가하지 않습니다.
+   render.yaml에 서버 설정이 준비되어 있습니다. Runtime Node, npm ci --ignore-scripts,
+   Start node server/index.mjs를 사용합니다.
+3. Render의 비공개 Environment에 GITHUB_TOKEN을 직접 입력합니다.
+   BASE_URL은 생성된 Render 서비스 주소(끝의 /api 제외)입니다.
+   .private/github-upload/server.env의 값들을 같은 Environment에 입력합니다.
+   서버에는 토큰과 코드 확인용 설정만 두며 실제 학생 작품은 GitHub에 저장합니다.
+4. docs/config.js의 apiUrl을 해당 서비스 주소 + /api로 설정합니다.
+5. GitHub Settings → Pages → Source를 GitHub Actions로 변경하고 Pages 배포를 확인합니다.
+6. .private/github-upload/학생별-제출코드.tsv의 20개 코드를 학생마다 하나씩 배부합니다.
+   같은 코드를 서로 다른 학생에게 주면 같은 작품 폴더를 사용하게 되므로 중복 배부하지 않습니다.
+7. 시험 작품을 업로드해 실제 GitHub 커밋과 지도 재생까지 확인한 뒤 수업에 사용합니다.
+
+무료 서비스의 대기 시간
+Render 무료 웹 서비스는 15분 동안 사용하지 않으면 쉬며 다시 켜질 때 약 1분 걸릴 수 있습니다.
+수업 시작 전에 서버 주소를 열어 상태를 확인합니다. 학생 작품은 쉬거나 재시작해도 GitHub에 남습니다.
+서비스의 무료 제공 범위와 GitHub 제한은 적용됩니다. 유료 디스크나 데이터베이스는 필요하지 않습니다.
+
+참고
+https://render.com/docs/free
+https://docs.github.com/en/pages/getting-started-with-github-pages/github-pages-limits
+GitHub Actions로 게시하면 기본 브랜치 게시의 시간당 10회 소프트 빌드 제한을 적용받지 않습니다.

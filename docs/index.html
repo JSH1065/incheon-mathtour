@@ -399,6 +399,9 @@
 
 </style>
 <script src="./config.js"></script>
+<script src="./project-core.js"></script>
+<script src="./project-renderer.js"></script>
+<script src="./github-missions.js"></script>
 <script src="./mission-catalog.js"></script>
 <script src="./site-common.js" defer></script>
 </head>
@@ -934,14 +937,14 @@ async function openMission(p){
 
     data.missions.forEach(m=>{
       const btn = document.createElement("button");
-      const nm  = m.name || "(이름 없음)";
+      const nm  = (m.school ? m.school + ' ' : '') + (m.name || "(이름 없음)");
       if(m.topic){const topic=document.createElement('span');topic.style.cssText='display:block;font-weight:800;font-size:1.7cqw;';topic.textContent=m.topic;btn.appendChild(topic);}
       const name=document.createElement('span');name.style.cssText='display:block;font-size:1.25cqw;font-weight:500;opacity:.9;margin-top:.3cqw;';name.textContent=nm;btn.appendChild(name);
 
       btn.style.cssText =
         "background:#4a6cf7; color:#fff; border:none; padding:1.1cqw 2.2cqw;" +
         "border-radius:1.4cqw; cursor:pointer; line-height:1.3; text-align:center;";
-      btn.onclick = ()=> runStudentMission(p, m.id, m.sourceApi, m.exampleUrl);
+      btn.onclick = ()=> runStudentMission(p, m.id, m.sourceApi, m.exampleUrl, m.githubManifest);
       grid.appendChild(btn);
     });
 
@@ -953,7 +956,7 @@ async function openMission(p){
 }
 
 /* 고른 학생의 미션 HTML을 iframe에 띄우기 */
-async function runStudentMission(p, sid, sourceApi = SCRIPT_URL, exampleUrl){
+async function runStudentMission(p, sid, sourceApi = SCRIPT_URL, exampleUrl, githubManifest){
   const listBox = document.getElementById("smList");
   const runBox  = document.getElementById("smRun");
   const frame   = document.getElementById("smFrame");
@@ -968,7 +971,8 @@ fitMissionFrame();                 // ← 추가: 무대 높이에 맞춰 iframe
 
   try{
     let data;
-    if(exampleUrl){data=await window.loadExampleMission(p.id,sid,exampleUrl);}
+    if(githubManifest){data=await window.loadGitHubMission(p.id,sid,githubManifest);}
+    else if(exampleUrl){data=await window.loadExampleMission(p.id,sid,exampleUrl);}
     else{
       const res = await fetch(sourceApi + "?action=mission_load&placeId="
                   + encodeURIComponent(p.id) + "&sid=" + encodeURIComponent(sid));

@@ -1,0 +1,1198 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>MATHTOUR INCHEON 미션 만들기</title>
+<style>
+  /* 글자크기 (제목) */
+  h1 { font-size:22px; color:#1565c0; margin:4px 0 14px; }
+  * { box-sizing: border-box; }
+  body { margin:0; font-family:"맑은 고딕","Malgun Gothic",sans-serif; background:#f4f7fb; color:#222; padding:0; }
+
+  .wrap { max-width:1300px; margin:0 auto; padding:16px; }
+  .row { display:flex; gap:16px; flex-wrap:wrap; align-items:flex-start; }
+  .col { flex:1; min-width:360px; }
+  .card { background:#fff; border-radius:14px; padding:16px; box-shadow:0 4px 14px rgba(0,0,0,.08); margin-bottom:16px; }
+  /* 글자크기 (라벨) */
+  label { display:block; font-size:14px; font-weight:bold; margin:8px 0 4px; }
+  /* 글자크기 (입력칸·선택·textarea) */
+  input, select, textarea { width:100%; padding:9px; border:1px solid #cfd8dc; border-radius:8px; font-size:14px; font-family:inherit; }
+  /* 글자크기 (코드 붙여넣기 칸) */
+  textarea.code { height:150px; resize:vertical; font-family:Consolas,"D2Coding",monospace; font-size:13px; line-height:1.5; white-space:pre; }
+  /* 글자크기 (안내문) */
+  .hint { font-size:12.5px; color:#607d8b; margin:4px 0 8px; line-height:1.6; }
+  /* 글자크기 (버튼) */
+  .btn { padding:11px 16px; font-size:14px; border:none; border-radius:10px; cursor:pointer; font-weight:bold; }
+  .btn-prompt { background:#eceff1; color:#37474f; }
+  .btn-prompt:hover { background:#cfd8dc; }
+  .btn-check { background:#42a5f5; color:#fff; width:100%; margin-top:8px; }
+  .btn-check:hover { background:#1e88e5; }
+  .btn-up { background:#bdbdbd; color:#fff; width:100%; margin-top:10px; cursor:not-allowed; }
+  .btn-up.ready { background:#2e7d32; cursor:pointer; }
+  .btn-up.ready:hover { background:#1b5e20; }
+  iframe { width:100%; border:1px solid #cfd8dc; border-radius:10px; background:#fff; display:block; }
+
+  .pic-grid { display:flex; gap:8px; flex-wrap:wrap; }
+  .pic-cell { flex:1; min-width:120px; border:2px dashed #b0bec5; border-radius:10px; padding:10px 8px; text-align:center; background:#fafdff; transition:all .15s; }
+  /* 드래그로 파일을 끌고 올 때 강조 */
+  .pic-cell.dragover { border-color:#42a5f5; background:#e3f2fd; }
+  /* 글자크기 (사진 라벨) */
+  .pic-cell .pc-label { font-size:12.5px; font-weight:bold; color:#546e7a; margin-bottom:4px; }
+  /* 드래그 앤 드롭 안내 영역 (세로로 넓게) */
+  .pic-cell .pc-drop { border:1px dashed #cfd8dc; border-radius:8px; padding:18px 6px; margin:4px 0 6px; color:#90a4ae; font-size:12px; line-height:1.5; cursor:pointer; background:#fff; }
+  .pic-cell .pc-drop .pc-drop-ico { font-size:28px; display:block; margin-bottom:4px; }
+  .pic-cell.dragover .pc-drop { color:#1e88e5; border-color:#42a5f5; }
+  /* 글자크기 (사진 파일선택) */
+  .pic-cell input[type=file] { font-size:11px; width:100%; }
+  .pic-cell img { max-width:100%; max-height:120px; border-radius:6px; margin-top:6px; display:none; }
+  .pic-cell img.on { display:inline-block; }
+  /* 글자크기 (사진 지우기) */
+  .pic-cell .pc-clear { font-size:11px; color:#c62828; background:none; border:none; cursor:pointer; display:none; margin-top:2px; }
+  .pic-cell .pc-clear.on { display:inline-block; }
+  /* 글자크기 (사진 출처 입력칸) */
+  .pic-cell .pc-src { font-size:11px; margin-top:6px; }
+
+  .scene-item { border:1px solid #d7e3ee; border-radius:12px; padding:12px; margin-bottom:12px; background:#fafdff; }
+  .scene-head { display:flex; align-items:center; gap:8px; margin-bottom:8px; }
+  /* 글자크기 (장면 번호) */
+  .scene-no { background:#1565c0; color:#fff; border-radius:8px; padding:3px 10px; font-size:13px; font-weight:bold; }
+  /* 글자크기 (장면 제목) */
+  .scene-title { font-weight:bold; color:#37474f; font-size:14px; }
+  .char-row { display:flex; gap:10px; flex-wrap:wrap; }
+  .char-side { flex:1; min-width:150px; border:1px solid #e3eaf1; border-radius:10px; padding:8px; background:#fff; }
+  .char-side.boy { border-left:4px solid #42a5f5; }
+  .char-side.girl { border-left:4px solid #ec407a; }
+  /* 글자크기 (캐릭터 칸 제목) */
+  .char-side .cs-title { font-size:12.5px; font-weight:bold; color:#546e7a; margin-bottom:4px; }
+  .char-side select { margin-bottom:4px; }
+  /* 글자크기 (대사 입력칸) */
+  .char-side input { font-size:13px; }
+  /* 글자크기 (문제 장면 체크줄) */
+  .q-row { margin-top:8px; display:flex; align-items:center; gap:6px; font-size:13.5px; }
+  .hint-row { margin-top:6px; display:none; }
+  .hint-row.on { display:block; }
+
+  /* 글자크기 (검사·업로드 메시지) */
+  .msg { margin-top:10px; padding:11px; border-radius:8px; font-size:14px; line-height:1.7; white-space:pre-wrap; display:none; }
+  .msg.ok { background:#e8f5e9; color:#2e7d32; display:block; }
+  .msg.bad { background:#ffebee; color:#c62828; display:block; }
+  .msg.bad ul { margin:6px 0 0; padding-left:20px; }
+  .msg.bad li { margin-bottom:8px; }
+
+  .prompt-box { display:none; margin-top:10px; }
+  .prompt-box.on { display:block; }
+  /* 글자크기 (프롬프트 미리보기 칸) */
+  .prompt-box textarea { height:220px; font-size:12px; font-family:Consolas,monospace; white-space:pre-wrap; }
+  /* 글자크기 (미리보기 안내) */
+  .pv-guide { font-size:13px; color:#37474f; background:#fff8e1; border:1px solid #ffe082; border-radius:8px; padding:10px; margin-top:10px; line-height:1.7; }
+  /* 글자크기 (빈 안내) */
+  .empty-note { color:#90a4ae; font-size:13px; padding:10px; text-align:center; }
+
+  /* 미리보기: 실제 본체와 같은 22:9 */
+  .preview-card { background:#fff; border-radius:14px; padding:16px; box-shadow:0 4px 14px rgba(0,0,0,.08); }
+  #preview { aspect-ratio:22/9; max-height:72vh; }
+
+/* ===== 좁은 화면(휴대폰) 대응 ===== */
+@media screen and (max-width:720px){
+  html, body{ overflow-x:hidden; }
+  .wrap{ padding:10px; }
+  .card, .preview-card{ padding:12px; }
+
+  /* 2단 → 1단으로 세로 쌓기, 좁아도 넘치지 않게 */
+  .col{ min-width:0; flex:1 1 100%; }
+  .char-side{ min-width:0; }
+  .pic-cell{ min-width:0; flex:1 1 30%; }
+
+  /* 코드 붙여넣기 칸을 조금 키워 보기 편하게 */
+  textarea.code{ height:180px; }
+
+  /* 미리보기: 납작한 22:9 대신 휴대폰에서는 16:9로 */
+  #preview{ aspect-ratio:16/9; max-height:60vh; }
+}
+
+</style>
+<script src="https://jsh1065.github.io/incheon-mathtour/config.js"></script>
+<script>
+document.addEventListener('DOMContentLoaded', () => {
+  const nav = document.createElement('nav');
+  nav.setAttribute('aria-label', '매쓰투어 메뉴');
+  nav.style.cssText = 'display:flex;gap:16px;align-items:center;padding:10px 16px;background:#fff;color:#223;font:14px/1.5 sans-serif;border-bottom:1px solid #dde3eb;';
+  const brand = document.createElement('strong'); brand.textContent = '인천 매쓰투어'; nav.appendChild(brand);
+  for (const [href, text] of [['./index.html','체험하기'],['./make.html','미션 만들기']]) {
+    const a=document.createElement('a'); a.href=new URL(href, window.MATHTOUR_CONFIG?.siteBase || location.href).href; a.textContent=text; a.style.color='#2857aa'; nav.appendChild(a);
+  }
+  document.body.prepend(nav);
+  if (!window.MATHTOUR_CONFIG?.apiUrl || window.MATHTOUR_CONFIG?.localTest) {
+    const message = document.createElement('p');
+    message.id='connectionNotice'; message.setAttribute('role','status');
+    message.style.cssText='margin:0;padding:8px 16px;background:#fff4ce;color:#684d00;font:14px/1.5 sans-serif;';
+    message.textContent=window.MATHTOUR_CONFIG?.localTest ? '로컬 검사 모드 · 실제 저장소에는 제출하지 않습니다.' : window.MATHTOUR_CONFIG?.storageProvider === 'github' ? 'GitHub 업로드 연결 준비 중입니다. 게임 제작·미리보기·파일 보관은 사용할 수 있어요.' : '학생 제출 저장소는 연결 준비 중입니다. 마니산 공개 예시 체험, 게임 만들기와 미리보기는 사용할 수 있어요.';
+    nav.after(message);
+  }
+});
+
+</script>
+</head>
+<body>
+<div class="wrap">
+  <h1>🧩 MATHTOUR INCHEON 미션 만들기</h1>
+
+  <div class="row">
+    <!-- 왼쪽: 입력 + 붙여넣기 + 사진 -->
+    <div class="col">
+      <div class="card">
+        <label>장소 선택</label>
+        <select id="placeId">
+          <option value="B01">B01 부평지하상가·굴포천</option>
+          <option value="B02">B02 부평향교</option>
+          <option value="B03">B03 계양산성박물관·계양산</option>
+          <option value="K01">K01 강화고인돌</option>
+          <option value="K02" selected>K02 마니산</option>
+          <option value="K03">K03 보문사</option>
+          <option value="K04">K04 검단선사박물관</option>
+          <option value="K05">K05 정서진</option>
+          <option value="M01">M01 SSG랜더스필드</option>
+          <option value="M02">M02 문학산</option>
+          <option value="M03">M03 수봉공원·수봉별마루</option>
+          <option value="M04">M04 차이나타운·홍예문</option>
+          <option value="N01">N01 인천대공원</option>
+          <option value="N02">N02 소래포구 어시장</option>
+          <option value="N03">N03 센트럴파크·문보트</option>
+          <option value="N04">N04 인천대교</option>
+          <option value="S01">S01 인천국제공항</option>
+          <option value="S02">S02 아라뱃길</option>
+          <option value="S03">S03 청라호수공원·음악분수</option>
+        </select>
+        <label>탐구 주제</label>
+        <input id="topic" placeholder="예: 피타고라스 정리와 참성단의 높이" maxlength="40">
+        <div class="char-row">
+          <div style="flex:1;min-width:120px;">
+            <label for="school">학교</label>
+            <input id="school" placeholder="예: 구월중" maxlength="40" autocomplete="organization">
+          </div>
+          <div style="flex:1;min-width:120px;">
+            <label for="sname">이름</label>
+            <input id="sname" placeholder="예: 김수학" maxlength="40" autocomplete="name">
+          </div>
+        </div>
+        <div id="uploadCodeFields">
+          <label for="uploadCode">개인 제출코드</label>
+          <input id="uploadCode" type="password" autocomplete="off" placeholder="선생님이 나눠 준 제출코드">
+        </div>
+        <p class="hint">학교와 이름을 입력하면 제출 파일명이 자동으로 정해져요. 같은 학교 학생들은 학교 이름을 똑같이 적어 주세요.</p>
+        <p class="hint" id="submissionNamePreview" aria-live="polite"></p>
+      </div>
+
+      <div class="card">
+        <label>1단계 · AI에게 줄 프롬프트</label>
+        <p class="hint">스토리보드의 게임 장면에는 <b>게임 1·게임 2</b>처럼 번호만 정해요. AI에게는 이야기 본문을 만드는 프롬프트와 게임을 만드는 프롬프트를 각각 전달해요.</p>
+        <button class="btn btn-prompt" onclick="togglePrompt()">📋 프롬프트 열기 / 복사</button>
+        <div class="prompt-box" id="promptBox">
+          <textarea id="promptText" readonly></textarea>
+          <button class="btn btn-prompt" style="margin-top:6px;width:100%" onclick="copyPrompt()">이 내용 전체 복사</button>
+        </div>
+      </div>
+
+      <div class="card">
+        <label>2단계 · 사용할 게임 번호</label>
+        <p class="hint">게임 번호만 입력하면 장소에 맞는 파일명을 자동으로 만들어요. 실제 파일은 아래 <b>4단계</b>에서 본문 HTML과 함께 가져와요.</p>
+        <label for="newGameNumber">게임 번호</label>
+        <div style="display:flex;gap:8px"><input id="newGameNumber" type="number" min="1" max="999" value="1" style="max-width:100px"><button type="button" class="btn btn-prompt" id="addGameBtn">게임 번호 추가</button></div>
+        <div id="gameNumberList" style="margin-top:10px"></div>
+        <div id="gameAssetStatus" class="msg" role="status" aria-live="polite"></div>
+        <details style="margin:10px 0">
+          <summary style="cursor:pointer;font-size:13px;color:#1565c0">게임만 만들 때 사용할 AI 프롬프트</summary>
+          <label for="gamePromptNumber">만들 게임 선택</label>
+          <select id="gamePromptNumber"></select>
+          <p class="hint">정답을 맞히면 <b>다음</b> 버튼을 켜고, 마지막 <b>미션 완료</b> 버튼에서만 <b>missionClear()</b>를 호출하도록 해요.</p>
+          <textarea id="gameAssetPrompt" readonly aria-label="게임 에셋용 AI 프롬프트" style="height:170px;font-size:12px"></textarea>
+          <button type="button" class="btn btn-prompt" id="copyGameAssetPromptBtn" onclick="copyGameAssetPrompt()">프롬프트 복사</button>
+        </details>
+        <div id="legacyCodeFields">
+        <label>스토리보드 본문 코드 (파일로 가져올 때는 생략)</label>
+        <p class="hint">이야기 본문만 붙여넣어 장면을 만들 수도 있어요. 게임 코드는 여기 섞지 않고 게임 번호로 연결해요.</p>
+        <textarea id="aiCode" class="code" placeholder="이야기 본문 HTML을 붙여넣거나, 아래에서 본문 파일을 가져오세요."></textarea>
+        <button class="btn btn-check" onclick="loadScenes()">📥 장면 불러오기</button>
+        <button type="button" class="btn btn-prompt" id="loadExampleProject" style="margin-top:8px">게임 2개 예시 스토리보드</button>
+        <p class="hint" style="margin-top:10px"><a href="https://jsh1065.github.io/incheon-mathtour/examples/K02.html" download>예시 본문 K02.html</a> · <a href="https://jsh1065.github.io/incheon-mathtour/examples/K02-G1.html" download>게임 1</a> · <a href="https://jsh1065.github.io/incheon-mathtour/examples/K02-G2.html" download>게임 2</a><br>세 파일을 내려받은 뒤 4단계에서 함께 선택해 보세요.</p>
+        <p class="hint"><a href="https://jsh1065.github.io/incheon-mathtour/examples/manisan/index.html">🌿 마니산 완성 예시 · 스토리보드·게임·일러스트 다운로드</a></p>
+        </div>
+      </div>
+
+      <div class="card">
+        <label>2-1단계 · 사진 넣기 (최대 3장)</label>
+        <p class="hint">코드에 <b>IMG1 · IMG2 · IMG3</b> 글자를 썼다면 그 번호에 맞는 사진을 올려요. 자동으로 크기를 줄여 저장해요.<br><b>저작권</b>을 위해 사진마다 <b>출처</b>를 꼭 적어 주세요(그 사진이 나오는 장면 오른쪽 위에 작게 표시돼요).</p>
+        <div class="pic-grid">
+          <div class="pic-cell" id="picCell1">
+            <div class="pc-label">사진 1 → IMG1</div>
+            <div class="pc-drop" onclick="document.getElementById('picFile1').click()">
+              <span class="pc-drop-ico">🖼️</span>
+              여기로 사진을<br>끌어다 놓거나<br>눌러서 선택
+            </div>
+            <input type="file" id="picFile1" accept="image/*" onchange="pickPic(1,this)">
+            <img id="pic1img"><br><button class="pc-clear" id="pic1clr" onclick="clearPic(1)">지우기</button>
+            <input class="pc-src" id="pic1src" placeholder="사진 1 출처 (예: 위키미디어 CC BY)" oninput="picSrc[1]=this.value">
+          </div>
+          <div class="pic-cell" id="picCell2">
+            <div class="pc-label">사진 2 → IMG2</div>
+            <div class="pc-drop" onclick="document.getElementById('picFile2').click()">
+              <span class="pc-drop-ico">🖼️</span>
+              여기로 사진을<br>끌어다 놓거나<br>눌러서 선택
+            </div>
+            <input type="file" id="picFile2" accept="image/*" onchange="pickPic(2,this)">
+            <img id="pic2img"><br><button class="pc-clear" id="pic2clr" onclick="clearPic(2)">지우기</button>
+            <input class="pc-src" id="pic2src" placeholder="사진 2 출처 (예: 위키미디어 CC BY)" oninput="picSrc[2]=this.value">
+          </div>
+          <div class="pic-cell" id="picCell3">
+            <div class="pc-label">사진 3 → IMG3</div>
+            <div class="pc-drop" onclick="document.getElementById('picFile3').click()">
+              <span class="pc-drop-ico">🖼️</span>
+              여기로 사진을<br>끌어다 놓거나<br>눌러서 선택
+            </div>
+            <input type="file" id="picFile3" accept="image/*" onchange="pickPic(3,this)">
+            <img id="pic3img"><br><button class="pc-clear" id="pic3clr" onclick="clearPic(3)">지우기</button>
+            <input class="pc-src" id="pic3src" placeholder="사진 3 출처 (예: 위키미디어 CC BY)" oninput="picSrc[3]=this.value">
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- 오른쪽: 장면 편집 -->
+    <div class="col">
+      <div class="card">
+        <label>3단계 · 스토리보드와 게임 연결</label>
+        <p class="hint">
+          대사는 장면이 넘어가며 <b>하나의 이야기</b>가 되게 이어서 써요. 표정·대사·말풍선은 비워도 돼요.<br>
+          <b>문제 장면</b>에 체크하면 힌트칸이 생겨요. 힌트를 쓰면 가운데 "💡 힌트 보기" 버튼이 생기고, 누르면 <b>오른쪽 여학생 말풍선</b>에 힌트가 나타나요(표정도 생각중으로 바뀜).
+        </p>
+        <div id="sceneList"><div class="empty-note">본문을 가져오거나 예시 스토리보드를 불러온 뒤, 장면에서 게임 1·게임 2를 선택해요.</div></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- 아래: 전체폭 미리보기 -->
+  <div class="preview-card">
+    <label for="projectFiles">4단계 · 본문과 게임 HTML 파일 함께 가져오기</label>
+    <p class="hint">본문 HTML 1개와 게임 HTML 여러 개를 한 번에 선택할 수 있어요. 예: <b>K02.html, K02-G1.html, K02-G2.html</b><br>학교·이름이 붙은 제출용 본문·게임 파일도 다시 가져올 수 있어요. 다시 선택하면 같은 게임 번호의 파일을 교체해요. 파일을 가져온 뒤 미리보기를 완료하고 아래에서 제출을 준비해요.</p>
+    <input id="projectFiles" type="file" multiple accept=".html,.htm,text/html">
+    <div id="projectFileList" role="status" aria-live="polite" style="font-size:13px;line-height:1.8;margin:10px 0"></div>
+    <button class="btn btn-check" onclick="runCheck()">🔍 스토리보드 미리보기</button>
+    <div class="msg" id="msg"></div>
+    <label style="margin-top:20px">5단계 · 스토리보드 미리보기 (22:9)</label>
+    <p class="hint">표정·대사·사진과 장면 순서를 확인해요. <b>게임 장면은 가운데를 비우고 완료 상태로 넘겨요.</b> 게임 파일이 없어도 미리볼 수 있으며, 게임 코드는 실행하지 않아요. 실제 체험에서는 게임을 풀어야 다음 장면으로 이동해요.</p>
+    <iframe id="preview" title="미션 미리보기" sandbox="allow-scripts allow-forms"></iframe>
+    <div class="pv-guide">
+      🔧 <b>고칠 게 있으면</b> 위에서 표정·대사·힌트를 고치고 <b>다시 "스토리보드 미리보기"</b>를 누르세요.<br>
+      ✅ 마지막 <b>미리보기 확인 완료</b>를 누른 뒤 제출을 준비하세요. 실제 게임 파일은 제출 준비 때 검사해요.
+    </div>
+    <button class="btn btn-up" id="upBtn" onclick="doUpload()" disabled>⬆ 본문과 게임 파일 전부 업로드</button>
+    <button class="btn btn-prompt" type="button" style="margin-top:8px" onclick="prepareSubmissionDownloads()">제출 파일을 내 컴퓨터에도 보관</button>
+    <div class="msg" id="upMsg"></div>
+    <div id="submissionDownloads" hidden>
+      <p class="hint">아래 파일을 모두 저장한 뒤 OneDrive 제출 화면에서 함께 선택해 주세요. ZIP으로 묶지 않아도 돼요. 파일 저장만으로 제출되지는 않아요.</p>
+      <ul id="submissionFileLinks" style="line-height:2;overflow-wrap:anywhere"></ul>
+    </div>
+  </div>
+</div>
+
+<script>
+  /* ===== 선생님 설정 ===== */
+  const SCRIPT_URL = window.MATHTOUR_CONFIG?.apiUrl || "";
+  const CHAR_BASE = new URL("./student_images/", window.MATHTOUR_CONFIG?.siteBase || location.href).href;
+  const FACES = [
+    { key:'stand', name:'기본' },{ key:'how', name:'궁금' },{ key:'thinking', name:'생각중' },
+    { key:'finding', name:'찾기' },{ key:'aha', name:'깨달음' },{ key:'thumb', name:'칭찬' },{ key:'lookmap', name:'지도보기' }
+  ];
+  /* 권역 이름 (상단 띠 표시용) — 첨부 기준으로 정리 */
+  const REGION = { B:'계양·부평 권역', K:'검단·강화 권역', M:'미추홀·제물포 권역', N:'남동·연수 권역', S:'서해·영종 권역' };
+  /* 권역별 고유 색상 (상단 띠 색) — B파랑/K초록/M빨강/N보라/S노랑 */
+  /* grad: 그라데이션(진한→연한), text: 글씨색 */
+  const REGION_COLOR = {
+    B:{ grad:'linear-gradient(90deg,#1565c0,#42a5f5)', text:'#ffffff' }, // 파랑
+    K:{ grad:'linear-gradient(90deg,#2e7d32,#66bb6a)', text:'#ffffff' }, // 초록
+    M:{ grad:'linear-gradient(90deg,#c62828,#ef5350)', text:'#ffffff' }, // 빨강
+    N:{ grad:'linear-gradient(90deg,#6a1b9a,#ab47bc)', text:'#ffffff' }, // 보라
+    S:{ grad:'linear-gradient(90deg,#f9a825,#ffee58)', text:'#5d4037' }  // 노랑(글씨 진한 갈색)
+  };
+  /* 장소 이름 (상단 띠 표시용) */
+  const PLACE_NAME = {
+    B01:'부평지하상가·굴포천', B02:'부평향교', B03:'계양산성박물관·계양산',
+    K01:'강화고인돌', K02:'마니산', K03:'보문사', K04:'검단선사박물관', K05:'정서진',
+    M01:'SSG랜더스필드', M02:'문학산', M03:'수봉공원·수봉별마루', M04:'차이나타운·홍예문',
+    N01:'인천대공원', N02:'소래포구 어시장', N03:'센트럴파크·문보트', N04:'인천대교',
+    S01:'인천국제공항', S02:'아라뱃길', S03:'청라호수공원·음악분수'
+  };
+  /* ====================== */
+
+/* 학교·이름은 제출 파일명에 사용하고, 서버의 기존 식별자는 서버에서 확인합니다. */
+
+
+  let scenes = [];
+  let pics = { 1:null, 2:null, 3:null };
+  let picSrc = { 1:'', 2:'', 3:'' };
+  let lastFullHtml = "";
+
+  function togglePrompt(){ document.getElementById('promptText').value=window.getProgramPrompt(); document.getElementById('promptBox').classList.toggle('on'); }
+  function copyPrompt(){ navigator.clipboard.writeText(window.getProgramPrompt()).then(()=>alert('프롬프트를 복사했어요!'),()=>{const t=document.getElementById('promptText');t.select();document.execCommand('copy');alert('복사했어요!');}); }
+
+  function esc(s){ return String(s==null?'':s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;'); }
+  function faceOptions(sel){ return FACES.map(f=>'<option value="'+f.key+'"'+(sel===f.key?' selected':'')+'>'+f.name+'</option>').join(''); }
+
+  /* ---------- 사진 ---------- */
+  function processPicFile(n, file){
+    if(!file || !file.type || !file.type.startsWith('image/')){ alert('이미지 파일만 올릴 수 있어요.'); return; }
+    const reader=new FileReader();
+    reader.onload=e=>{
+      const img=new Image();
+      img.onload=()=>{
+        const maxW=1000; let w=img.width,h=img.height;
+        if(w>maxW){ h=Math.round(h*maxW/w); w=maxW; }
+        const cv=document.createElement('canvas'); cv.width=w; cv.height=h;
+        const ctx=cv.getContext('2d'); ctx.fillStyle='#fff'; ctx.fillRect(0,0,w,h); ctx.drawImage(img,0,0,w,h);
+        const dataUrl=cv.toDataURL('image/jpeg',0.75);
+        pics[n]=dataUrl; invalidateCheckedMission();
+        const im=document.getElementById('pic'+n+'img'); im.src=dataUrl; im.classList.add('on');
+        document.getElementById('pic'+n+'clr').classList.add('on');
+      };
+      img.src=e.target.result;
+    };
+    reader.readAsDataURL(file);
+  }
+  function pickPic(n, inputEl){
+    const file=inputEl.files[0]; if(!file) return;
+    processPicFile(n, file);
+  }
+  function clearPic(n){
+    invalidateCheckedMission();
+    pics[n]=null; picSrc[n]='';
+    const sEl=document.getElementById('pic'+n+'src'); if(sEl) sEl.value='';
+    const fEl=document.getElementById('picFile'+n); if(fEl) fEl.value='';
+    const im=document.getElementById('pic'+n+'img'); im.src=''; im.classList.remove('on');
+    document.getElementById('pic'+n+'clr').classList.remove('on');
+  }
+
+  /* 드래그 앤 드롭 연결 */
+  [1,2,3].forEach(function(n){
+    const cell=document.getElementById('picCell'+n);
+    if(!cell) return;
+    cell.addEventListener('dragover', function(ev){ ev.preventDefault(); cell.classList.add('dragover'); });
+    cell.addEventListener('dragleave', function(ev){ ev.preventDefault(); cell.classList.remove('dragover'); });
+    cell.addEventListener('drop', function(ev){
+      ev.preventDefault(); cell.classList.remove('dragover');
+      const f = ev.dataTransfer && ev.dataTransfer.files && ev.dataTransfer.files[0];
+      if(f) processPicFile(n, f);
+    });
+  });
+
+  /* ---------- 장면 불러오기 (전체 코드 보관) ---------- */
+  let studentStyle = "";
+  let studentScript = "";
+
+  function loadScenes(){} // Assigned by project-maker.js after the shared editor helpers load.
+
+  function renderScenes(){
+    const host=document.getElementById('sceneList'); host.innerHTML='';
+    scenes.forEach((sc,i)=>{
+      const div=document.createElement('div'); div.className='scene-item';
+      div.innerHTML=
+        '<div class="scene-head"><span class="scene-no">장면 '+(i+1)+'</span><span class="scene-title">'+esc(sc.title)+'</span></div>'
+        +'<div class="char-row">'
+          +'<div class="char-side boy"><div class="cs-title">◀ 왼쪽 남학생</div>'
+            +'<select onchange="setV('+i+',\'boyFace\',this.value)">'+faceOptions(sc.boyFace)+'</select>'
+            +'<input placeholder="남학생 대사 (비워도 됨)" value="'+esc(sc.boyText)+'" oninput="setV('+i+',\'boyText\',this.value)"></div>'
+          +'<div class="char-side girl"><div class="cs-title">오른쪽 여학생 ▶</div>'
+            +'<select onchange="setV('+i+',\'girlFace\',this.value)">'+faceOptions(sc.girlFace)+'</select>'
+            +'<input placeholder="여학생 대사 (비워도 됨)" value="'+esc(sc.girlText)+'" oninput="setV('+i+',\'girlText\',this.value)"></div>'
+        +'</div>'
+        +'<div class="q-row"><label style="margin:0;display:flex;align-items:center;gap:6px;cursor:pointer">'
+          +'<input type="checkbox" style="width:auto" '+(sc.isProblem?'checked':'')+' onchange="toggleProblem('+i+',this.checked)"> 이 장면은 문제 장면이에요</label></div>'
+        +'<div class="hint-row'+(sc.isProblem?' on':'')+'" id="hintRow'+i+'">'
+          +'<label style="font-size:13px;margin-top:6px">힌트 문구 (쓰면 여학생 말풍선에 나타나요 / 비우면 힌트 버튼이 안 나와요)</label>'
+          +'<input placeholder="예: 직각을 낀 두 변의 제곱을 더해 보세요" value="'+esc(sc.hint)+'" oninput="setV('+i+',\'hint\',this.value)"></div>';
+      host.appendChild(div);
+    });
+  }
+  function setV(i,f,v){ scenes[i][f]=v; }
+  function toggleProblem(i,on){ scenes[i].isProblem=on; document.getElementById('hintRow'+i).classList.toggle('on',on); }
+
+  /* ---------- 최종 HTML 생성 ---------- */
+  function boyImg(face){ return CHAR_BASE+face+'_boy.webp'; }
+  function girlImg(face){ return CHAR_BASE+face+'_girl.webp'; }
+  function replaceImgTags(text){
+    let out=text;
+    for(let n=1;n<=3;n++){ if(pics[n]) out=out.split('IMG'+n).join(pics[n]); }
+    return out;
+  }
+
+  function buildFullHtml({ preview = false } = {}){
+    const placeId=document.getElementById('placeId').value.trim();
+    const topic=document.getElementById('topic').value.trim();
+    const regionKey=placeId.charAt(0);
+    const regionName=REGION[regionKey]||'';
+    const placeName=PLACE_NAME[placeId]||placeId;
+    const rc=REGION_COLOR[regionKey]||{ grad:'linear-gradient(90deg,#1565c0,#1e88e5)', text:'#ffffff' };
+
+    const charData = scenes.map(sc=>{
+      // 이 장면이 실제로 쓰는 사진 번호만 골라 출처 모으기
+      const used=[1,2,3].filter(n=>pics[n] && picSrc[n] && picSrc[n].trim() && (sc.creditSource || (gameAsset ? gameAsset.html : sc.outer)).indexOf('IMG'+n)!==-1);
+      const credit = used.length ? ('사진 출처: '+used.map(n=>picSrc[n].trim()).join(' / ')) : '';
+      return {
+        boy: boyImg(sc.boyFace), boyText: sc.boyText, boyFace: sc.boyFace,
+        girl: girlImg(sc.girlFace), girlText: sc.girlText, girlFace: sc.girlFace,
+        isProblem: sc.isProblem, hint: sc.hint,
+        credit: credit
+      };
+    });
+    const sceneHtml = gameAsset ? '<iframe id="mt-game-asset" title="학생이 만든 게임" sandbox="allow-scripts allow-forms" style="width:100%;height:100%;border:0;display:block"></iframe><div id="mt-game-error" hidden style="position:absolute;inset:0;background:#fff5f5;color:#b71c1c;padding:20px;overflow:auto;z-index:10001"></div>' : replaceImgTags(scenes.map(sc=>sc.outer).join('\n'));
+    const styleCss = gameAsset ? '' : replaceImgTags(studentStyle);
+    const scriptJs = gameAsset ? buildAssetHostScript() : studentScript;
+
+    const titleBar = esc(regionName)+' › '+esc(placeName)+(topic?' › '+esc(topic):'');
+
+    return [
+'<!DOCTYPE html><html lang="ko"><head><meta charset="UTF-8">',
+'<meta name="viewport" content="width=device-width, initial-scale=1.0"><title>매쓰투어 미션</title>',
+'<style>',
+'*{box-sizing:border-box;}html,body{margin:0;height:100%;}',
+'body{font-family:"맑은 고딕","Malgun Gothic",sans-serif;background:#eaf2fb;display:flex;justify-content:center;align-items:center;overflow:hidden;}',
+'#mt-stage{width:100%;height:100%;display:flex;flex-direction:column;position:relative;}',
+/* 상단 권역·장소·주제 띠 — 색상은 권역별로 아래 인라인 style에서 지정, 글자크기 15px */
+'#mt-topbar{flex:0 0 auto;font-size:15px;font-weight:bold;padding:7px 14px;text-align:center;line-height:1.3;word-break:break-word;}',
+'#mt-body{flex:1 1 auto;display:flex;align-items:stretch;min-height:0;}',
+/* 양옆 패널: 22:9 전체에서 16:9 뺀 나머지를 반씩 */
+'.mt-side{flex:1 1 0;background:#fff;display:flex;flex-direction:column;justify-content:flex-end;align-items:center;padding:10px 6px;min-width:70px;overflow:hidden;position:relative;}',
+'.mt-side img.mt-char{width:100%;max-width:240px;object-fit:contain;max-height:80%;}',
+
+/* 사진 출처 — 오른쪽 흰 패널 맨 위, 두 줄까지만, 넘치면 … / 마우스 올리면 title로 전체 보임 — 글자크기 9px */
+'#mt-credit{position:absolute;top:4px;left:4px;right:4px;color:#607d8b;font-size:9px;line-height:1.3;text-align:left;word-break:break-all;overflow:hidden;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;max-height:24px;z-index:5;}',
+'#mt-credit:empty{display:none;}',
+/* 말풍선 — 진한 회색 바탕 + 흰 글씨 (글자크기 14px) */
+'.mt-bubble{background:rgba(55,55,60,.92);border:none;border-radius:16px;padding:9px 12px;font-size:14px;line-height:1.45;color:#ffffff;margin-bottom:8px;width:100%;word-break:break-word;box-shadow:0 2px 6px rgba(0,0,0,.18);}',
+'.mt-bubble:empty{display:none;}',
+'.mt-bubble.mt-hinting{background:rgba(93,64,55,.95);color:#fff3e0;}',
+/* 가운데 게임: 세로 높이를 꽉 쓰고 16:9 비율 유지 */
+'.mt-center{flex:0 0 auto;height:100%;aspect-ratio:16/9;align-self:center;position:relative;overflow:hidden;}',
+/* 힌트 버튼 — 가운데 아래로 이동 — 글자크기 */
+'#mt-hintBtn{position:absolute;left:50%;bottom:8px;transform:translateX(-50%);background:#ffb300;color:#fff;border:none;border-radius:10px;padding:6px 14px;font-size:13px;cursor:pointer;z-index:9999;white-space:nowrap;}',
+'#mt-hintBtn.mt-on{background:#f57c00;}',
+/* 미션 완료 — 글자크기 */
+'#mt-clear{position:absolute;inset:0;background:rgba(232,245,233,.97);display:none;flex-direction:column;justify-content:center;align-items:center;font-size:22px;font-weight:bold;color:#2e7d32;z-index:10000;}',
+'#mt-center-host{width:100%;height:100%;position:relative;}',
+'#mt-center-host > #stage, #mt-center-host > div{width:100%;height:100%;max-width:100%!important;}',
+'</style>',
+'<style>'+styleCss+'</style>',
+'</head><body>',
+'<div id="mt-stage">',
+'<div id="mt-topbar" style="background:'+rc.grad+';color:'+rc.text+';">'+titleBar+'</div>',
+'<div id="mt-body">',
+'<div class="mt-side"><div class="mt-bubble" id="mt-boyBubble"></div><img class="mt-char" id="mt-boyImg" src=""></div>',
+'<div class="mt-center"><div id="mt-center-host">'+sceneHtml+'</div>',
+'<button id="mt-hintBtn" style="display:none" onclick="mtToggleHint()">💡 힌트 보기</button>',
+'<div id="mt-clear">'+(preview ? '미리보기 확인 완료' : '✨ 미션 완료! ✨')+'<div style="font-size:15px;margin-top:8px;">'+(preview ? '표정·대사·장면 순서를 확인했어요' : '보석을 받았어요')+'</div></div>',
+'</div>',
+'<div class="mt-side"><div id="mt-credit"></div><div class="mt-bubble" id="mt-girlBubble"></div><img class="mt-char" id="mt-girlImg" src=""></div>',
+'</div>',
+'</div>',
+'<script>',
+'var MT_CHAR='+scriptJSON(charData)+';',
+'var CHAR_BASE='+JSON.stringify(CHAR_BASE)+';',
+'var mt_done=false;',
+/* 학생(AI) 코드가 호출만 하면 되도록 window에 명시적으로 정의 */
+'window.missionClear=function(){if(mt_done)return;mt_done=true;var m=document.getElementById("mt-clear");if(m)m.style.display="flex";try{window.parent.postMessage({type:"MISSION_CLEAR"},"*");}catch(e){}};',
+/* 힌트 토글: 여학생 말풍선에 띄우고 표정을 생각중으로 */
+'var mt_hintOn=false;',
+'function mtToggleHint(){',
+'  var i=mtVisibleIndex();var c=MT_CHAR[i]||{};',
+'  var gb=document.getElementById("mt-girlBubble");',
+'  var gi=document.getElementById("mt-girlImg");',
+'  var hb=document.getElementById("mt-hintBtn");',
+'  mt_hintOn=!mt_hintOn;',
+'  if(mt_hintOn && c.hint && c.hint.trim()){',
+'    gb.textContent="💡 "+c.hint;',
+'    gb.classList.add("mt-hinting");',
+'    gi.src=CHAR_BASE+"thinking_girl.webp";',
+'    if(hb)hb.classList.add("mt-on");',
+'  }else{',
+'    gb.textContent=c.girlText||"";',
+'    gb.classList.remove("mt-hinting");',
+'    gi.src=c.girl||"";',
+'    if(hb)hb.classList.remove("mt-on");',
+'  }',
+'}',
+'function mtSceneList(){return Array.from(document.querySelectorAll("section.scene"));}',
+'function mtVisibleIndex(){var ss=mtSceneList();for(var i=0;i<ss.length;i++){var st=getComputedStyle(ss[i]);if(st.display!=="none"&&st.visibility!=="hidden"&&ss[i].offsetParent!==null){return i;}}return 0;}',
+'function mtPaint(){var i=mtVisibleIndex();var c=MT_CHAR[i]||MT_CHAR[0]||{};',
+'  mt_hintOn=false;',
+'  document.getElementById("mt-boyImg").src=c.boy||"";',
+'  document.getElementById("mt-girlImg").src=c.girl||"";',
+'  document.getElementById("mt-boyBubble").textContent=c.boyText||"";',
+'  var gb=document.getElementById("mt-girlBubble");gb.textContent=c.girlText||"";gb.classList.remove("mt-hinting");',
+'  var cr=document.getElementById("mt-credit");if(cr){cr.textContent=c.credit||"";cr.title=c.credit||"";}',
+'  var hb=document.getElementById("mt-hintBtn");',
+'  if(hb){hb.classList.remove("mt-on");if(c.isProblem&&c.hint&&c.hint.trim()){hb.style.display="block";}else{hb.style.display="none";}}',
+'}',
+'var mtObs=new MutationObserver(function(){mtPaint();});',
+'mtSceneList().forEach(function(s){mtObs.observe(s,{attributes:true,attributeFilter:["class","style"]});});',
+scriptJs,
+'setTimeout(mtPaint,60);',
+gameAsset ? '' : 'if(mtSceneList().length===0){missionClear();}',
+'<\/script></body></html>'
+    ].join('\n');
+  }
+
+  /* ---------- 검사 ---------- */
+  function buildErrorHtml(title){
+    return '<!DOCTYPE html><html lang="ko"><head><meta charset="UTF-8"><style>body{margin:0;font-family:"맑은 고딕",sans-serif;display:flex;justify-content:center;align-items:center;height:100vh;background:#fff5f5;}.b{text-align:center;color:#c62828;}</style></head><body><div class="b"><div style="font-size:40px">🚫</div><p style="font-size:16px">'+title+'</p></div></body></html>';
+  }
+  function showErrors(list){
+    const m=document.getElementById('msg'); m.className='msg bad';
+    m.innerHTML='고칠 점이 있어요. 아래를 확인하세요:<ul>'+list.map(x=>'<li>'+esc(x)+'</li>').join('')+'</ul>';
+    const b=document.getElementById('upBtn'); b.disabled=true; b.classList.remove('ready');
+  }
+  function clearUpMsg(){ const u=document.getElementById('upMsg'); u.className='msg'; u.textContent=''; }
+  function runCheck(){} // Assigned by project-maker.js.
+
+  async function doUpload(){
+    if(!SCRIPT_URL){
+      if(window.MATHTOUR_CONFIG?.storageProvider === 'github') { const msg=document.getElementById('upMsg');msg.className='msg bad';msg.textContent='GitHub 업로드 연결을 준비하고 있어요. 아직 제출되지 않았어요. 아래 보관 버튼으로 작업 파일을 저장해 주세요.';return; }
+      window.prepareSubmissionDownloads(); return;
+    }
+    const placeId=document.getElementById('placeId').value.trim();
+    const topic=document.getElementById('topic').value.trim();
+    const school=document.getElementById('school').value.trim();
+    const name=document.getElementById('sname').value.trim();
+    const u=document.getElementById('upMsg');
+    const uploadCode=document.getElementById('uploadCode').value.trim();
+    if(!uploadCode){u.className='msg bad';u.textContent='개인 제출코드를 입력해 주세요.';return;}
+    if(!school||!name){ u.className='msg bad'; u.textContent='❌ 학교와 이름을 입력해 주세요.'; return; }
+    if(!topic){ u.className='msg bad'; u.textContent='❌ 탐구 주제를 입력해 주세요.'; return; }
+    if(!previewReviewed || document.getElementById('upBtn').disabled){ u.className='msg bad'; u.textContent='❌ 먼저 미리보기 확인 완료를 눌러 주세요.'; return; }
+    let prepared;
+    try { prepared = window.prepareProjectUpload(); }
+    catch (error) { u.className='msg bad'; u.textContent='파일을 준비하지 못했어요. 본문과 게임 파일을 다시 확인해 주세요.'; return; }
+    if(prepared.errors.length){u.className='msg bad';u.textContent='업로드 전에 확인해 주세요:\n'+prepared.errors.join('\n');return;}
+    const project = prepared.project;
+    const htmlWithTopic = prepared.html;
+    lastFullHtml = htmlWithTopic;
+    if(new Blob([htmlWithTopic]).size>5*1024*1024){u.className='msg bad';u.textContent='게임과 사진을 합친 크기가 5MB를 넘어요. 사진 크기를 줄여 주세요.';return;}
+    const upBtn=document.getElementById('upBtn'); upBtn.disabled=true; upBtn.classList.remove('ready');
+    u.className='msg ok'; u.textContent='⏳ 업로드 중이에요. 여러 명이 함께 제출하면 순서대로 저장하므로 잠시 기다려 주세요.';
+    try{
+      const res=await fetch(SCRIPT_URL,{method:'POST',headers:{'Content-Type':'application/json'},signal:AbortSignal.timeout(300000),body:JSON.stringify({ action:'mission_save', school, name, placeId, topic, uploadCode, html:htmlWithTopic, project })});
+      const data=await res.json();
+      if(res.ok && data.ok){ u.className='msg ok'; u.textContent='🎉 '+(data.provider==='github'?'GitHub 저장 완료!':'업로드 완료!')+' ('+(data.saved||'')+')\n'+(data.provider==='github'?'사이트 반영까지 몇 분 걸릴 수 있어요. 반영 후 지도에서 작품을 선택해 주세요.':'이제 매쓰투어에서 내 미션이 보여요.'); }
+      else{ let msg='❌ 업로드 실패: '+(data.error||'알 수 없는 오류'); if(data.error==='unauthorized') msg='❌ 학교·이름·제출코드를 확인해 주세요.'; u.className='msg bad'; u.textContent=msg; upBtn.disabled=false; upBtn.classList.add('ready'); }
+    }catch(e){ u.className='msg bad'; u.textContent='❌ 전송 오류가 발생했어요. 잠시 후 다시 시도해 주세요.'; upBtn.disabled=false; upBtn.classList.add('ready'); }
+  }
+/* 스토리보드 실행 문서와 개별 게임의 완료 신호를 연결한다. */
+let gameAsset = null;
+let activeAssetPreview = '';
+let previewDocument = '';
+let previewReviewed = false;
+
+const GAME_ASSET_PROMPT = [
+  '아래 기획을 바탕으로 매쓰투어에 넣을 단일 HTML 게임을 만들어 줘.',
+  '',
+  '[게임 기획]',
+  '[여기에 문제 내용, 조작 방법, 성공 조건을 입력]',
+  '',
+  '[필수 규칙]',
+  '1. HTML, CSS, JavaScript를 하나의 HTML 파일에 모두 포함해 줘. 외부 라이브러리·별도 파일·localStorage는 사용하지 마. 진행 상태는 게임 안의 변수로 관리해.',
+  '2. 가운데 게임 영역은 16:9야. 고정 픽셀 크기 대신 주어진 영역에 맞춰 크기가 조절되게 해. 640×360처럼 작은 화면에서도 글자·입력칸·버튼이 잘리거나 겹치지 않게 해. 스크롤을 숨기기만 해서 내용을 잘라내지 마.',
+  '3. 아래쪽에는 제작기가 표시하는 공통 힌트 버튼을 위해 약 48px의 여유를 남겨. 게임의 입력칸이나 이동 버튼이 힌트 버튼과 겹치지 않게 해.',
+  '4. 캐릭터·말풍선·공통 힌트 버튼·보석 효과·업로드 화면은 제작기가 제공하므로 게임에 만들지 마.',
+  '5. 사진이 필요하면 실제 사용하는 IMG1, IMG2, IMG3만 넣어. 사진은 제작기에서 연결할 거야. 내 컴퓨터의 파일 경로는 넣지 마.',
+  '6. 여러 장면은 각각 <section class="scene" data-title="장면 이름">으로 감싸고, 한 번에 한 장면만 보여 줘. 장면 요소는 처음부터 HTML에 두고 class·style·hidden으로 전환해 줘.',
+  '7. 문제 장면의 다음 버튼은 처음에 disabled 상태로 만들어. 성공하면 화면 안에 성공 안내를 표시하고 다음 버튼을 활성화해. 성공 직후 자동으로 장면을 넘기거나 미션을 완료하지 마.',
+  '8. 첫 장면을 제외한 장면에 이전 버튼을 넣어. 이전 장면으로 돌아가도 이미 성공한 상태와 다음 버튼 활성화 상태를 유지해. 빈 입력은 정답으로 처리하지 말고, 소수 계산이 필요하면 허용 오차를 명확히 정해.',
+  '9. 마지막에는 결과나 풀이를 확인하는 장면과 미션 완료 버튼을 만들어. 전체 활동이 끝난 뒤 마지막 미션 완료 버튼을 눌렀을 때만 아래 코드를 한 번 실행해. 정답을 맞힌 순간이나 다음 버튼에서는 호출하지 마.',
+  '   if (typeof window.missionClear === "function") { window.missionClear(); }',
+  '   missionClear 함수 자체는 정의하지 마. 연속 클릭해도 완료 처리가 한 번만 실행되게 해. 제작기 밖에서도 결과 확인까지 실행할 수 있게 해.',
+  '10. 마우스와 터치로 조작할 수 있게 해. 마우스를 올려야만 보이는 설명에 의존하지 마. 안내와 오류는 alert나 새 창 대신 게임 화면 안에 표시해.',
+  '',
+  '[표정·대사 연결 — 선택 사항]',
+  '표정·대사·힌트는 제작기에서 설정할 거야. 각 section.scene에 data-boy-face, data-boy-text, data-girl-face, data-girl-text, data-problem, data-hint를 미리 넣어도 돼.',
+  '문제 장면에는 data-problem="true", 나머지에는 data-problem="false"를 써 줘.',
+  '표정 이름은 stand, how, thinking, finding, aha, thumb, lookmap 중 하나만 사용해.',
+  '',
+  '완성된 HTML 전체를 생략 없이 제공해 줘.'
+].join('\n');
+
+function invalidateCheckedMission() {
+  window.clearSubmissionDownloads?.();
+  lastFullHtml = '';
+  activeAssetPreview = '';
+  previewDocument = '';
+  previewReviewed = false;
+  const up = document.getElementById('upBtn');
+  up.disabled = true;
+  up.classList.remove('ready');
+  clearUpMsg();
+}
+
+function showAssetStatus(message, bad) {
+  const node = document.getElementById('gameAssetStatus');
+  node.className = 'msg ' + (bad ? 'bad' : 'ok');
+  node.textContent = message;
+}
+
+/* 함수 본문을 문자열로 넣어 게임 문서의 첫 스크립트로 실행한다. */
+function gameAssetBridge(channel) {
+  let completed = false;
+  let previousIndex = -1;
+  const send = (event, detail) => window.parent.postMessage(Object.assign({ type: 'MT_GAME_ASSET', channel, event }, detail || {}), '*');
+  window.missionClear = function () {
+    if (completed) return;
+    completed = true;
+    send('complete');
+  };
+  // 게임의 submit 이벤트는 실행하되 페이지 이동은 하지 않는다.
+  document.addEventListener('submit', function (event) { event.preventDefault(); });
+  window.addEventListener('error', function (event) {
+    send('error', { message: event.message || '게임에서 실행 오류가 발생했어요.' });
+  });
+  window.addEventListener('unhandledrejection', function (event) {
+    send('error', { message: String(event.reason && event.reason.message || event.reason || '게임 실행 오류') });
+  });
+  function reportScene() {
+    const list = Array.from(document.querySelectorAll('section.scene'));
+    let index = list.findIndex(function (section) {
+      const style = getComputedStyle(section);
+      return style.display !== 'none' && style.visibility !== 'hidden' && section.getClientRects().length > 0;
+    });
+    if (!list.length) index = 0;
+    if (index >= 0 && index !== previousIndex) {
+      previousIndex = index;
+      send('scene', { index });
+    }
+  }
+  function ready() {
+    reportScene();
+    new MutationObserver(reportScene).observe(document.body, { subtree: true, childList: true, attributes: true, attributeFilter: ['class', 'style', 'hidden'] });
+    window.addEventListener('resize', reportScene);
+    send('ready');
+  }
+  if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', ready, { once: true });
+  else ready();
+}
+
+function scriptJSON(value) {
+  return JSON.stringify(value).replace(/</g, '\\u003c').replace(/\u2028/g, '\\u2028').replace(/\u2029/g, '\\u2029');
+}
+
+function buildAssetDocument(channel) {
+  const doc = new DOMParser().parseFromString(replaceImgTags(gameAsset.html), 'text/html');
+  const bridge = doc.createElement('script');
+  bridge.textContent = '(' + gameAssetBridge.toString() + ')(' + JSON.stringify(channel) + ');';
+  doc.head.prepend(bridge);
+  return '<!DOCTYPE html>\n' + doc.documentElement.outerHTML;
+}
+
+function buildAssetHostScript() {
+  const channel = 'mt-' + Date.now().toString(36) + '-' + Math.random().toString(36).slice(2);
+  const source = buildAssetDocument(channel);
+  return [
+    'var mt_assetScene=0;',
+    'mtVisibleIndex=function(){return mt_assetScene;};',
+    '(function(){',
+    'var frame=document.getElementById("mt-game-asset");',
+    'var channel=' + scriptJSON(channel) + ';',
+    'var previewRun=' + scriptJSON(activeAssetPreview) + ';',
+    'var failed=false;',
+    'function report(state,message){window.parent.postMessage({type:"MT_ASSET_PREVIEW",run:previewRun,state:state,message:message||""},"*");}',
+    'window.addEventListener("message",function(event){',
+    ' var d=event.data;',
+    ' if(event.source!==frame.contentWindow||!d||d.type!=="MT_GAME_ASSET"||d.channel!==channel)return;',
+    ' if(d.event==="scene"&&Number.isInteger(d.index)&&d.index>=0&&d.index<MT_CHAR.length){mt_assetScene=d.index;mtPaint();}',
+    ' if(d.event==="ready")report("ready");',
+    ' if(d.event==="error"){failed=true;var box=document.getElementById("mt-game-error");box.textContent="게임 실행 오류: "+String(d.message||"");box.hidden=false;report("error",String(d.message||""));}',
+    ' if(d.event==="complete"&&!failed){report("complete");window.missionClear();}',
+    '});',
+    'frame.srcdoc=' + scriptJSON(source) + ';',
+    '})();'
+  ].join('\n');
+}
+
+window.addEventListener('message', function (event) {
+  const data = event.data;
+  if (event.source !== document.getElementById('preview').contentWindow || !data || data.type !== 'MT_ASSET_PREVIEW' || !activeAssetPreview || data.run !== activeAssetPreview || !previewDocument) return;
+  if (data.state === 'error') {
+    invalidateCheckedMission();
+    showErrors(['게임 실행 오류: ' + String(data.message || '알 수 없는 오류')]);
+  } else if (data.state === 'complete') {
+    previewReviewed = true;
+    const up = document.getElementById('upBtn');
+    up.disabled = false;
+    up.classList.add('ready');
+    const msg = document.getElementById('msg');
+    msg.className = 'msg ok';
+    msg.textContent = '✅ 스토리보드 미리보기 확인 완료! 게임 실행은 생략했어요. 제출 준비 때 본문과 실제 게임 파일을 검사해요.';
+  }
+});
+
+document.getElementById('gameAssetPrompt').value = GAME_ASSET_PROMPT;
+async function copyGameAssetPrompt() {
+  const textarea = document.getElementById('gameAssetPrompt');
+  try { await navigator.clipboard.writeText(textarea.value); }
+  catch (_) { textarea.focus(); textarea.select(); document.execCommand('copy'); }
+  document.getElementById('copyGameAssetPromptBtn').textContent = '복사했어요';
+}
+
+document.querySelector('.wrap').addEventListener('input', function (event) {
+  if (event.target.matches('input,select,textarea') && event.target.id !== 'uploadCode' && !event.target.readOnly) invalidateCheckedMission();
+});
+document.querySelector('.wrap').addEventListener('change', function (event) {
+  if (event.target.matches('input,select,textarea') && event.target.id !== 'uploadCode' && !event.target.readOnly) invalidateCheckedMission();
+});
+
+</script>
+<script>
+/* Shared with the Node checks; no network or storage access. */
+(function (root) {
+  const MAX_GAMES = 20;
+  function gameNumber(value) {
+    const n = Number(value);
+    if (!/^\d{1,3}$/.test(String(value)) || !Number.isInteger(n) || n < 1 || n > 999) throw new Error('게임 번호는 1~999 사이의 정수로 입력해 주세요.');
+    return n;
+  }
+  function gameName(place, number) { return place + '-G' + gameNumber(number) + '.html'; }
+  function parseGameName(name) {
+    const m = /^([BKMNS]\d{2})(?:-G|_[^<>:"/\\|?*\x00-\x1f]+_G)(\d{1,3})\.html?$/i.exec(name);
+    return m ? { place: m[1].toUpperCase(), number: gameNumber(m[2]) } : null;
+  }
+  function json(value) { return JSON.stringify(value).replace(/</g, '\\u003c').replace(/\u2028/g, '\\u2028').replace(/\u2029/g, '\\u2029'); }
+  function tourRuntime(steps, preview = false) {
+    const screens = Array.from(document.querySelectorAll('.scene'));
+    const previous = document.getElementById('tourPrevious');
+    const next = document.getElementById('tourNext');
+    const finish = document.getElementById('tourFinish');
+    const status = document.getElementById('tourStatus');
+    const title = document.getElementById('tourTitle');
+    const frames = [], solved = new Set();
+    let current = 0, failed = false, done = false;
+    const ready = i => preview || !steps[i].game || solved.has(i);
+    function paint() {
+      screens.forEach((s, i) => { s.hidden = i !== current; });
+      title.textContent = (current + 1) + ' / ' + steps.length + ' · ' + steps[current].title;
+      previous.disabled = current === 0 || done || failed;
+      next.hidden = current === steps.length - 1;
+      next.disabled = !ready(current) || done || failed;
+      finish.hidden = current !== steps.length - 1;
+      finish.disabled = !steps.every((_, i) => ready(i)) || done || failed;
+      if (!failed) status.textContent = done ? (preview ? '미리보기 확인을 마쳤어요!' : '전체 미션을 완료했어요!') : steps[current].game ? (preview ? '미리보기 · 게임 ' + steps[current].game + ' 완료 상태입니다. 다음 장면으로 이동하세요.' : ready(current) ? '게임 완료! 다음 장면으로 이동할 수 있어요.' : '게임의 마지막 미션 완료까지 진행해 주세요.') : '내용을 살펴본 뒤 다음 장면으로 이동하세요.';
+      if (!frames[current] && !(preview && steps[current].game)) {
+        const frame = document.createElement('iframe');
+        frame.title = steps[current].game ? '게임 ' + steps[current].game : steps[current].title;
+        frame.setAttribute('sandbox', steps[current].game ? 'allow-scripts allow-forms' : '');
+        screens[current].appendChild(frame);
+        frames[current] = frame;
+        frame.srcdoc = steps[current].html;
+      }
+    }
+    previous.addEventListener('click', () => { if (current > 0 && !done && !failed) { current--; paint(); } });
+    next.addEventListener('click', () => { if (current < steps.length - 1 && ready(current) && !done && !failed) { current++; paint(); } });
+    finish.addEventListener('click', () => {
+      if (done || failed || current !== steps.length - 1 || !steps.every((_, i) => ready(i))) return;
+      done = true; paint();
+      if (typeof window.missionClear === 'function') window.missionClear();
+    });
+    window.addEventListener('message', event => {
+      const data = event.data;
+      const index = frames.findIndex(frame => frame && event.source === frame.contentWindow);
+      if (index < 0 || !steps[index].game || !data || data.type !== 'MT_GAME_ASSET' || data.channel !== steps[index].channel) return;
+      if (data.event === 'error') {
+        failed = true; paint();
+        status.textContent = '게임 ' + steps[index].game + ' 실행 오류: ' + String(data.message || '파일을 확인해 주세요.');
+        // Forward the failure through the enclosing game's normal error bridge.
+        throw new Error(status.textContent);
+      }
+      if (data.event === 'complete' && index === current && !done && !failed) { solved.add(index); paint(); }
+    });
+    paint();
+  }
+  function tourDocument(steps, { preview = false } = {}) {
+    // Preview documents never contain game code, even if a caller supplied it.
+    const content = preview ? steps.map(step => step.game ? { title: step.title, game: step.game, html: '' } : step) : steps;
+    return '<!doctype html><html lang="ko"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width"><title>매쓰투어 스토리보드</title><style>' +
+      '*{box-sizing:border-box}html,body{margin:0;height:100%;font-family:Malgun Gothic,sans-serif;background:#eef6ff;color:#26364a}body{display:flex;flex-direction:column;padding-bottom:48px}[hidden]{display:none!important}header{padding:6px 10px;font-size:13px;font-weight:bold;background:#e3effc}main{position:relative;flex:1;min-height:0}.scene{position:absolute;inset:0}.scene iframe{width:100%;height:100%;border:0;display:block}footer{padding:5px 10px;background:white;flex-shrink:0}#tourStatus{font-size:12px;margin:0 0 4px;min-height:16px}nav{display:flex;gap:8px;justify-content:space-between}button{font:inherit;font-size:13px;border:0;border-radius:8px;padding:7px 14px;background:#1565c0;color:white;cursor:pointer}button:disabled{background:#b7c6d8;cursor:not-allowed}button:focus-visible{outline:3px solid #f9a825;outline-offset:2px}</style></head><body><header id="tourTitle"></header><main>' +
+      steps.map(() => '<section class="scene" hidden></section>').join('') +
+      '</main><footer><p id="tourStatus" role="status" aria-live="polite"></p><nav><button id="tourPrevious">◀ 이전 장면</button><button id="tourNext">다음 장면 ▶</button><button id="tourFinish" hidden>' + (preview ? '미리보기 확인 완료' : '전체 미션 완료') + '</button></nav></footer><script>(' + tourRuntime.toString() + ')(' + json(content) + ',' + json(preview) + ');<\/script></body></html>';
+  }
+  root.MathTourProject = { MAX_GAMES, gameNumber, gameName, parseGameName, tourDocument, tourRuntime };
+})(typeof window === 'undefined' ? globalThis : window);
+
+</script>
+<script>
+/* Individual submission files keep school/name together without a ZIP archive. */
+(function (root) {
+  'use strict';
+  function identity(school, name) {
+    const values = [school, name].map(value => String(value || '').normalize('NFC').trim());
+    if (values.some(value => !value || value.length > 40)) throw new Error('학교와 이름을 각각 1~40자로 입력해 주세요.');
+    if (values.some(value => /[<>:"/\\|?*\x00-\x1f\u200b-\u200f\u202a-\u202e\u2066-\u2069]/.test(value))) throw new Error('학교와 이름에는 파일명에 사용할 수 없는 기호가 들어갈 수 없어요.');
+    return { school: values[0], name: values[1] };
+  }
+  function prefix(placeId, school, name) {
+    if (!/^[BKMNS]\d{2}$/.test(placeId)) throw new Error('관광지를 먼저 선택해 주세요.');
+    const author = identity(school, name);
+    return placeId + '_' + (author.school + author.name).replace(/\s/g, '');
+  }
+  function buildFiles({ placeId, school, name, topic, project, html, submissionId }) {
+    const author = identity(school, name), base = prefix(placeId, school, name);
+    if (!String(topic || '').trim()) throw new Error('탐구 주제를 입력해 주세요.');
+    const files = [];
+    const add = (role, suffix, type, content, extra = {}) => {
+      const file = { role, name: base + '_' + suffix, type, content, ...extra };
+      files.push(file); return file.name;
+    };
+    const program = add('program', '본문.html', 'text/html;charset=utf-8', project.program.html);
+    const games = project.games.map(game => ({ number: game.number, name: add('game', 'G' + game.number + '.html', 'text/html;charset=utf-8', game.html, { number: game.number }) }));
+    const pictures = (project.pictures || []).map(pic => {
+      const match = /^data:image\/(jpeg|png|webp);base64,/.exec(pic.data);
+      if (!match) throw new Error('지원하지 않는 사진 형식이에요. 사진을 다시 선택해 주세요.');
+      return { number: pic.number, source: pic.source, name: add('picture', 'IMG' + pic.number + '.' + (match[1] === 'jpeg' ? 'jpg' : match[1]), 'image/' + match[1], pic.data, { dataUrl: true, number: pic.number }) };
+    });
+    const mission = add('mission', '매스투어.html', 'text/html;charset=utf-8', html);
+    // Keep author fields separate: the readable concatenated filename is not an identity key.
+    const manifest = { format: 'mathtour-submission', schemaVersion: 1, submissionId, placeId, ...author, topic: topic.trim(), program, games, pictures, mission, storyboard: project.storyboard };
+    add('storyboard', '스토리보드.json', 'application/json;charset=utf-8', JSON.stringify(manifest, null, 2));
+    return files;
+  }
+  root.MathTourSubmission = { identity, prefix, buildFiles };
+})(typeof window === 'undefined' ? globalThis : window);
+
+</script>
+<script>
+/* The editor owns the story order; each numbered game runs in its own sandbox. */
+(function () {
+  'use strict';
+  const core = window.MathTourProject;
+  const numbers = new Set([1]);
+  const files = new Map();
+  let programName = '', lastImportedSource = '', readVersion = 0, reading = false;
+  const place = () => document.getElementById('placeId').value;
+  const sorted = () => Array.from(numbers).sort((a, b) => a - b);
+  const nameOf = n => core.gameName(place(), n);
+  const size = value => new Blob([value]).size;
+  const originalRender = renderScenes;
+  const downloadUrls = [];
+  function refreshSubmissionName() {
+    const target = document.getElementById('submissionNamePreview');
+    try {
+      const base = window.MathTourSubmission.prefix(place(), document.getElementById('school').value, document.getElementById('sname').value);
+      target.textContent = '제출 파일명: ' + base + '_본문.html · ' + base + '_G1.html';
+    } catch (error) {
+      target.textContent = '제출 파일명: ' + place() + '_학교이름_본문.html · ' + place() + '_학교이름_G1.html';
+    }
+  }
+  ['school', 'sname'].forEach(id => document.getElementById(id).addEventListener('input', refreshSubmissionName));
+  document.getElementById('placeId').addEventListener('change', refreshSubmissionName);
+  window.clearSubmissionDownloads = function () {
+    downloadUrls.splice(0).forEach(url => URL.revokeObjectURL(url));
+    document.getElementById('submissionFileLinks').replaceChildren();
+    document.getElementById('submissionDownloads').hidden = true;
+  };
+  window.prepareSubmissionDownloads = function () {
+    const status = document.getElementById('upMsg');
+    window.clearSubmissionDownloads();
+    try {
+      if (!previewReviewed) throw new Error('먼저 스토리보드 미리보기에서 확인 완료를 눌러 주세요.');
+      const author = window.MathTourSubmission.identity(document.getElementById('school').value, document.getElementById('sname').value);
+      const topic = document.getElementById('topic').value.trim();
+      if (!topic) throw new Error('탐구 주제를 입력해 주세요.');
+      const prepared = window.prepareProjectUpload();
+      if (prepared.errors.length) throw new Error(prepared.errors.join('\n'));
+      const exported = window.MathTourSubmission.buildFiles({ placeId: place(), ...author, topic, project: prepared.project, html: prepared.html, submissionId: crypto.randomUUID() });
+      const host = document.getElementById('submissionFileLinks');
+      exported.forEach(file => {
+        const content = file.dataUrl ? Uint8Array.from(atob(file.content.split(',')[1]), char => char.charCodeAt(0)) : file.content;
+        const url = URL.createObjectURL(new Blob([content], { type: file.type })); downloadUrls.push(url);
+        const row = document.createElement('li'), link = document.createElement('a');
+        link.href = url; link.download = file.name; link.textContent = file.name;
+        row.appendChild(link); host.appendChild(row);
+      });
+      document.getElementById('submissionDownloads').hidden = false;
+      status.className = 'msg ok';
+      status.textContent = '보관용 파일 ' + exported.length + '개를 준비했어요. 아래 파일명을 눌러 저장해 주세요. 파일 다운로드만으로는 GitHub에 제출되지 않아요.';
+    } catch (error) {
+      status.className = 'msg bad'; status.textContent = error.message || '제출 파일을 만들지 못했어요.';
+    }
+  };
+  if (window.MATHTOUR_CONFIG?.storageProvider === 'github') {
+    document.getElementById('upBtn').textContent = '⬆ GitHub에 업로드';
+    document.querySelector('#submissionDownloads .hint').textContent = '본문·게임·사진·스토리보드와 실행본을 내 컴퓨터에 보관할 수 있어요. 실제 제출은 GitHub에 업로드 버튼을 사용해요.';
+  } else if (!SCRIPT_URL) {
+    document.getElementById('uploadCodeFields').hidden = true;
+    document.getElementById('upBtn').textContent = '⬇ 제출 파일 준비 (개별 파일)';
+  }
+  refreshSubmissionName();
+
+  window.getProgramPrompt = function () {
+    return [
+      '첨부한 스토리보드를 매쓰투어 이야기 본문 HTML로 만들어 줘. 게임 구현은 별도 파일로 만들 거야.',
+      '장소: ' + place() + ' ' + PLACE_NAME[place()] + '. 본문 파일명: ' + place() + '.html',
+      '등록한 게임: ' + sorted().map(n => '게임 ' + n + ' = ' + nameOf(n)).join(', '),
+      '',
+      '1. HTML과 CSS만 있는 본문 파일 하나를 만들어. JavaScript, 게임 로직, iframe, 이전·다음·미션 완료 버튼은 넣지 마. 제작기가 순서와 버튼을 제공해.',
+      '2. 장면마다 <section class="scene" data-title="장면 제목">으로 감싸고 스토리보드 순서대로 배치해.',
+      '3. 게임 장면은 <section class="scene" data-title="게임 1" data-game="1"></section>처럼 번호만 적어. 게임 2는 data-game="2"야. 실제 게임 코드는 절대로 본문에 섞지 마.',
+      '4. 이야기·설명·사진 장면은 section 안에 내용을 넣고 data-game은 생략해. 사진이 필요할 때만 IMG1, IMG2, IMG3를 사용해. 외부 파일·라이브러리는 불러오지 마.',
+      '5. 각 장면에 data-boy-face, data-boy-text, data-girl-face, data-girl-text, data-problem, data-hint를 넣어. 표정은 stand, how, thinking, finding, aha, thumb, lookmap 중 선택해. 캐릭터·말풍선은 직접 그리지 마.',
+      '6. 게임 장면에는 data-problem="true"와 힌트를 적어. 이야기 마지막에는 배운 내용을 돌아보는 장면을 넣어.',
+      '7. 가운데 화면은 16:9에 맞춰 반응형으로 만들어. 작은 화면에서도 내용이 잘리지 않게 하고 긴 내용은 스크롤할 수 있게 해.',
+      '완성된 본문 HTML 전체를 제공해 줘. 게임 파일은 별도 요청에서 만들 거야.'
+    ].join('\n');
+  };
+
+  function refreshPrompts() {
+    document.getElementById('promptText').value = window.getProgramPrompt();
+    const selector = document.getElementById('gamePromptNumber');
+    const selected = Number(selector.value);
+    selector.replaceChildren();
+    sorted().forEach(n => selector.add(new Option('게임 ' + n + ' · ' + nameOf(n), String(n))));
+    if (numbers.has(selected)) selector.value = String(selected);
+    const n = Number(selector.value) || 1;
+    document.getElementById('gameAssetPrompt').value = '이번에 만들 게임: 게임 ' + n + '\n파일명: ' + nameOf(n) + '\n' + GAME_ASSET_PROMPT +
+      '\n이 게임의 미션 완료는 게임 하나의 완료야. 전체 이야기의 진행·다음 장면 버튼은 제작기가 처리해.';
+  }
+  document.getElementById('gamePromptNumber').onchange = refreshPrompts;
+  function fileList() {
+    const lines = [programName ? '✓ 본문: ' + programName + ' · ' + scenes.length + '개 장면' : '본문 HTML 파일을 가져오거나 본문 코드를 입력해 주세요.'];
+    sorted().forEach(n => lines.push((files.has(nameOf(n)) ? '✓ ' : '파일 필요: ') + '게임 ' + n + ' · ' + nameOf(n)));
+    const other = Array.from(files.keys()).filter(name => !sorted().some(n => nameOf(n) === name));
+    if (other.length) lines.push('현재 장소에서 사용하지 않는 파일: ' + other.join(', ') + ' (제출에서 제외)');
+    const target = document.getElementById('projectFileList');
+    target.textContent = lines.join('\n'); target.style.whiteSpace = 'pre-line';
+  }
+  function renderNumbers() {
+    const host = document.getElementById('gameNumberList'); host.replaceChildren();
+    sorted().forEach(n => {
+      const row = document.createElement('div'); row.style.cssText = 'display:flex;gap:8px;align-items:center;padding:7px 0;border-bottom:1px solid #edf1f5';
+      const text = document.createElement('span'); text.textContent = '게임 ' + n + ' → ' + nameOf(n); text.style.flex = '1';
+      const remove = document.createElement('button'); remove.type = 'button'; remove.className = 'btn btn-prompt'; remove.textContent = '삭제'; remove.setAttribute('aria-label', '게임 ' + n + ' 번호 삭제');
+      remove.onclick = () => {
+        if (scenes.some(sc => sc.gameNumber === n)) { showAssetStatus('스토리보드에서 게임 ' + n + ' 연결을 바꾼 뒤 삭제해 주세요.', true); return; }
+        numbers.delete(n); files.delete(nameOf(n)); invalidateCheckedMission(); renderNumbers(); renderScenes();
+      };
+      row.append(text, remove); host.appendChild(row);
+    });
+    refreshPrompts(); fileList();
+  }
+
+  renderScenes = function () {
+    originalRender();
+    document.querySelectorAll('#sceneList .scene-item').forEach((row, i) => {
+      const label = document.createElement('label'); label.textContent = '이 장면에 보여줄 내용';
+      const select = document.createElement('select'); select.setAttribute('aria-label', '장면 ' + (i + 1) + ' 내용 선택');
+      select.add(new Option('이야기·사진 (본문 내용)', ''));
+      sorted().forEach(n => select.add(new Option('게임 ' + n + ' · ' + nameOf(n), String(n))));
+      select.value = scenes[i].gameNumber ? String(scenes[i].gameNumber) : '';
+      select.onchange = () => {
+        scenes[i].gameNumber = select.value ? core.gameNumber(select.value) : null;
+        invalidateCheckedMission(); fileList();
+      };
+      label.appendChild(select); row.querySelector('.scene-head').after(label);
+    });
+  };
+
+  function parseProgram(html) {
+    const doc = new DOMParser().parseFromString(html, 'text/html');
+    if (doc.querySelector('script,iframe,object,embed,base,link[rel~="stylesheet"]') || Array.from(doc.querySelectorAll('*')).some(el => Array.from(el.attributes).some(a => /^on/i.test(a.name)))) {
+      throw new Error('본문에는 이야기와 게임 번호만 넣어 주세요. 게임 동작 코드·iframe은 별도 게임 파일에 넣고, 본문은 1단계 프롬프트로 다시 만들어 주세요.');
+    }
+    const sections = Array.from(doc.querySelectorAll('section.scene'));
+    if (!sections.length || sections.length > 50) throw new Error('본문에 section.scene 장면이 1~50개 필요해요. 1단계 프롬프트를 사용해 주세요.');
+    const safeFace = v => FACES.some(f => f.key === v) ? v : 'stand';
+    const parsed = sections.map((section, i) => ({
+      title: section.getAttribute('data-title') || '장면 ' + (i + 1), outer: section.outerHTML,
+      gameNumber: section.hasAttribute('data-game') ? core.gameNumber(section.getAttribute('data-game')) : null,
+      boyFace: safeFace(section.getAttribute('data-boy-face')), boyText: section.getAttribute('data-boy-text') || '',
+      girlFace: safeFace(section.getAttribute('data-girl-face')), girlText: section.getAttribute('data-girl-text') || '',
+      isProblem: /^(true|1|yes)$/i.test(section.getAttribute('data-problem') || ''), hint: section.getAttribute('data-hint') || ''
+    }));
+    return { scenes: parsed, css: Array.from(doc.querySelectorAll('style')).map(s => s.textContent).join('\n') };
+  }
+  function setProgram(html, name, parsed) {
+    lastImportedSource = html;
+    scenes = parsed.scenes; studentStyle = parsed.css; studentScript = ''; gameAsset = null;
+    programName = name;
+    parsed.scenes.forEach(sc => { if (sc.gameNumber) numbers.add(sc.gameNumber); });
+    document.getElementById('aiCode').value = html;
+  }
+  loadScenes = function () {
+    try {
+      const html = document.getElementById('aiCode').value;
+      const parsed = parseProgram(html);
+      if (new Set([...numbers, ...parsed.scenes.map(sc => sc.gameNumber).filter(Boolean)]).size > core.MAX_GAMES) throw new Error('게임은 최대 20개까지 등록할 수 있어요.');
+      setProgram(html, place() + '.html', parsed);
+      readVersion++; reading = false; invalidateCheckedMission(); renderNumbers(); renderScenes();
+      showAssetStatus('본문 장면을 불러왔어요. 각 장면의 게임 번호와 표정·대사를 확인하세요.', false);
+    } catch (error) { showAssetStatus(error.message, true); invalidateCheckedMission(); }
+  };
+
+  document.getElementById('addGameBtn').onclick = () => {
+    try {
+      const n = core.gameNumber(document.getElementById('newGameNumber').value);
+      if (numbers.has(n)) throw new Error('게임 ' + n + '은 이미 등록되어 있어요.');
+      if (numbers.size >= core.MAX_GAMES) throw new Error('게임은 최대 20개까지 등록할 수 있어요.');
+      numbers.add(n); invalidateCheckedMission(); renderNumbers(); renderScenes();
+      showAssetStatus('게임 ' + n + '을 추가했어요. 파일명은 ' + nameOf(n) + '이에요.', false);
+      document.getElementById('newGameNumber').value = Math.min(999, n + 1);
+    } catch (error) { showAssetStatus(error.message, true); }
+  };
+  document.getElementById('placeId').addEventListener('change', () => {
+    readVersion++; reading = false; invalidateCheckedMission(); renderNumbers(); renderScenes();
+    showAssetStatus('선택한 장소에 맞춰 파일명이 바뀌었어요. 해당 장소의 게임 파일을 가져와 주세요.', false);
+  });
+
+  document.getElementById('projectFiles').addEventListener('change', async function () {
+    const selected = Array.from(this.files || []); if (!selected.length) return;
+    const version = ++readVersion; const selectedPlace = place();
+    reading = true; invalidateCheckedMission();
+    try {
+      if (selected.length > core.MAX_GAMES + 1) throw new Error('본문 1개와 게임 최대 20개를 선택해 주세요.');
+      if (selected.some(f => !/\.html?$/i.test(f.name) || f.size > 2 * 1024 * 1024)) throw new Error('파일마다 2MB 이하의 HTML 파일을 선택해 주세요.');
+      const loaded = await Promise.all(selected.map(async file => ({ name: file.name, html: await file.text(), game: core.parseGameName(file.name) })));
+      if (version !== readVersion) return;
+      if (loaded.some(f => !f.html.trim())) throw new Error('내용이 비어 있는 파일이 있어요.');
+      const programs = loaded.filter(f => !f.game);
+      if (programs.length > 1) throw new Error('본문은 하나만 선택해 주세요. 게임 파일명은 ' + selectedPlace + '-G1.html처럼 지정해 주세요.');
+      if (loaded.some(f => f.game && f.game.place !== selectedPlace)) throw new Error('다른 장소의 게임 파일이 있어요. 현재 장소는 ' + selectedPlace + '이에요.');
+      const gameKeys = loaded.filter(f => f.game).map(f => core.gameName(selectedPlace, f.game.number));
+      if (new Set(gameKeys).size !== gameKeys.length) throw new Error('같은 게임 번호의 파일을 두 번 선택했어요. 한 파일만 선택해 주세요.');
+      const parsed = programs.length ? parseProgram(programs[0].html) : null;
+      const nextNumbers = new Set([...numbers, ...loaded.filter(f => f.game).map(f => f.game.number), ...(parsed?.scenes || []).map(sc => sc.gameNumber).filter(Boolean)]);
+      if (nextNumbers.size > core.MAX_GAMES) throw new Error('게임은 최대 20개까지 등록할 수 있어요.');
+      if (programs.length) setProgram(programs[0].html, programs[0].name, parsed);
+      loaded.filter(f => f.game).forEach(f => { files.set(core.gameName(selectedPlace, f.game.number), f.html); numbers.add(f.game.number); });
+      renderNumbers(); renderScenes();
+      showAssetStatus(selected.length + '개 파일을 가져왔어요. 아직 제출하지 않았어요. 스토리보드 미리보기를 눌러 주세요.', false);
+    } catch (error) { if (version === readVersion) showAssetStatus(error.message || '파일을 읽지 못했어요.', true); }
+    finally { if (version === readVersion) { reading = false; this.value = ''; } }
+  });
+
+  function programDocument() {
+    const sections = scenes.map(sc => {
+      const section = new DOMParser().parseFromString(sc.outer, 'text/html').querySelector('section.scene');
+      if (sc.gameNumber) section.setAttribute('data-game', sc.gameNumber); else section.removeAttribute('data-game');
+      for (const [attr, value] of Object.entries({ 'title': sc.title, 'boy-face': sc.boyFace, 'boy-text': sc.boyText, 'girl-face': sc.girlFace, 'girl-text': sc.girlText, 'problem': String(sc.isProblem), 'hint': sc.hint })) section.setAttribute('data-' + attr, value);
+      return section.outerHTML;
+    });
+    return '<!doctype html><html lang="ko"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width"><title>매쓰투어 본문</title><style>' + studentStyle + '</style></head><body>' + sections.join('\n') + '</body></html>';
+  }
+  window.buildProjectSubmission = function () {
+    return {
+      schemaVersion: 1,
+      program: { name: programName || place() + '.html', html: programDocument() },
+      games: sorted().map(number => ({ number, name: nameOf(number), html: files.get(nameOf(number)) })),
+      storyboard: scenes.map(sc => ({ title: sc.title, gameNumber: sc.gameNumber, boyFace: sc.boyFace, girlFace: sc.girlFace, boyText: sc.boyText, girlText: sc.girlText, isProblem: sc.isProblem, hint: sc.hint })),
+      pictures: [1, 2, 3].filter(n => pics[n]).map(number => ({ number, data: pics[number], source: picSrc[number] }))
+    };
+  };
+
+  function embeddedErrors(html) {
+    const doc = new DOMParser().parseFromString(html, 'text/html');
+    const errors = [];
+    const allowed = value => !value || /^(data:|IMG[123]$|#)/i.test(value.trim());
+    if (doc.querySelector('script[src],link[href],iframe,object,embed,base,meta[http-equiv],script[type="module"]')) errors.push('외부 파일·iframe·모듈 대신 HTML 안에 모든 내용을 넣어 주세요.');
+    if (Array.from(doc.querySelectorAll('[src],[poster]')).some(el => !allowed(el.getAttribute('src')) || !allowed(el.getAttribute('poster'))) || doc.querySelector('[srcset]')) errors.push('이미지는 IMG1·IMG2·IMG3 또는 HTML 안에 포함한 이미지만 사용할 수 있어요.');
+    const css = Array.from(doc.querySelectorAll('style')).map(s => s.textContent).join('\n') + Array.from(doc.querySelectorAll('[style]')).map(s => s.getAttribute('style')).join('\n');
+    if (/@import\b/i.test(css) || Array.from(css.matchAll(/url\(\s*(['"]?)(.*?)\1\s*\)/gi)).some(m => !allowed(m[2]))) errors.push('배경과 스타일의 외부 파일 주소를 IMG 번호 또는 내장 데이터로 바꿔 주세요.');
+    return errors;
+  }
+  function bridgeDocument(html, channel) {
+    const doc = new DOMParser().parseFromString(replaceImgTags(html), 'text/html');
+    const script = doc.createElement('script'); script.textContent = '(' + gameAssetBridge.toString() + ')(' + JSON.stringify(channel) + ');'; doc.head.prepend(script);
+    return '<!doctype html>' + doc.documentElement.outerHTML;
+  }
+  function storyDocument(sc) {
+    const doc = new DOMParser().parseFromString(sc.outer, 'text/html');
+    const section = doc.querySelector('section.scene'); section.removeAttribute('hidden');
+    section.style.cssText += ';display:block!important;visibility:visible!important;position:relative!important;height:auto!important;min-height:100%;';
+    return replaceImgTags('<!doctype html><html lang="ko"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width"><style>*{box-sizing:border-box}html,body{margin:0;min-height:100%;font-family:Malgun Gothic,sans-serif}body{padding:14px}img{max-width:100%}' + studentStyle + '</style></head><body>' + section.outerHTML + '</body></html>');
+  }
+  function storyboardErrors() {
+    const errors = [];
+    if (reading) errors.push('파일을 읽는 중이에요. 잠시 후 다시 검사해 주세요.');
+    if (!scenes.length) errors.push('본문 HTML이나 예시 스토리보드를 먼저 불러와 주세요.');
+    if (programName && document.getElementById('aiCode').value.trim() !== lastImportedSource.trim()) errors.push('본문 코드를 고쳤어요. 장면 불러오기를 눌러 변경 내용을 반영해 주세요.');
+    if (scenes.length) errors.push(...embeddedErrors(programDocument()).map(e => '본문: ' + e));
+    return errors;
+  }
+  function uploadErrors() {
+    const errors = storyboardErrors();
+    sorted().forEach(n => {
+      const html = files.get(nameOf(n));
+      if (!html) { errors.push(nameOf(n) + ' 파일이 없어요. 4단계에서 함께 가져와 주세요.'); return; }
+      errors.push(...embeddedErrors(html).map(e => nameOf(n) + ': ' + e));
+      if (!/\bmissionClear\s*\(/.test(html)) errors.push(nameOf(n) + ': 마지막 완료 버튼에서 missionClear()를 호출해야 해요.');
+      const doc = new DOMParser().parseFromString(html, 'text/html');
+      doc.querySelectorAll('script').forEach(s => { if (s.type && !['text/javascript', 'application/javascript'].includes(s.type)) return; try { new Function(s.textContent); } catch (e) { errors.push(nameOf(n) + ': ' + e.message); } });
+    });
+    scenes.forEach((sc, i) => { if (sc.gameNumber && !numbers.has(sc.gameNumber)) errors.push('장면 ' + (i + 1) + '의 게임 번호가 등록되지 않았어요.'); });
+    const allSource = (scenes.length ? programDocument() : '') + sorted().map(n => files.get(nameOf(n)) || '').join('\n');
+    for (let n = 1; n <= 3; n++) {
+      if (allSource.includes('IMG' + n) && !pics[n]) errors.push('IMG' + n + '에 사용할 사진을 넣어 주세요.');
+      if (pics[n] && !picSrc[n].trim()) errors.push('사진 ' + n + '의 출처를 입력해 주세요.');
+    }
+    return Array.from(new Set(errors));
+  }
+  function compileProject({ preview }) {
+    const steps = scenes.map((sc, i) => {
+      sc.creditSource = sc.gameNumber ? (preview ? ' ' : files.get(nameOf(sc.gameNumber))) : sc.outer;
+      const channel = 'game-' + i + '-' + Date.now().toString(36) + '-' + Math.random().toString(36).slice(2);
+      return { title: sc.title, game: sc.gameNumber, channel, html: sc.gameNumber ? (preview ? '' : bridgeDocument(files.get(nameOf(sc.gameNumber)), channel)) : storyDocument(sc) };
+    });
+    const previousAsset = gameAsset, previousRun = activeAssetPreview;
+    try {
+      gameAsset = { name: 'storyboard.html', html: core.tourDocument(steps, { preview }), hasScenes: true };
+      if (!preview) activeAssetPreview = '';
+      return buildFullHtml({ preview });
+    } finally { gameAsset = previousAsset; activeAssetPreview = previousRun; }
+  }
+  // Always compile a fresh playable document for submission. Preview HTML is never saved.
+  window.prepareProjectUpload = function () {
+    const errors = uploadErrors();
+    if (errors.length) return { errors };
+    const project = window.buildProjectSubmission();
+    if (size(JSON.stringify(project)) > 8 * 1024 * 1024) return { errors: ['본문·게임·사진의 합이 8MB를 넘어요. 파일 크기를 줄여 주세요.'] };
+    const html = compileProject({ preview: false });
+    if (size(html) > 5 * 1024 * 1024) return { errors: ['실행 파일이 5MB를 넘어요. 게임·사진 크기를 줄여 주세요.'] };
+    return { errors: [], project, html };
+  };
+  runCheck = function () {
+    invalidateCheckedMission();
+    try {
+      const errors = storyboardErrors();
+      if (errors.length) { showErrors(errors); document.getElementById('preview').srcdoc = buildErrorHtml('스토리보드 본문을 먼저 확인해 주세요'); return; }
+      activeAssetPreview = 'preview-' + Date.now().toString(36) + '-' + Math.random().toString(36).slice(2);
+      previewDocument = compileProject({ preview: true });
+    } catch (error) {
+      invalidateCheckedMission();
+      showErrors(['미리보기 본문을 만들지 못했어요. 본문 HTML을 다시 불러와 주세요.']);
+      document.getElementById('preview').srcdoc = buildErrorHtml('스토리보드 본문을 확인해 주세요');
+      return;
+    }
+    const msg = document.getElementById('msg'); msg.className = 'msg ok';
+    msg.textContent = '✅ 스토리보드 미리보기예요. 게임 장면은 빈 화면·완료 상태로 표시해요. 표정·대사·순서를 확인하고 마지막 미리보기 확인 완료를 눌러 주세요. 실제 게임 파일은 제출 준비 때 검사해요.';
+    document.getElementById('preview').srcdoc = previewDocument;
+  };
+  document.getElementById('loadExampleProject').onclick = async () => {
+    if (scenes.length) { showAssetStatus('현재 본문이 있어요. 예시를 사용하려면 예시 본문 HTML을 4단계에서 가져와 주세요.', true); return; }
+    const version = ++readVersion;
+    try {
+      const response = await fetch(new URL('./examples/K02.html', window.MATHTOUR_CONFIG?.siteBase || location.href)); if (!response.ok) throw new Error('예시 본문을 불러오지 못했어요.');
+      const html = await response.text(); if (version !== readVersion) return;
+      setProgram(html, place() + '.html', parseProgram(html));
+      invalidateCheckedMission(); renderNumbers(); renderScenes();
+      showAssetStatus('게임 1·게임 2가 있는 예시 스토리보드예요. 게임 파일 없이도 미리볼 수 있어요. 실제 업로드 전에는 두 게임 파일을 가져와 주세요.', false);
+    } catch (error) { showAssetStatus(error.message, true); }
+  };
+  renderNumbers();
+})();
+
+</script>
+
+</body>
+</html>

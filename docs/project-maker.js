@@ -48,12 +48,15 @@
       });
       document.getElementById('submissionDownloads').hidden = false;
       status.className = 'msg ok';
-      status.textContent = '제출용 파일 ' + exported.length + '개를 준비했어요. 아래 파일명을 눌러 모두 저장해 주세요.\n아직 OneDrive에 제출되지 않았어요. 선생님이 안내한 제출 링크에서 파일을 함께 선택해 주세요.';
+      status.textContent = '보관용 파일 ' + exported.length + '개를 준비했어요. 아래 파일명을 눌러 저장해 주세요. 파일 다운로드만으로는 GitHub에 제출되지 않아요.';
     } catch (error) {
       status.className = 'msg bad'; status.textContent = error.message || '제출 파일을 만들지 못했어요.';
     }
   };
-  if (!SCRIPT_URL) {
+  if (window.MATHTOUR_CONFIG?.storageProvider === 'github') {
+    document.getElementById('upBtn').textContent = '⬆ GitHub에 업로드';
+    document.querySelector('#submissionDownloads .hint').textContent = '본문·게임·사진·스토리보드와 실행본을 내 컴퓨터에 보관할 수 있어요. 실제 제출은 GitHub에 업로드 버튼을 사용해요.';
+  } else if (!SCRIPT_URL) {
     document.getElementById('uploadCodeFields').hidden = true;
     document.getElementById('upBtn').textContent = '⬇ 제출 파일 준비 (개별 파일)';
   }
@@ -313,7 +316,7 @@
     if (scenes.length) { showAssetStatus('현재 본문이 있어요. 예시를 사용하려면 예시 본문 HTML을 4단계에서 가져와 주세요.', true); return; }
     const version = ++readVersion;
     try {
-      const response = await fetch('./examples/K02.html'); if (!response.ok) throw new Error('예시 본문을 불러오지 못했어요.');
+      const response = await fetch(new URL('./examples/K02.html', window.MATHTOUR_CONFIG?.siteBase || location.href)); if (!response.ok) throw new Error('예시 본문을 불러오지 못했어요.');
       const html = await response.text(); if (version !== readVersion) return;
       setProgram(html, place() + '.html', parseProgram(html));
       invalidateCheckedMission(); renderNumbers(); renderScenes();

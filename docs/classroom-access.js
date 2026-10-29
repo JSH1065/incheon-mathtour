@@ -1,7 +1,7 @@
-/* A teacher-shared fragment supplies the classroom code; no code is published here. */
+/* One public maker works online and from a downloaded file; older invitations still work. */
 (function (root) {
   'use strict';
-  if (root.location.protocol === 'file:' || root.MATHTOUR_CONFIG?.storageProvider !== 'github') return;
+  if (root.MATHTOUR_CONFIG?.storageProvider !== 'github') return;
   const input = document.getElementById('uploadCode');
   const fields = document.getElementById('uploadCodeFields');
   const notice = document.getElementById('classroomAccessNotice');
@@ -13,6 +13,11 @@
     notice.className = bad ? 'hint classroom-access-error' : 'hint';
     notice.textContent = text;
   };
+  function applyCodeFree() {
+    input.dataset.common = 'true';
+    fields.hidden = true;
+    report('학교와 이름을 입력하면 코드 없이 제출할 수 있어요.');
+  }
   function apply(code, remember) {
     input.value = code;
     // This flag is essential: doUpload adds each author's private browser key.
@@ -45,10 +50,13 @@
     apply(code, true);
     return true;
   }
+  // Preserve credentials already embedded in older downloaded classroom/personal makers.
+  if (root.location.protocol === 'file:' && input.value) return;
   if (!consumeLink() && !input.value) {
     let saved;
     try { saved = root.localStorage.getItem(storageKey); } catch { /* Use a fresh invitation if storage is blocked. */ }
     if (valid(saved)) apply(saved, false);
+    else applyCodeFree();
   }
   // Also support opening an invitation while this maker tab is already loaded.
   root.addEventListener('hashchange', consumeLink);

@@ -133,6 +133,32 @@ test('common maker retains a private key per author and separates browsers, incl
   const blocked = maker({ getItem() { throw new Error('blocked'); }, setItem() { throw new Error('blocked'); } });
   assert.equal(blocked.commonSubmissionKey('구월중', '학생'), blocked.commonSubmissionKey('구월중', '학생'));
 });
+
+test('code-free submissions isolate namesakes, update only their own work, and never publish keys', async t => {
+  const config = loadConfig({ BASE_URL:'http://localhost', STORAGE_PROVIDER:'github' });
+  config.encryptionKey = randomBytes(32).toString('base64');
+  const api = fakeGitHub(), store = new GitHubStore({ token:'test-token', repository:'test/math', fetchImpl:api.fetch, mutationDelay:0 });
+  const server = createApplication({ config, store, readRoster:async()=>{ throw Error('Code-free submissions must not require a roster'); } });
+  await new Promise(resolve=>server.listen(0,'127.0.0.1',resolve));
+  t.after(()=>new Promise(resolve=>server.close(resolve)));
+  const url = 'http://127.0.0.1:' + server.address().port + '/api';
+  const post = (submissionKey, extra={}) => fetch(url,{method:'POST',headers:{'content-type':'application/json',origin:'null'},body:JSON.stringify({ ...mission('CHOSEN-FOLDER'), action:'mission_save',school:'같은학교',name:'동명이인',submissionKey,...extra })});
+  assert.equal((await (await fetch(url+'?action=status')).json()).codeFreeMaker,true);
+  for(const key of [undefined,'','short','z'.repeat(48)]) assert.equal((await post(key)).status,400);
+  const keys = Array.from({length:20},()=>randomBytes(24).toString('hex'));
+  for(const response of await Promise.all(keys.map((key,i)=>post(key,i%2?{uploadCode:''}:{})))) assert.equal(response.status,200);
+  const catalog=()=>JSON.parse(api.files()['docs/submissions/catalog.json']).missions;
+  assert.equal(catalog().length,20);
+  assert.equal(new Set(catalog().map(row=>row.id)).size,20);
+  const otherId=catalog()[1].id;
+  assert.equal((await post(keys[0],{id:otherId,topic:'수정한 작품'})).status,200);
+  assert.equal(catalog().length,20);
+  assert.notEqual(catalog().find(row=>row.topic==='수정한 작품').id,otherId);
+  assert.equal(catalog().find(row=>row.id===otherId).topic,'삼각형');
+  const published=JSON.stringify(api.files());
+  for(const key of [...keys,config.encryptionKey]) assert(!published.includes(key));
+  assert.equal((await post(keys[0],{school:''})).status,400);
+});
 test('Korean filenames resolve through the catalog and teacher game edits are fetched afresh', async () => {
   const folder = 'https://school.example/tour/submissions/K02/S01/';
   const name = 'K02_구월중정승헌_스토리보드.json', game = 'K02_구월중정승헌_G1.html';

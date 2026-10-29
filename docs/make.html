@@ -140,6 +140,7 @@
     <button type="button" class="btn btn-storyboard" id="openStoryboard" aria-haspopup="dialog">1. 스토리보드 작성</button>
     <h1>🧩 MATHTOUR INCHEON 미션 만들기</h1>
   </header>
+  <p class="hint"><a href="./학생용_매스투어_제작기.html" download>공통 제작기 내려받기</a> · 모든 학생이 같은 파일을 사용해요.</p>
 
   <div class="row">
     <!-- 왼쪽: 입력 + 붙여넣기 + 사진 -->
@@ -580,7 +581,8 @@ gameAsset ? '' : 'if(mtSceneList().length===0){missionClear();}',
     const name=document.getElementById('sname').value.trim();
     const u=document.getElementById('upMsg');
     const uploadCode=document.getElementById('uploadCode').value.trim();
-    if(!uploadCode){u.className='msg bad';u.textContent='개인 제출코드를 입력해 주세요.';return;}
+    const codeFree=window.MATHTOUR_CONFIG?.storageProvider === 'github' && !uploadCode;
+    if(!uploadCode && !codeFree){u.className='msg bad';u.textContent='개인 제출코드를 입력해 주세요.';return;}
     if(!school||!name){ u.className='msg bad'; u.textContent='❌ 학교와 이름을 입력해 주세요.'; return; }
     if(!topic){ u.className='msg bad'; u.textContent='❌ 탐구 주제를 입력해 주세요.'; return; }
     if(!previewReviewed || document.getElementById('upBtn').disabled){ u.className='msg bad'; u.textContent='❌ 먼저 미리보기 확인 완료를 눌러 주세요.'; return; }
@@ -596,12 +598,12 @@ gameAsset ? '' : 'if(mtSceneList().length===0){missionClear();}',
     u.className='msg ok'; u.textContent='⏳ 업로드 중이에요. 여러 명이 함께 제출하면 순서대로 저장하므로 잠시 기다려 주세요.';
     try{
       let submissionKey;
-      if(document.getElementById('uploadCode').dataset.common === 'true'){
+      if(codeFree || document.getElementById('uploadCode').dataset.common === 'true'){
         // Refuse to submit to an old server, which would otherwise treat the common code as one student.
         const statusUrl=new URL(SCRIPT_URL,location.href);statusUrl.searchParams.set('action','status');
         const statusResponse=await fetch(statusUrl,{cache:'no-store',signal:AbortSignal.timeout(300000)});
         const status=await statusResponse.json();
-        if(!statusResponse.ok || !status.ok || !status.commonMaker || !status.sixSceneMaker){
+        if(!statusResponse.ok || !status.ok || !status.commonMaker || !status.sixSceneMaker || (codeFree && !status.codeFreeMaker)){
           u.className='msg bad';u.textContent='공통 제작기 연결을 준비하고 있어요. 아직 제출되지 않았으니 잠시 후 다시 시도해 주세요.';
           upBtn.disabled=false;upBtn.classList.add('ready');return;
         }
@@ -777,7 +779,7 @@ document.querySelector('.wrap').addEventListener('change', function (event) {
 });
 
 </script>
-<script src="./classroom-access.js?v=20261029-classroom"></script>
+<script src="./classroom-access.js?v=20261030-common"></script>
 <script src="./project-core.js?v=20261029-six"></script>
 <script src="./submission-files.js?v=20261029-six"></script>
 <script src="./project-maker.js?v=20261029-six"></script>

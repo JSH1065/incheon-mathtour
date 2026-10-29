@@ -61,7 +61,9 @@ test('a malformed or duplicate class parameter never falls back to an earlier cl
     assert.equal(current.elements.uploadCode.dataset.common,undefined);
     assert.equal(current.elements.uploadCodeFields.hidden,false);
     assert.match(current.elements.classroomAccessNotice.textContent,/다시 열어/);
-    assert.equal(open({saved}).elements.uploadCode.value,'');
+    const plain = open({saved});
+    assert.equal(plain.elements.uploadCode.value,'');
+    assert.equal(plain.elements.uploadCodeFields.hidden,true);
   }
 });
 
@@ -72,10 +74,17 @@ test('blocked storage allows the current invitation and gives a return instructi
   assert.match(elements.classroomAccessNotice.textContent,/다시 접속/);
 });
 
-test('ordinary URLs and offline personal makers keep their existing submission mode', () => {
-  const plain=open({hash:'#storyboard'});
-  assert.equal(plain.elements.uploadCode.value,'');
-  assert.equal(plain.elements.uploadCodeFields.hidden,false);
+test('ordinary URLs and the same downloaded maker submit without a manually entered code', () => {
+  for (const protocol of ['https:', 'file:']) {
+    const plain=open({hash:'#storyboard', protocol});
+    assert.equal(plain.elements.uploadCode.value,'');
+    assert.equal(plain.elements.uploadCode.dataset.common,'true');
+    assert.equal(plain.elements.uploadCodeFields.hidden,true);
+    assert.match(plain.elements.classroomAccessNotice.textContent,/코드 없이/);
+  }
+});
+
+test('offline personal makers retain their existing submission mode', () => {
   const offline=open({hash:'#class='+code,protocol:'file:',inputValue:'personal-code'});
   assert.equal(offline.elements.uploadCode.value,'personal-code');
   assert.equal(offline.elements.uploadCode.dataset.common,undefined);

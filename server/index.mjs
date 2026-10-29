@@ -61,7 +61,7 @@ export function createApplication({ config, store, auth, readRoster }) {
         rates.check('api:' + ip, 600);
         if (req.method === 'GET') {
           const action = url.searchParams.get('action');
-          if (action === 'status') { json(res, 200, { ok: true, mode: config.mock ? 'local-test' : config.provider, storage: config.provider === 'github' ? 'GitHub' : 'OneDrive', commonMaker: config.provider === 'github', sixSceneMaker:true }); return; }
+          if (action === 'status') { json(res, 200, { ok: true, mode: config.mock ? 'local-test' : config.provider, storage: config.provider === 'github' ? 'GitHub' : 'OneDrive', commonMaker: config.provider === 'github', codeFreeMaker: config.provider === 'github', sixSceneMaker:true }); return; }
           if (action === 'mission_list') { json(res, 200, await store.list(url.searchParams.get('placeId'))); return; }
           if (action === 'mission_load') { json(res, 200, await store.load(url.searchParams.get('placeId'), url.searchParams.get('sid'))); return; }
           throw httpError(400, 'unknown_action');
@@ -71,20 +71,27 @@ export function createApplication({ config, store, auth, readRoster }) {
         if (data.action === 'mission_save') {
           if (config.provider === 'github') {
             rates.check('github-save:' + ip, 100);
-            const roster = await readRoster();
-            const suppliedHash = codeHash(String(data.uploadCode || ''), config.encryptionKey);
-            const student = roster.students?.find(item => item.uploadCodeHash && same(item.uploadCodeHash, suppliedHash));
-            if (!student || (student.school && student.school !== data.school) || (student.name && student.name !== data.name)) throw httpError(403, 'unauthorized');
-            // Legacy individual makers keep their folder. A common maker adds a private browser key.
-            // Never accept a chosen folder ID, and never expose that browser key in published files.
-            data.id = student.id;
-            if (data.submissionKey !== undefined) {
+            // New public makers use a private browser key. Existing coded makers retain their IDs.
+            // An incorrect supplied code must never fall back to the code-free route.
+            let student;
+            if (data.uploadCode) {
+              const roster = await readRoster();
+              const suppliedHash = codeHash(String(data.uploadCode), config.encryptionKey);
+              student = roster.students?.find(item => item.uploadCodeHash && same(item.uploadCodeHash, suppliedHash));
+              if (!student || (student.school && student.school !== data.school) || (student.name && student.name !== data.name)) throw httpError(403, 'unauthorized');
+            }
+            // Never accept a chosen folder ID or publish a browser key.
+            data.id = student?.id;
+            if (!student || data.submissionKey !== undefined) {
               if (typeof data.submissionKey !== 'string' || !/^[a-f0-9]{48}$/.test(data.submissionKey)) throw httpError(400, 'invalid_submission_key');
               if (typeof data.school !== 'string' || !data.school.trim() || data.school.length > 40 || typeof data.name !== 'string' || !data.name.trim() || data.name.length > 40) throw httpError(400, 'invalid_school_or_name');
               data.school = data.school.normalize('NFC').trim();
               data.name = data.name.normalize('NFC').trim();
+              const identity = student
+                ? ['common-maker-v1', student.id, data.school, data.name, data.submissionKey]
+                : ['public-maker-v1', data.school, data.name, data.submissionKey];
               data.id = 'M' + createHmac('sha256', Buffer.from(config.encryptionKey, 'base64'))
-                .update(JSON.stringify(['common-maker-v1', student.id, data.school, data.name, data.submissionKey])).digest('hex').slice(0, 32);
+                .update(JSON.stringify(identity)).digest('hex').slice(0, 32);
             }
             validateMission(data);
             rates.check('github-student:' + data.id, 10);
@@ -173,7 +180,7 @@ async function start() {
     store = new LocalTestStore(join(config.dataDir, 'local-test'));
     config.encryptionKey = randomBytes(32).toString('base64');
   } else if (config.provider === 'github') {
-    if (Buffer.from(config.encryptionKey || '', 'base64').length !== 32 || !config.rosterJson) throw new Error('GitHub upload codes are not configured');
+    if (Buffer.from(config.encryptionKey || '', 'base64').length !== 32) throw new Error('GitHub submission key is not configured');
     const { GitHubStore } = await import('./github-store.mjs');
     store = new GitHubStore({ token: config.githubToken, repository: config.githubRepository, branch: config.githubBranch });
   } else {
@@ -182,7 +189,7 @@ async function start() {
   }
   const readRoster = config.mock
     ? async () => ({ students: [{ id:'TEST01', name:'테스트', uploadCodeHash:codeHash('LOCAL-DEMO-ONLY',config.encryptionKey) }] })
-    : async () => { try { return JSON.parse(config.rosterJson || await readFile(join(config.dataDir,'roster.json'),'utf8')); } catch { throw httpError(503,'roster_not_configured'); } };
+    : async () => { try { return config.provider === 'github' && !config.rosterJson ? { students: [] } : JSON.parse(config.rosterJson || await readFile(join(config.dataDir,'roster.json'),'utf8')); } catch { throw httpError(503,'roster_not_configured'); } };
   const server = createApplication({ config, store, auth, readRoster });
   server.listen(config.port, config.host, () => console.log('MathTour server ready at ' + config.baseUrl + (config.mock ? ' (LOCAL TEST: no OneDrive writes)' : '')));
 }

@@ -1,16 +1,16 @@
 {
   "format": "mathtour-submission",
   "schemaVersion": 1,
-  "submissionId": "fbcf4445-692c-44c9-a33a-aad8858a09ea",
+  "submissionId": "b73c4f96-c0c9-48a1-a5c2-4a2427d36214",
   "placeId": "K02",
   "school": "교사예시",
   "name": "업로드확인",
-  "topic": "마니산에서 만난 삼각형의 비밀 · 업로드 예시",
+  "topic": "마니산 · 6개 장면으로 배우는 피타고라스 정리",
   "program": "K02_교사예시업로드확인_본문.html",
   "games": [
     {
       "number": 1,
-      "name": "K02_교사예시업로드확인_G1.html"
+      "name": "K02_교사예시업로드확인_게임.html"
     }
   ],
   "pictures": [
@@ -22,56 +22,85 @@
   ],
   "storyboard": [
     {
-      "title": "관광지 소개 · 마니산과 참성단",
+      "title": "관광지 소개 1",
       "gameNumber": null,
       "boyFace": "lookmap",
       "girlFace": "stand",
       "boyText": "강화도 마니산에 도착했어!",
       "girlText": "산과 바다가 함께 보이는 곳이야. 참성단도 만나 보자.",
       "isProblem": false,
-      "hint": ""
+      "hint": "",
+      "gamePlan": "",
+      "gameControls": "",
+      "gameAnswer": ""
     },
     {
-      "title": "탐구 준비 · 산길을 삼각형으로",
+      "title": "관광지 소개 2",
+      "gameNumber": null,
+      "boyFace": "finding",
+      "girlFace": "how",
+      "boyText": "산과 바다가 만나는 풍경 속에 어떤 도형이 보일까?",
+      "girlText": "참성단과 능선에서 도형을 떠올려 보자.",
+      "isProblem": false,
+      "hint": "",
+      "gamePlan": "",
+      "gameControls": "",
+      "gameAnswer": ""
+    },
+    {
+      "title": "문제 상황 설명(사용하는 수학 개념)",
       "gameNumber": null,
       "boyFace": "finding",
       "girlFace": "how",
       "boyText": "비스듬한 길의 길이는 어떻게 구할까?",
       "girlText": "수평 거리와 높이를 알면 직각삼각형으로 생각할 수 있어.",
       "isProblem": false,
-      "hint": ""
+      "hint": "",
+      "gamePlan": "",
+      "gameControls": "",
+      "gameAnswer": ""
     },
     {
-      "title": "게임 1 · 두 개의 길이 열쇠",
+      "title": "문제(게임)",
       "gameNumber": 1,
       "boyFace": "thinking",
       "girlFace": "how",
       "boyText": "두 문제를 풀어 길이 열쇠를 모아 보자!",
       "girlText": "정답 확인 → 다음 → 마지막 미션 완료 순서야.",
       "isProblem": true,
-      "hint": "빗변을 구할 때는 두 변의 제곱을 더하고, 나머지 변은 빗변의 제곱에서 다른 변의 제곱을 빼요. 마지막에는 제곱근을 구해요."
+      "hint": "빗변을 구할 때는 두 변의 제곱을 더하고, 나머지 변은 빗변의 제곱에서 다른 변의 제곱을 빼요. 마지막에는 제곱근을 구해요.",
+      "gamePlan": "직각인 두 변이 6 m, 8 m인 삼각형의 빗변과, 빗변 13 m·한 변 5 m인 삼각형의 나머지 변을 구해요.",
+      "gameControls": "숫자를 입력하고 정답 확인 → 다음 → 마지막 미션 완료를 눌러요.",
+      "gameAnswer": "첫 문제 10 m, 둘째 문제 12 m. 두 문제를 맞힌 뒤 미션 완료를 눌러요."
     },
     {
-      "title": "풀이 연결 · 더할까, 뺄까?",
+      "title": "정답 확인 및 해설",
       "gameNumber": null,
       "boyFace": "aha",
       "girlFace": "thumb",
       "boyText": "10과 12를 구했어. 마지막에 제곱근을 잊으면 안 되네!",
       "girlText": "직각을 마주 보는 가장 긴 변이 빗변이야.",
       "isProblem": false,
-      "hint": ""
+      "hint": "",
+      "gamePlan": "",
+      "gameControls": "",
+      "gameAnswer": ""
     },
     {
-      "title": "배운 수학 정리 · 탐험 노트",
+      "title": "배운 내용 정리",
       "gameNumber": null,
       "boyFace": "thumb",
       "girlFace": "aha",
       "boyText": "직각삼각형이라면 두 변으로 나머지 길이를 찾을 수 있어!",
       "girlText": "직각인지 확인하고, 빗변을 찾는 것이 먼저야.",
       "isProblem": false,
-      "hint": ""
+      "hint": "",
+      "gamePlan": "",
+      "gameControls": "",
+      "gameAnswer": ""
     }
   ],
+  "layout": "six-scenes-one-game",
   "playback": "source-files",
   "studentId": "TEACHER01"
 }

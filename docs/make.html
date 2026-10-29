@@ -24,9 +24,11 @@
   .storyboard-heading { display:flex; justify-content:space-between; align-items:center; gap:12px; }
   .storyboard-heading h2 { margin:0; font-size:20px; }
   .storyboard-actions { display:flex; flex-wrap:wrap; gap:8px; margin-top:12px; }
-  .storyboard-mode[aria-pressed="true"] { background:#1565c0; color:white; }
-  .storyboard-scroll { overflow:auto; padding:20px; }
-  #storyboardNotice { margin:0 0 12px; padding:10px 12px; background:#fff8e1; border-radius:8px; font-size:13px; line-height:1.6; }
+  .storyboard-scroll { overflow:auto; padding:16px; min-height:0; background:#e8edf4; }
+  .storyboard-pdf-page { margin:0 auto 16px; max-width:860px; }
+  .storyboard-pdf-page img { display:block; width:100%; height:auto; background:white; box-shadow:0 2px 12px #162e4c20; }
+  .storyboard-pdf-page figcaption { padding:6px; text-align:center; color:#546e7a; font-size:12px; }
+  .storyboard-actions a { text-decoration:none; display:inline-flex; align-items:center; }
   #storyboardDownloadStatus { min-height:1.6em; margin:8px 0 0; font-size:12px; color:#546e7a; }
   .row { display:flex; gap:16px; flex-wrap:wrap; align-items:flex-start; }
   .col { flex:1; min-width:360px; }
@@ -299,18 +301,14 @@
 <dialog id="storyboardDialog" aria-labelledby="storyboardDialogTitle">
   <div class="storyboard-shell">
     <div class="storyboard-toolbar">
-      <div class="storyboard-heading"><h2 id="storyboardDialogTitle">스토리보드</h2><button type="button" class="btn btn-prompt" id="closeStoryboard" aria-label="스토리보드 창 닫기">닫기 ✕</button></div>
-      <div class="storyboard-actions" aria-label="스토리보드 선택">
-        <button type="button" class="btn btn-prompt storyboard-mode" id="showCurrentStoryboard" aria-pressed="true">현재 작품</button>
-        <button type="button" class="btn btn-prompt storyboard-mode" id="showStoryboardTemplate" aria-pressed="false">작성 양식</button>
-      </div>
+      <div class="storyboard-heading"><h2 id="storyboardDialogTitle">스토리보드 PDF</h2><button type="button" class="btn btn-prompt" id="closeStoryboard" aria-label="스토리보드 창 닫기">닫기 ✕</button></div>
       <div class="storyboard-actions">
-        <button type="button" class="btn btn-storyboard" id="downloadStoryboardText" style="margin-left:0">TXT 다운로드 · AI에 전달</button>
-        <button type="button" class="btn btn-prompt" id="downloadStoryboardHtml">HTML 다운로드 · 표로 보기</button>
+        <a class="btn btn-storyboard" id="downloadStoryboardPdf" href="./worksheets/storyboard-six-scenes.pdf" download="매쓰투어_미션_기획_스토리보드_6장면.pdf">PDF 다운로드</a>
+        <a class="btn btn-prompt" id="openStoryboardPdf" href="./worksheets/storyboard-six-scenes.pdf" target="_blank" rel="noopener">PDF 크게 보기</a>
       </div>
-      <p id="storyboardDownloadStatus" role="status">선택한 스토리보드를 저장해요. 게임 파일 없이도 내려받을 수 있어요.</p>
+      <p id="storyboardDownloadStatus" role="status">PDF를 내려받아 AI에 첨부하고, 빈칸의 내용을 작성하세요.</p>
     </div>
-    <div class="storyboard-scroll"><p id="storyboardNotice"></p><div id="storyboardContent"></div></div>
+    <div class="storyboard-scroll" id="storyboardPdfPages" aria-label="스토리보드 PDF 미리보기 · 3쪽"></div>
   </div>
 </dialog>
 
@@ -782,7 +780,7 @@ document.querySelector('.wrap').addEventListener('change', function (event) {
 <script src="./submission-files.js?v=20261029-six"></script>
 <script src="./project-maker.js?v=20261029-six"></script>
 <script src="./storyboard-core.js?v=20261029-six"></script>
-<script src="./storyboard-panel.js?v=20261029-six"></script>
+<script src="./storyboard-panel.js?v=20261029-pdf"></script>
 
 </body>
 </html>

@@ -16,7 +16,7 @@ if (process.argv.includes('--common')) {
   const common = html.replace('<div id="uploadCodeFields">', '<div id="uploadCodeFields" hidden>')
     .replace('<input id="uploadCode"', '<input id="uploadCode" data-common="true" value="' + code + '"');
   await writeFile(new URL('공통_매스투어_제작기.html', privateRoot), common, { mode: 0o600 });
-  await writeFile(new URL('수업용-접속링크.txt', privateRoot), site + 'make.html#class=' + code + '&view=storyboard\n', { mode: 0o600 });
+  await writeFile(new URL('수업용-접속링크.txt', privateRoot), site + 'make.html?classroom=1#class=' + code + '&view=storyboard\n', { mode: 0o600 });
   console.log('Built one common classroom HTML. School/name and a private automatic key keep submissions separate.');
 }
 if (process.argv.includes('--personal')) {

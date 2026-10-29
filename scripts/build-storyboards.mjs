@@ -1,39 +1,52 @@
 import { readFile, writeFile } from 'node:fs/promises';
 import vm from 'node:vm';
-const docs = new URL('../docs/', import.meta.url), context = vm.createContext({});
-vm.runInContext(await readFile(new URL('storyboard-core.js', docs), 'utf8'), context);
-const core = context.MathTourStoryboard;
-const blank = core.template({ placeId:'K02', placeName:'마니산' });
-await writeFile(new URL('examples/스토리보드_작성양식.txt', docs), '\ufeff' + core.toText(blank));
-await writeFile(new URL('examples/스토리보드_작성양식.html', docs), core.toHtml(blank));
-const path = new URL('examples/manisan/storyboard.json', docs);
-const example = JSON.parse(await readFile(path, 'utf8'));
-const plain = html => String(html || '').replace(/<br\s*\/?\s*>/gi, '\n').replace(/<\/(p|div|h1|h2|article)>/gi, '\n').replace(/<[^>]*>/g, '').trim();
-example.scenes.forEach(scene => {
-  scene.gameNumber = scene.gameNumber || null;
-  scene.sceneType = scene.gameNumber ? 'game' : 'story';
-  scene.gameFile = scene.gameNumber ? example.placeId + '-G' + scene.gameNumber + '.html' : '';
+const docs = new URL('../docs/',import.meta.url), dir = new URL('examples/manisan/',docs), ctx = vm.createContext({});
+for (const file of ['project-core.js','storyboard-core.js']) vm.runInContext(await readFile(new URL(file,docs),'utf8'),ctx);
+const core = ctx.MathTourStoryboard, project = ctx.MathTourProject;
+const e = s => String(s ?? '').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/"/g,'&quot;');
+const plain = html => String(html || '').replace(/<br\s*\/?\s*>/gi,'\n').replace(/<\/(p|div|h1|h2|article)>/gi,'\n').replace(/<[^>]*>/g,'').trim();
+const blank = core.template({placeId:'K02',placeName:'마니산'});
+for (const ext of ['txt','html']) await writeFile(new URL('examples/스토리보드_작성양식.'+ext,docs),ext==='txt'?'\ufeff'+core.toText(blank):core.toHtml(blank));
+const example = JSON.parse(await readFile(new URL('storyboard.json',dir),'utf8'));
+if(example.scenes.length===5) example.scenes.splice(1,0,{
+  boyFace:'finding',boyText:'산과 바다가 만나는 풍경 속에 어떤 도형이 보일까?',girlFace:'how',girlText:'참성단과 능선에서 도형을 떠올려 보자.',photo:true,
+  content:'<div class="tag">LOOK AROUND</div><h1>풍경 속에서 도형 찾기</h1><p>마니산의 능선과 참성단을 살펴보며 선과 도형을 떠올려 봐요.</p><p>이제 산길을 수평 거리와 높이, 비스듬한 길로 단순화해 수학 문제를 만들어 볼 거예요.</p><p class="small">그림은 관광지를 모티브로 한 가상 일러스트이며 실제 측정 그림이 아니에요.</p>'
 });
-await writeFile(path, JSON.stringify(example, null, 2) + '\n');
-const board = { ...example, placeName:'마니산', scenes:example.scenes.map(scene => ({ ...scene,
-  screenText:scene.gameNumber ? '게임 1 안에서 문제 두 개를 풀어요.\n문제 1: 직각인 두 변 6 m, 8 m → 빗변 10 m.\n문제 2: 빗변 13 m, 한 변 5 m → 나머지 변 12 m.\n정답 확인 후 다음 버튼을 켜고, 마지막 미션 완료에서 missionClear()를 호출해요.' : plain(scene.content),
-  pictures:scene.photo ? [1] : [], isProblem:!!scene.gameNumber
-})) };
-await writeFile(new URL('examples/manisan/스토리보드.txt', docs), '\ufeff' + core.toText(board) + '\n\n관광지 소개 참고: 강화군 마니산 https://www.ganghwa.go.kr/manisan/\n게임 속 수치와 산길은 가상이며 실제 관광지의 측정값이 아닙니다. 그림은 AI 생성 일러스트입니다.\n');
-await writeFile(new URL('examples/manisan/스토리보드.html', docs), core.toHtml(board));
-const indexPath = new URL('examples/manisan/index.html', docs);
-let index = await readFile(indexPath, 'utf8');
-if (!index.includes('<th>게임 번호·연결 파일</th>')) {
-  index = index.replace('<th>가운데 화면</th>', '<th>게임 번호·연결 파일</th><th>가운데 화면</th>');
-  example.scenes.forEach((scene, i) => {
-    const heading = '<tr><th>' + (i + 1) + '<br>' + scene.title + '</th>';
-    index = index.replace(heading, heading + '<td>' + (scene.gameNumber ? '게임 ' + scene.gameNumber + '<br>' + scene.gameFile : '해당 없음') + '</td>');
-  });
-}
-index = index.replace('GitHub Pages에 게시한 수업 예시입니다. OneDrive 제출은 아직 연결 전이며, 파일 일괄 업로드는 로컬 시험 환경에서 확인했습니다.', 'GitHub Pages에 게시한 수업 예시입니다. 제작기에서 본문·게임·사진을 함께 가져와 GitHub로 제출할 수 있어요.');
-index = index.replace('학교·이름을 입력하고 미리보기 확인 완료 후, 제출 파일 준비 (개별 파일)를 눌러 파일을 저장해요. OneDrive 제출 링크는 아직 연결 전이에요.', '학교·이름을 입력하고 미리보기 확인 완료 후, GitHub에 업로드를 눌러 제출해요. 좌측 상단 1. 스토리보드 작성에서 장면별 게임 번호를 확인하고 기획안을 저장할 수 있어요.');
-index = index.replace('우측 상단 스토리보드 보기·다운로드', '좌측 상단 1. 스토리보드 작성');
-index = index.replace('<a href="./스토리보드.txt" download>스토리보드.txt</a>', '<a href="./스토리보드.txt" download>스토리보드 TXT · AI에 전달</a>');
-if (!index.includes('href="./스토리보드.html"')) index = index.replace('<li><a href="./K02.html"', '<li><a href="./스토리보드.html">스토리보드 HTML · 표로 보기</a></li><li><a href="./K02.html"');
-await writeFile(indexPath, index);
-console.log('Built planning templates and the updated Manisan storyboard with explicit game numbers.');
+example.layout=project.SINGLE_LAYOUT;
+example.scenes=project.sixScenes(example.scenes.map((s,i)=>({...s,gameNumber:i===3?1:null})));
+example.scenes.forEach(s=>{delete s.gameFile;delete s.sceneType;});
+Object.assign(example.scenes[3],{gamePlan:'직각인 두 변이 6 m, 8 m인 삼각형의 빗변과, 빗변 13 m·한 변 5 m인 삼각형의 나머지 변을 구해요.',gameControls:'숫자를 입력하고 정답 확인 → 다음 → 마지막 미션 완료를 눌러요.',gameAnswer:'첫 문제 10 m, 둘째 문제 12 m. 두 문제를 맞힌 뒤 미션 완료를 눌러요.'});
+const oldBody=await readFile(new URL('K02.html',dir),'utf8'),css=oldBody.match(/<style>([\s\S]*?)<\/style>/i)[1];
+const sections=example.scenes.map((s,i)=>'<section class="scene" data-title="'+e(s.title)+'" data-boy-face="'+s.boyFace+'" data-boy-text="'+e(s.boyText)+'" data-girl-face="'+s.girlFace+'" data-girl-text="'+e(s.girlText)+'" data-problem="'+(i===3)+'" data-hint="'+e(s.hint)+'"'+(i===3?' data-game="1" data-game-plan="'+e(s.gamePlan)+'" data-game-controls="'+e(s.gameControls)+'" data-game-answer="'+e(s.gameAnswer)+'"':'')+'>'+(i===3?'':(s.photo?'<img class="landscape" src="IMG1" alt="마니산과 서해를 모티브로 한 일러스트"><div class="veil"></div>':'')+'<div class="copy">'+s.content+'</div>')+'</section>');
+const doc=ss=>'<!doctype html><html lang="ko"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>마니산 수학 탐험</title><style>'+css+'</style></head><body>'+ss.join('\n')+'</body></html>';
+const body=doc(sections);
+for(const file of ['K02.html','본문코드.txt'])await writeFile(new URL(file,dir),body);
+await writeFile(new URL('storyboard.json',dir),JSON.stringify(example,null,2)+'\n');
+let game=await readFile(new URL('K02-G1.html',dir),'utf8');
+game=game.replace('마니산 길이 열쇠 · 게임 1','마니산 길이 열쇠 · 게임').replace(/<div class="equations">[\s\S]*?<\/div>/,'<p>두 문제를 모두 해결했어요. 다음 장면에서 풀이 과정을 함께 정리해요.</p>').replace('<p>빗변은 제곱의 합, 나머지 변은 제곱의 차를 이용해요.</p>','').replace('풀이를 확인했다면 미션 완료를 눌러요.','미션 완료를 눌러 다음 해설 장면으로 이동해요.');
+await writeFile(new URL('K02_게임.html',dir),game);
+await writeFile(new URL('examples/K02_게임.html',docs),game);
+await writeFile(new URL('examples/K02.html',docs),body.replace(/<img class="landscape"[^>]*><div class="veil"><\/div>/g,''));
+const board={...example,placeName:'마니산',scenes:example.scenes.map(s=>({...s,screenText:s.gameNumber?s.gamePlan:plain(s.content),pictures:s.photo?[1]:[]}))};
+await writeFile(new URL('스토리보드.txt',dir),'\ufeff'+core.toText(board));
+await writeFile(new URL('스토리보드.html',dir),core.toHtml(board));
+const instructions='1. 장소 K02 마니산을 선택해요.\n2. 본문 HTML 칸에 K02.html, 게임 HTML 칸에 K02_게임.html을 각각 선택해요.\n3. 사진1에 manisan-illustration.jpg를 넣고 AI 생성 일러스트라는 출처를 적어요.\n4. 6개 장면의 표정·대사를 확인해요. 게임은 4번에 자동 연결돼요.\n5. 미리보기에서 4번은 비워 두고 넘어가며, 6번에서 확인 완료를 눌러요.\n6. 학교·이름을 입력하고 GitHub에 업로드하면 본문·게임·사진이 함께 제출돼요.\n7. 좌측 상단 스토리보드 작성에서 내용·표정·대사 중심의 양식을 내려받을 수 있어요.';
+await writeFile(new URL('사용법과검사결과.txt',dir),'마니산 완성 예시 · 6개 고정 장면 / 게임 하나\n\n'+instructions+'\n\n게임 정답: 10, 12. 게임의 마지막 미션 완료 후 5번 해설로 이동합니다.\n실제 관광지의 측정값이 아닌 학습용 가상 모형입니다.\n');
+let index=await readFile(new URL('index.html',dir),'utf8');
+index=index.replace(/\.sb\{[\s\S]*?<\/style>/,'</style>').replace(/<details open>[\s\S]*?<\/details>/,'<details open><summary>6개 장면 스토리보드</summary>'+core.bodyHtml(board)+'</details>').replace('</style>',core.style+'</style>').replace(/<ol>[\s\S]*?<\/ol>/,'<ol>'+instructions.split('\n').map(line=>'<li>'+e(line.slice(3))+'</li>').join('')+'</ol>').replaceAll('K02-G1.html','K02_게임.html');
+await writeFile(new URL('index.html',dir),index);
+// Compile a standalone playable example using the existing character shell.
+const maker=await readFile(new URL('make.html',docs),'utf8');
+const take=(start,end)=>maker.slice(maker.indexOf(start),maker.indexOf(end,maker.indexOf(start)));
+ctx.document={getElementById:id=>({value:id==='placeId'?'K02':example.topic})};
+ctx.CHAR_BASE='https://jsh1065.github.io/incheon-mathtour/student_images/';
+ctx.pics={1:'data:image/jpeg;base64,'+(await readFile(new URL('manisan-illustration.jpg',dir))).toString('base64')};
+ctx.picSrc={1:example.pictures[0].source};ctx.studentStyle=css;ctx.studentScript='';ctx.activeAssetPreview='';
+ctx.scenes=example.scenes.map((s,i)=>({...s,outer:sections[i],creditSource:i===3?game:sections[i]}));
+vm.runInContext(take('  const FACES =','  /* ====================== */')+take('  function esc(s)','  /* ---------- 사진 ---------- */')+take('  function boyImg','  /* ---------- 검사 ---------- */')+take('function gameAssetBridge(channel)',"window.addEventListener('message', function (event)"),ctx);
+const replace=html=>html.replaceAll('IMG1',ctx.pics[1]);
+const steps=ctx.scenes.map((s,i)=>({title:s.title,game:s.gameNumber,channel:'example-'+i,html:i===3?replace(game).replace('<head>','<head><script>('+ctx.gameAssetBridge.toString()+')("example-'+i+'");</script>'):replace(doc([s.outer]))}));
+ctx.gameAsset={name:'storyboard.html',html:project.tourDocument(steps),hasScenes:true};
+ctx.buildAssetDocument=channel=>ctx.gameAsset.html.replace('<head>','<head><script>('+ctx.gameAssetBridge.toString()+')('+JSON.stringify(channel)+');</script>');
+await writeFile(new URL('mission.html',dir),ctx.buildFullHtml());
+console.log('Built six-scene worksheets, examples and standalone playable tour.');

@@ -1,4 +1,5 @@
 import { createHash, randomUUID } from 'node:crypto';
+import '../docs/project-core.js';
 
 export const PLACE_IDS = new Set(['B01','B02','B03','K01','K02','K03','K04','K05','M01','M02','M03','M04','N01','N02','N03','N04','S01','S02','S03']);
 export const MAX_HTML_BYTES = 5 * 1024 * 1024;
@@ -18,11 +19,14 @@ export function validateMission(data) {
 export function validateProject(project, placeId) {
   const bad = () => { throw httpError(400, 'invalid_project'); };
   if (!project || project.schemaVersion !== 1 || !Array.isArray(project.games) || project.games.length > 20 || !Array.isArray(project.storyboard) || !project.storyboard.length || project.storyboard.length > 50) bad();
+  const fixed = project.layout === globalThis.MathTourProject.SINGLE_LAYOUT;
+  if (project.layout !== undefined && !fixed) bad();
+  if (fixed && (project.games.length !== 1 || project.games[0].number !== 1 || project.storyboard.length !== 6 || project.storyboard.some((scene, i) => !scene || scene.title !== globalThis.MathTourProject.FIXED_SCENES[i] || scene.gameNumber !== (i === 3 ? 1 : null)))) bad();
   const validHtml = file => file && typeof file.html === 'string' && file.html.trim() && Buffer.byteLength(file.html, 'utf8') <= 2 * 1024 * 1024;
   if (!validHtml(project.program) || typeof project.program.name !== 'string' || !/^[^<>:"/\\|?*\x00-\x1f]{1,100}\.html?$/i.test(project.program.name) || project.program.name.startsWith('.')) bad();
   const seen = new Set(), names = new Set([project.program.name.toLowerCase()]);
   for (const game of project.games) {
-    if (!Number.isInteger(game.number) || game.number < 1 || game.number > 999 || seen.has(game.number) || game.name !== placeId + '-G' + game.number + '.html' || names.has(game.name.toLowerCase()) || !validHtml(game)) bad();
+    if (!Number.isInteger(game.number) || game.number < 1 || game.number > 999 || seen.has(game.number) || game.name !== (fixed ? globalThis.MathTourProject.singleGameName(placeId) : placeId + '-G' + game.number + '.html') || names.has(game.name.toLowerCase()) || !validHtml(game)) bad();
     seen.add(game.number); names.add(game.name.toLowerCase());
   }
   for (const scene of project.storyboard) {

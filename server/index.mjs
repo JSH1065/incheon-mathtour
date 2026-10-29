@@ -61,7 +61,7 @@ export function createApplication({ config, store, auth, readRoster }) {
         rates.check('api:' + ip, 600);
         if (req.method === 'GET') {
           const action = url.searchParams.get('action');
-          if (action === 'status') { json(res, 200, { ok: true, mode: config.mock ? 'local-test' : config.provider, storage: config.provider === 'github' ? 'GitHub' : 'OneDrive', commonMaker: config.provider === 'github' }); return; }
+          if (action === 'status') { json(res, 200, { ok: true, mode: config.mock ? 'local-test' : config.provider, storage: config.provider === 'github' ? 'GitHub' : 'OneDrive', commonMaker: config.provider === 'github', sixSceneMaker:true }); return; }
           if (action === 'mission_list') { json(res, 200, await store.list(url.searchParams.get('placeId'))); return; }
           if (action === 'mission_load') { json(res, 200, await store.load(url.searchParams.get('placeId'), url.searchParams.get('sid'))); return; }
           throw httpError(400, 'unknown_action');

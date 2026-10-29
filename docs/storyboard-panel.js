@@ -25,7 +25,7 @@
     const games = new Map(project.games.map(game => [game.number, game]));
     return { ...meta, scenes:scenes.map(scene => {
       const source = scene.gameNumber ? games.get(scene.gameNumber)?.html || '' : scene.outer;
-      return { ...scene, screenText:scene.gameNumber ? '별도 파일 ' + meta.placeId + '-G' + scene.gameNumber + '.html로 게임을 실행해요.\n' + (source ? '게임 파일을 가져온 상태예요.' : '게임 파일을 아직 가져오지 않았어요. 제출 전 4단계에서 선택해 주세요.') : plainContent(source), pictures:[1,2,3].filter(n => source.includes('IMG' + n)) };
+      return { ...scene, screenText:scene.gameNumber ? scene.gamePlan || '[게임의 문제와 목표를 3단계에서 작성해 주세요.]' : plainContent(source), pictures:[1,2,3].filter(n => source.includes('IMG' + n)) };
     }), pictures:project.pictures.map(pic => ({ number:pic.number, source:pic.source })) };
   }
   function render() {
@@ -34,8 +34,8 @@
     byId('showStoryboardTemplate').setAttribute('aria-pressed', String(mode === 'template'));
     byId('storyboardContent').innerHTML = core.bodyHtml(board);
     byId('downloadStoryboardText').disabled = byId('downloadStoryboardHtml').disabled = !board.scenes.length;
-    byId('storyboardNotice').textContent = mode === 'template' ? '관광지 소개·게임 1·게임 2·배운 수학 정리가 들어간 작성 양식이에요. TXT를 내려받아 내용을 채우고 AI에 전달하세요.' :
-      '현재 불러온 장면과 3단계에서 수정한 표정·대사·게임 번호를 표시해요. 본문 코드를 수정했다면 먼저 장면 불러오기를 눌러 주세요. 다운로드는 제출과 별개예요.';
+    byId('storyboardNotice').textContent = mode === 'template' ? '6개 장면의 내용·표정·대사를 작성하는 활동지예요. TXT를 내려받아 내용을 채우고 AI에 전달하세요. 4번 장면에만 게임을 넣어요.' :
+      '현재 본문과 3단계에서 수정한 표정·대사·게임 기획을 표시해요. 본문 코드를 고쳤다면 먼저 장면 불러오기를 눌러 주세요.';
     byId('storyboardDownloadStatus').textContent = '선택한 스토리보드를 저장해요. 게임 파일 없이도 내려받을 수 있어요.';
   }
   function openStoryboard() {

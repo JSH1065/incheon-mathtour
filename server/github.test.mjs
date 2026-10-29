@@ -41,6 +41,30 @@ function fakeGitHub() {
 }
 const mission = id => ({ id, school: '예시중', name: '학생' + id, placeId: 'K02', topic: '삼각형', html: '<p>snapshot</p>', project: { schemaVersion: 1, program: { name: 'K02.html', html: '<section class="scene" data-game="1"></section>' }, games: [{ number: 1, name: 'K02-G1.html', html: '<script>missionClear()</script>' }], storyboard: [{ title: 'game', gameNumber: 1 }], pictures: [{ number: 1, data: 'data:image/jpeg;base64,YQ==', source: 'test' }] } });
 
+test('six fixed scenes save one readable game file and reject misplaced or extra games', async () => {
+  const api = fakeGitHub(), store = new GitHubStore({ token:'test-token', repository:'test/math', fetchImpl:api.fetch, mutationDelay:0 });
+  const data = mission('SIX');
+  data.project.layout = 'six-scenes-one-game';
+  data.project.games[0].name = 'K02_게임.html';
+  data.project.storyboard = globalThis.MathTourProject.sixScenes(Array.from({length:6}, () => ({boyText:'대사'})));
+  data.project.program.html = data.project.storyboard.map((s,i) => '<section class="scene" data-title="'+s.title+'"'+(i===3?' data-game="1"':'')+'></section>').join('');
+  await store.save(data);
+  const files=api.files(), base='docs/submissions/K02/SIX/K02_예시중학생SIX_';
+  assert.equal(files[base+'게임.html'],data.project.games[0].html);
+  assert.equal(files[base+'G1.html'],undefined);
+  const manifest=JSON.parse(files[base+'스토리보드.json']);
+  assert.equal(manifest.games.length,1);assert.equal(manifest.storyboard.length,6);
+  assert.equal(manifest.games[0].name,'K02_예시중학생SIX_게임.html');
+  assert.equal(manifest.layout,'six-scenes-one-game');
+  for(const mutate of [p=>p.storyboard.pop(),p=>p.games.push({...p.games[0],number:2}),p=>{p.storyboard[2].gameNumber=1;},p=>{p.storyboard[3].gameNumber=null;}]) {
+    const changed=structuredClone(data);mutate(changed.project);
+    await assert.rejects(store.save(changed),{code:'invalid_project'});
+  }
+  data.project.games[0].html='<p>수정한 게임</p>';await store.save(data);
+  assert.equal(api.files()[base+'게임.html'],'<p>수정한 게임</p>');
+  assert.equal(JSON.parse(api.files()['docs/submissions/catalog.json']).missions.length,1);
+});
+
 test('20 simultaneous GitHub submissions keep every author and their original files', async () => {
   const api = fakeGitHub(), store = new GitHubStore({ token: 'test-token', repository: 'test/math', fetchImpl: api.fetch, mutationDelay: 0 });
   await Promise.all(Array.from({ length: 20 }, (_, i) => store.save(mission('S' + i))));

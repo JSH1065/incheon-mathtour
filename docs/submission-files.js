@@ -35,7 +35,7 @@
       files.push(file); return file.name;
     };
     const program = add('program', '본문.html', 'text/html;charset=utf-8', project.program.html);
-    const games = project.games.map(game => ({ number: game.number, name: add('game', 'G' + game.number + '.html', 'text/html;charset=utf-8', game.html, { number: game.number }) }));
+    const games = project.games.map(game => ({ number: game.number, name: add('game', project.layout === 'six-scenes-one-game' ? '게임.html' : 'G' + game.number + '.html', 'text/html;charset=utf-8', game.html, { number: game.number }) }));
     const pictures = (project.pictures || []).map(pic => {
       const match = /^data:image\/(jpeg|png|webp);base64,/.exec(pic.data);
       if (!match) throw new Error('지원하지 않는 사진 형식이에요. 사진을 다시 선택해 주세요.');
@@ -44,6 +44,7 @@
     const mission = add('mission', '매스투어.html', 'text/html;charset=utf-8', html);
     // Keep author fields separate: the readable concatenated filename is not an identity key.
     const manifest = { format: 'mathtour-submission', schemaVersion: 1, submissionId, placeId, ...author, topic: topic.trim(), program, games, pictures, mission, storyboard: project.storyboard };
+    if (project.layout) manifest.layout = project.layout;
     add('storyboard', '스토리보드.json', 'application/json;charset=utf-8', JSON.stringify(manifest, null, 2));
     return files;
   }

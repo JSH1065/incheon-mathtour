@@ -1,0 +1,52 @@
+{
+  "format": "mathtour-submission",
+  "schemaVersion": 1,
+  "submissionId": "96de3cca-8848-470b-ba6c-8422cfea532d",
+  "placeId": "K02",
+  "school": "기능점검",
+  "name": "자동검사",
+  "topic": "공통 제작기 제출 기능 점검",
+  "program": "K02_기능점검자동검사_본문.html",
+  "games": [
+    {
+      "number": 1,
+      "name": "K02_기능점검자동검사_게임.html"
+    }
+  ],
+  "pictures": [],
+  "storyboard": [
+    {
+      "title": "관광지 소개 1",
+      "gameNumber": null,
+      "isProblem": false
+    },
+    {
+      "title": "관광지 소개 2",
+      "gameNumber": null,
+      "isProblem": false
+    },
+    {
+      "title": "문제 상황 설명(사용하는 수학 개념)",
+      "gameNumber": null,
+      "isProblem": false
+    },
+    {
+      "title": "문제(게임)",
+      "gameNumber": 1,
+      "isProblem": true
+    },
+    {
+      "title": "정답 확인 및 해설",
+      "gameNumber": null,
+      "isProblem": false
+    },
+    {
+      "title": "배운 내용 정리",
+      "gameNumber": null,
+      "isProblem": false
+    }
+  ],
+  "layout": "six-scenes-one-game",
+  "playback": "source-files",
+  "studentId": "M23ba6ea04d74814d133941ee02792b1c"
+}

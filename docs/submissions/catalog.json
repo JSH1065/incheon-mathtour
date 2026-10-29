@@ -9,15 +9,6 @@
       "topic": "마니산 · 6개 장면으로 배우는 피타고라스 정리",
       "manifest": "./submissions/K02/TEACHER01/K02_%EA%B5%90%EC%82%AC%EC%98%88%EC%8B%9C%EC%97%85%EB%A1%9C%EB%93%9C%ED%99%95%EC%9D%B8_%EC%8A%A4%ED%86%A0%EB%A6%AC%EB%B3%B4%EB%93%9C.json",
       "updatedAt": "2026-10-29T00:08:25.695Z"
-    },
-    {
-      "id": "M23ba6ea04d74814d133941ee02792b1c",
-      "placeId": "K02",
-      "school": "기능점검",
-      "name": "자동검사",
-      "topic": "공통 제작기 제출 기능 점검",
-      "manifest": "./submissions/K02/M23ba6ea04d74814d133941ee02792b1c/K02_%EA%B8%B0%EB%8A%A5%EC%A0%90%EA%B2%80%EC%9E%90%EB%8F%99%EA%B2%80%EC%82%AC_%EC%8A%A4%ED%86%A0%EB%A6%AC%EB%B3%B4%EB%93%9C.json",
-      "updatedAt": "2026-10-29T16:59:58.214Z"
     }
   ]
 }

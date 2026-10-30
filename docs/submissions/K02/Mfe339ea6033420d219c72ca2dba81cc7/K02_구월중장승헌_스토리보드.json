@@ -1,0 +1,116 @@
+{
+  "format": "mathtour-submission",
+  "schemaVersion": 1,
+  "submissionId": "1694c8f7-b090-43e2-9577-e3baf9f9ae7e",
+  "placeId": "K02",
+  "school": "구월중",
+  "name": "장승헌",
+  "topic": "참성단과 하원상방",
+  "program": "K02_구월중장승헌_본문.html",
+  "games": [
+    {
+      "number": 1,
+      "name": "K02_구월중장승헌_게임.html"
+    }
+  ],
+  "pictures": [
+    {
+      "number": 1,
+      "source": "제미나이",
+      "name": "K02_구월중장승헌_IMG1.jpg"
+    },
+    {
+      "number": 2,
+      "source": "제미나이",
+      "name": "K02_구월중장승헌_IMG2.jpg"
+    },
+    {
+      "number": 3,
+      "source": "제미나이",
+      "name": "K02_구월중장승헌_IMG3.jpg"
+    }
+  ],
+  "storyboard": [
+    {
+      "title": "관광지 소개 1",
+      "gameNumber": null,
+      "boyFace": "lookmap",
+      "girlFace": "how",
+      "boyText": "여기가 바로 강화도 마니산 참성단이야! 제단 모양이 아주 독특하지?",
+      "girlText": "응! 아래쪽은 동그랗고 위쪽은 네모난 모양이네? 무슨 의미가 있을까?",
+      "isProblem": false,
+      "hint": "",
+      "gamePlan": "",
+      "gameControls": "",
+      "gameAnswer": ""
+    },
+    {
+      "title": "관광지 소개 2",
+      "gameNumber": null,
+      "boyFace": "aha",
+      "girlFace": "stand",
+      "boyText": "하늘은 원형(원), 땅은 바르다(정사각형)는 '하원상방' 사상이 담겨 있대!",
+      "girlText": "우와, 조상님들은 제단 건축에도 정교한 기하학 원리를 적용하셨구나!",
+      "isProblem": false,
+      "hint": "",
+      "gamePlan": "",
+      "gameControls": "",
+      "gameAnswer": ""
+    },
+    {
+      "title": "문제 상황 설명(사용하는 수학 개념)",
+      "gameNumber": null,
+      "boyFace": "thinking",
+      "girlFace": "how",
+      "boyText": "참성단을 복원하려면 원형 기단 둘레와 정사각형 둘레를 똑같이 만들어야 해.",
+      "girlText": "정사각형 한 변이 3.14m니까... 원의 반지름을 얼마로 해야 둘레가 같아질까?",
+      "isProblem": false,
+      "hint": "",
+      "gamePlan": "",
+      "gameControls": "",
+      "gameAnswer": ""
+    },
+    {
+      "title": "문제(게임)",
+      "gameNumber": 1,
+      "boyFace": "finding",
+      "girlFace": "thinking",
+      "boyText": "슬라이더를 움직여서 정사각형 둘레 12.56m와 일치하는 반지름 r을 찾아봐!",
+      "girlText": "원주 공식은 2×3.14×r이라는 점을 기억해서 계산해보자!",
+      "isProblem": true,
+      "hint": "정사각형 둘레는 12.56m! 2 × 3.14 × r = 12.56이 되는 r을 구해요. (정답: 2.0)",
+      "gamePlan": "참성단 하원상방 제단의 원형 기단 둘레와 정사각형 둘레(12.56m)가 같아지는 완벽한 반지름(r) 찾기",
+      "gameControls": "반지름 슬라이더(0.5m ~ 4.0m)를 조작하여 실시간 원주 변화를 확인하고 [제단 복원] 버튼으로 정답을 검증합니다.",
+      "gameAnswer": "반지름 r = 2.0m (원주 = 2 × 3.14 × 2.0 = 12.56m)"
+    },
+    {
+      "title": "정답 확인 및 해설",
+      "gameNumber": null,
+      "boyFace": "thumb",
+      "girlFace": "aha",
+      "boyText": "완벽해! 반지름이 2.0m일 때 원주가 정확히 12.56m가 되어 완벽한 조화를 이뤄!",
+      "girlText": "2×3.14×2=12.56m! 하늘과 땅의 둘레가 완벽히 균형을 이루었어!",
+      "isProblem": false,
+      "hint": "",
+      "gamePlan": "",
+      "gameControls": "",
+      "gameAnswer": ""
+    },
+    {
+      "title": "배운 내용 정리",
+      "gameNumber": null,
+      "boyFace": "thumb",
+      "girlFace": "thumb",
+      "boyText": "멋지게 참성단 첫 번째 복원 미션을 완수했어! 축하해!",
+      "girlText": "원주와 다각형 둘레의 관계를 직접 설계해보니 수학이 훨씬 새로워!",
+      "isProblem": false,
+      "hint": "",
+      "gamePlan": "",
+      "gameControls": "",
+      "gameAnswer": ""
+    }
+  ],
+  "layout": "six-scenes-one-game",
+  "playback": "source-files",
+  "studentId": "Mfe339ea6033420d219c72ca2dba81cc7"
+}

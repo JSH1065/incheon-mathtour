@@ -1,0 +1,267 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>마니산 참성단 - 하원상방 둘레 맞추기</title>
+<style>
+  body {
+    margin: 0;
+    padding: 10px;
+    font-family: sans-serif;
+    background-color: #f7f9fc;
+    color: #333;
+    box-sizing: border-box;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: flex-start;
+    min-height: 100vh;
+    overflow-y: auto;
+  }
+  .container {
+    width: 100%;
+    max-width: 640px;
+    background: #fff;
+    border-radius: 8px;
+    box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+    padding: 16px;
+    box-sizing: border-box;
+    margin-bottom: 20px;
+  }
+  .scene {
+    display: none;
+  }
+  .scene.active {
+    display: block;
+  }
+  h2 {
+    font-size: 1.2rem;
+    margin-top: 0;
+    color: #2c3e50;
+  }
+  p {
+    font-size: 0.95rem;
+    line-height: 1.4;
+    margin: 8px 0;
+  }
+  .btn-group {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-top: 16px;
+    gap: 8px;
+  }
+  button {
+    padding: 8px 16px;
+    font-size: 0.9rem;
+    border: none;
+    border-radius: 4px;
+    background-color: #3498db;
+    color: white;
+    cursor: pointer;
+    font-weight: bold;
+  }
+  button:hover {
+    background-color: #2980b9;
+  }
+  button:disabled {
+    background-color: #bdc3c7;
+    cursor: not-allowed;
+  }
+  canvas {
+    display: block;
+    margin: 10px auto;
+    background: #ecf0f1;
+    border-radius: 4px;
+  }
+  .dashboard {
+    background: #f1f4f8;
+    padding: 10px;
+    border-radius: 6px;
+    margin: 10px 0;
+    font-size: 0.9rem;
+  }
+  .success-msg {
+    color: #27ae60;
+    font-weight: bold;
+    margin: 8px 0;
+    text-align: center;
+  }
+  .intro-img {
+    text-align: center;
+    margin: 10px 0;
+  }
+  .intro-img img {
+    max-width: 100%;
+    height: auto;
+    max-height: 120px;
+    border-radius: 4px;
+  }
+</style>
+</head>
+<body>
+<div class="container">
+  <!-- 장면 1 -->
+  <section id="scene1" class="scene active">
+    <h2>마니산 참성단 - 하원상방 미션</h2>
+    <div class="intro-img">
+      <img src="IMG1" alt="참성단 안내 이미지">
+    </div>
+    <p>"참성단은 아래쪽은 원형(하늘)이고 위쪽은 정사각형(땅)으로 만들어진 '하원상방(천원지방)' 구조입니다!"</p>
+    <p>제단을 복원하기 위해 아래 원형 기단의 둘레(원주)와 위 정사각형 제단의 둘레가 같아지도록 설계하려고 합니다. 원의 반지름 슬라이더를 조작하여 정사각형 둘레와 완벽하게 균형을 이루는 반지름을 찾아주세요!</p>
+    <div class="btn-group" style="justify-content: flex-end;">
+      <button type="button" onclick="changeScene(2)">시작하기</button>
+    </div>
+  </section>
+
+  <!-- 장면 2 -->
+  <section id="scene2" class="scene">
+    <h2>원과 정사각형 둘레 맞추기</h2>
+    <div class="intro-img">
+      <img src="IMG2" alt="참성단 구조 도식 이미지">
+    </div>
+    <p>정사각형 제단 한 변: 3.14 m (고정) | 정사각형 둘레: 12.56 m (고정)</p>
+    
+    <canvas id="canvas" width="280" height="160"></canvas>
+    
+    <div class="dashboard">
+      <p>현재 원 반지름 (r): <span id="radiusVal">1.0</span> m</p>
+      <p>계산된 현재 원주 (2 * 3.14 * r): <span id="circumVal">6.28</span> m</p>
+      <p>목표 정사각형 둘레: 12.56 m</p>
+    </div>
+
+    <div>
+      <label for="radiusSlider">반지름 조절 (0.5 ~ 4.0 m):</label>
+      <input type="range" id="radiusSlider" min="0.5" max="4.0" step="0.1" value="1.0" oninput="updateSlider(this.value)">
+    </div>
+
+    <div id="successArea" style="display:none;" class="success-msg">
+      하늘과 땅의 완벽한 조화! 참성단 기단 설계 성공! ✨
+    </div>
+
+    <div class="btn-group">
+      <button type="button" onclick="changeScene(1)">이전</button>
+      <div style="display: flex; gap: 8px;">
+        <button type="button" id="checkBtn" onclick="checkAnswer()">제단 복원</button>
+        <button type="button" id="nextBtn" onclick="changeScene(3)" disabled>다음</button>
+      </div>
+    </div>
+  </section>
+
+  <!-- 장면 3 -->
+  <section id="scene3" class="scene">
+    <h2>미션 완료!</h2>
+    <div class="intro-img">
+      <img src="IMG3" alt="완료된 참성단 이미지">
+    </div>
+    <p>축하합니다! 원형 기단의 원주와 정사각형 제단의 둘레가 12.56 m로 완벽하게 일치하여 마니산 참성단이 아름답게 복원되었습니다.</p>
+    <p>하원상방(천원지방)의 지혜를 담은 참성단 설계 미션을 성공적으로 마쳤습니다.</p>
+    <div class="btn-group">
+      <button type="button" onclick="changeScene(2)">이전</button>
+      <button type="button" id="completeBtn" onclick="onMissionComplete()">미션 완료</button>
+    </div>
+  </section>
+</div>
+
+<script>
+  let currentScene = 1;
+  let isSolved = false;
+  let isCompleted = false;
+
+  function changeScene(sceneNum) {
+    document.querySelectorAll('.scene').forEach(el => el.classList.remove('active'));
+    document.getElementById('scene' + sceneNum).classList.add('active');
+    currentScene = sceneNum;
+    if (sceneNum === 2) {
+      drawCanvas(parseFloat(document.getElementById('radiusSlider').value));
+      if (isSolved) {
+        document.getElementById('successArea').style.display = 'block';
+        document.getElementById('nextBtn').removeAttribute('disabled');
+      }
+    }
+  }
+
+  function updateSlider(val) {
+    let r = parseFloat(val);
+    document.getElementById('radiusVal').innerText = r.toFixed(1);
+    let circum = 2 * 3.14 * r;
+    document.getElementById('circumVal').innerText = circum.toFixed(2);
+    drawCanvas(r);
+  }
+
+  function drawCanvas(r) {
+    const canvas = document.getElementById('canvas');
+    const ctx = canvas.getContext('2d');
+    ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+    const cx = canvas.width / 2;
+    const cy = canvas.height / 2;
+
+    // Grid lines
+    ctx.strokeStyle = '#e2e8f0';
+    ctx.lineWidth = 1;
+    ctx.beginPath();
+    ctx.moveTo(cx, 0); ctx.lineTo(cx, canvas.height);
+    ctx.moveTo(0, cy); ctx.lineTo(canvas.width, cy);
+    ctx.stroke();
+
+    // Square representing top altar (side 3.14 scaled)
+    const scale = 22;
+    const squareSide = 3.14 * scale;
+    ctx.strokeStyle = '#e74c3c';
+    ctx.lineWidth = 2;
+    ctx.strokeRect(cx - squareSide/2, cy - squareSide/2 - 12, squareSide, squareSide);
+    
+    ctx.fillStyle = '#e74c3c';
+    ctx.font = '10px sans-serif';
+    ctx.fillText('정사각형(땅, 3.14m)', cx - squareSide/2, cy - squareSide/2 - 16);
+
+    // Circle representing bottom altar (radius r)
+    const circleRadius = r * scale;
+    ctx.strokeStyle = '#3498db';
+    ctx.lineWidth = 2;
+    ctx.beginPath();
+    ctx.arc(cx, cy + 15, circleRadius, 0, Math.PI * 2);
+    ctx.stroke();
+
+    ctx.fillStyle = '#3498db';
+    ctx.fillText('원형(하늘, r=' + r.toFixed(1) + 'm)', cx - 45, cy + 15 + circleRadius + 14);
+
+    if (isSolved) {
+      ctx.strokeStyle = '#f1c40f';
+      ctx.lineWidth = 3;
+      ctx.beginPath();
+      ctx.arc(cx, cy + 15, circleRadius, 0, Math.PI * 2);
+      ctx.stroke();
+    }
+  }
+
+  function checkAnswer() {
+    let r = parseFloat(document.getElementById('radiusSlider').value);
+    if (Math.abs(r - 2.0) < 0.001) {
+      isSolved = true;
+      document.getElementById('successArea').style.display = 'block';
+      document.getElementById('nextBtn').removeAttribute('disabled');
+      drawCanvas(r);
+    } else {
+      alert('현재 원주(' + (2 * 3.14 * r).toFixed(2) + 'm)와 정사각형 둘레(12.56m)가 일치하지 않습니다. 반지름을 조절해 보세요!');
+    }
+  }
+
+  function onMissionComplete() {
+    if (!isCompleted) {
+      isCompleted = true;
+      if (typeof window.missionClear === "function") {
+        window.missionClear();
+      }
+      alert('참성단 미션이 성공적으로 완료되었습니다!');
+    }
+  }
+
+  window.onload = function() {
+    drawCanvas(1.0);
+  };
+</script>
+</body>
+</html>

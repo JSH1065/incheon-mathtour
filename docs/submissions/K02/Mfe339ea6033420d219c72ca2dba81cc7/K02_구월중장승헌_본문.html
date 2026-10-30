@@ -1,0 +1,142 @@
+<!doctype html><html lang="ko"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width"><title>매쓰투어 본문</title><style>
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+        body {
+            width: 100vw;
+            height: 100vh;
+            background-color: #0f172a;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            font-family: 'Malgun Gothic', sans-serif;
+            color: #f8fafc;
+            overflow: hidden;
+        }
+        /* 16:9 반응형 고정 비율 컨테이너 */
+        .story-container {
+            width: 100vw;
+            height: 56.25vw;
+            max-height: 100vh;
+            max-width: 177.78vh;
+            background: linear-gradient(135deg, #1e293b, #0f172a);
+            position: relative;
+            display: flex;
+            flex-direction: column;
+            padding: 30px;
+            box-shadow: 0 15px 35px rgba(0,0,0,0.6);
+            border-radius: 12px;
+            overflow: hidden;
+        }
+        .scene {
+            display: flex;
+            flex-direction: column;
+            height: 100%;
+            justify-content: space-between;
+        }
+        .content-box {
+            flex: 1;
+            background: rgba(255, 255, 255, 0.05);
+            backdrop-filter: blur(12px);
+            border-radius: 12px;
+            padding: 25px;
+            overflow-y: auto;
+            border: 1px solid rgba(255, 255, 255, 0.15);
+        }
+        h2 {
+            font-size: 24px;
+            color: #38bdf8;
+            margin-bottom: 15px;
+            border-bottom: 2px solid rgba(56, 189, 248, 0.3);
+            padding-bottom: 8px;
+        }
+        p {
+            font-size: 17px;
+            line-height: 1.6;
+            margin-bottom: 12px;
+        }
+        ul {
+            margin-left: 20px;
+            margin-bottom: 12px;
+        }
+        li {
+            font-size: 16px;
+            line-height: 1.5;
+            margin-bottom: 6px;
+        }
+        .img-tag {
+            margin-top: 15px;
+            padding: 12px;
+            background: rgba(56, 189, 248, 0.1);
+            border: 2px dashed #38bdf8;
+            text-align: center;
+            border-radius: 8px;
+            font-weight: bold;
+            color: #38bdf8;
+            font-size: 15px;
+        }
+        .game-slot-notice {
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            height: 100%;
+            text-align: center;
+            color: #94a3b8;
+        }
+        .game-slot-notice h3 {
+            font-size: 24px;
+            color: #f43f5e;
+            margin-bottom: 10px;
+        }
+    </style></head><body><section class="scene" data-title="관광지 소개 1" data-boy-face="lookmap" data-boy-text="여기가 바로 강화도 마니산 참성단이야! 제단 모양이 아주 독특하지?" data-girl-face="how" data-girl-text="응! 아래쪽은 동그랗고 위쪽은 네모난 모양이네? 무슨 의미가 있을까?" data-problem="false" data-hint="" data-game-plan="" data-game-controls="" data-game-answer="">
+        <div class="content-box">
+            <h2>마니산 참성단과 하원상방 구조</h2>
+            <p>강화도 마니산 정상에 위치한 참성단은 단군왕검이 하늘에 제사를 지내기 위해 세웠다고 전해지는 유서 깊은 장소입니다.</p>
+            <p>이곳의 가장 큰 건축적 특징은 아래쪽 기단은 원형이고 위쪽 제단은 정사각형으로 이루어진 독특한 구조를 띠고 있다는 점입니다.</p>
+            <div class="img-tag">[사진 자료: IMG1] 참성단 전경과 원형 기단·사각형 제단 구조</div>
+        </div>
+    </section>
+<section class="scene" data-title="관광지 소개 2" data-boy-face="aha" data-boy-text="하늘은 원형(원), 땅은 바르다(정사각형)는 '하원상방' 사상이 담겨 있대!" data-girl-face="stand" data-girl-text="우와, 조상님들은 제단 건축에도 정교한 기하학 원리를 적용하셨구나!" style="display:none;" data-problem="false" data-hint="" data-game-plan="" data-game-controls="" data-game-answer="">
+        <div class="content-box">
+            <h2>천원지방과 하원상방 우주관</h2>
+            <p>우리 선조들은 예로부터 하늘은 둥글고 땅은 네모지다는 '천원지방(天圓地方)'의 우주관을 가지고 있었습니다.</p>
+            <p>참성단의 건축물은 이러한 철학적 의미를 담아 원과 정사각형의 기하학적 도형을 상하로 결합한 '하원상방'의 형태로 설계되었습니다.</p>
+            <div class="img-tag">[사진 자료: IMG2] 정사각형 제단과 기단의 정교한 석축 디테일</div>
+        </div>
+    </section>
+<section class="scene" data-title="문제 상황 설명(사용하는 수학 개념)" data-boy-face="thinking" data-boy-text="참성단을 복원하려면 원형 기단 둘레와 정사각형 둘레를 똑같이 만들어야 해." data-girl-face="how" data-girl-text="정사각형 한 변이 3.14m니까... 원의 반지름을 얼마로 해야 둘레가 같아질까?" style="display:none;" data-problem="false" data-hint="" data-game-plan="" data-game-controls="" data-game-answer="">
+        <div class="content-box">
+            <h2>제단 복원 미션: 원주와 정사각형 둘레의 만남</h2>
+            <p>시간이 흘러 훼손된 참성단을 과학적이고 수학적인 원리로 복원하는 탐구 미션이 주어졌습니다.</p>
+            <p>상단 정사각형 제단의 한 변의 길이는 <strong>3.14m</strong>로 고정되어 있어 전체 정사각형 둘레는 <strong>12.56m</strong>입니다.</p>
+            <p>하단 원형 기단의 둘레(원주)가 이 정사각형의 둘레와 정확히 일치하도록 원의 반지름(r)을 찾아야 합니다.</p>
+            <div class="img-tag">[사진 자료: IMG3] 마니산 정상으로 향하는 아름다운 등산로 풍경</div>
+        </div>
+    </section>
+<section class="scene" data-title="문제(게임)" data-boy-face="finding" data-boy-text="슬라이더를 움직여서 정사각형 둘레 12.56m와 일치하는 반지름 r을 찾아봐!" data-girl-face="thinking" data-girl-text="원주 공식은 2×3.14×r이라는 점을 기억해서 계산해보자!" data-hint="정사각형 둘레는 12.56m! 2 × 3.14 × r = 12.56이 되는 r을 구해요. (정답: 2.0)" data-game-plan="참성단 하원상방 제단의 원형 기단 둘레와 정사각형 둘레(12.56m)가 같아지는 완벽한 반지름(r) 찾기" data-game-controls="반지름 슬라이더(0.5m ~ 4.0m)를 조작하여 실시간 원주 변화를 확인하고 [제단 복원] 버튼으로 정답을 검증합니다." data-game-answer="반지름 r = 2.0m (원주 = 2 × 3.14 × 2.0 = 12.56m)" style="display:none;" data-game="1" data-problem="true"></section>
+<section class="scene" data-title="정답 확인 및 해설" data-boy-face="thumb" data-boy-text="완벽해! 반지름이 2.0m일 때 원주가 정확히 12.56m가 되어 완벽한 조화를 이뤄!" data-girl-face="aha" data-girl-text="2×3.14×2=12.56m! 하늘과 땅의 둘레가 완벽히 균형을 이루었어!" style="display:none;" data-problem="false" data-hint="" data-game-plan="" data-game-controls="" data-game-answer="">
+        <div class="content-box">
+            <h2>참성단 복원 성공 및 원주 해설</h2>
+            <p><strong>[수학적 풀이 및 해설]</strong></p>
+            <p>1. 정사각형 제단의 둘레: $4 \times 3.14\text{m} = \mathbf{12.56\text{m}}$</p>
+            <p>2. 원주의 공식: $\text{원주} = 2 \times \pi \times r$ (단, $\pi = 3.14$ 기준)</p>
+            <p>3. 방정식 계산: $2 \times 3.14 \times r = 12.56 \implies 6.28 \times r = 12.56 \implies r = \mathbf{2.0\text{m}}$</p>
+            <p>반지름이 정확히 <strong>2.0m</strong>일 때 원형 기단과 정사각형 제단의 둘레가 완벽하게 일치하여 조화를 이룹니다!</p>
+            <div class="img-tag">[사진 자료: IMG2] 완벽한 비율로 복원된 참성단 제단 모습</div>
+        </div>
+    </section>
+<section class="scene" data-title="배운 내용 정리" data-boy-face="thumb" data-boy-text="멋지게 참성단 첫 번째 복원 미션을 완수했어! 축하해!" data-girl-face="thumb" data-girl-text="원주와 다각형 둘레의 관계를 직접 설계해보니 수학이 훨씬 새로워!" style="display:none;" data-problem="false" data-hint="" data-game-plan="" data-game-controls="" data-game-answer="">
+        <div class="content-box">
+            <h2>미션 완료 및 학습 정리</h2>
+            <p>축하합니다! 마니산 참성단 하원상방 제단 복원 미션을 성공적으로 완수했습니다.</p>
+            <p><strong>핵심 개념 요약:</strong></p>
+            <ul>
+                <li><strong>원주와 원의 넓이 [초등 6수02-06]</strong>: 원의 지름과 원주율의 관계를 이해하고 원주($2\pi r$)를 계산하는 과정을 익혔습니다.</li>
+                <li><strong>부채꼴과 도형의 성질 [중등 9수03-03]</strong>: 실생활 건축물 속에 숨겨진 기하학적 도형의 조화와 둘레 비교 원리를 탐구했습니다.</li>
+            </ul>
+            <div class="img-tag">[사진 자료: IMG3] 미션 완료를 기념하는 마니산 탐구 활동 인증샷</div>
+        </div>
+    </section></body></html>

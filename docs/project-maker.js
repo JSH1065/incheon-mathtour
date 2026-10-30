@@ -205,10 +205,7 @@
     return '<!doctype html>' + doc.documentElement.outerHTML;
   }
   function storyDocument(sc) {
-    const doc = new DOMParser().parseFromString(sc.outer, 'text/html');
-    const section = doc.querySelector('section.scene'); section.removeAttribute('hidden');
-    section.style.cssText += ';display:block!important;visibility:visible!important;position:relative!important;height:auto!important;min-height:100%;';
-    return replaceImgTags('<!doctype html><html lang="ko"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width"><style>*{box-sizing:border-box}html,body{margin:0;min-height:100%;font-family:Malgun Gothic,sans-serif}body{padding:14px}img{max-width:100%}' + studentStyle + '</style></head><body>' + section.outerHTML + '</body></html>');
+    return window.MathTourContent.storyDocument(sc.outer, studentStyle, pics);
   }
   function storyboardErrors() {
     const errors = [];

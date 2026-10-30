@@ -10,5 +10,6 @@
     "secrets": "node scripts/setup-secrets.mjs",
     "roster": "node --env-file-if-exists=.env scripts/create-roster.mjs"
   },
-  "dependencies": { "@azure/msal-node": "7.1.2" }
+  "dependencies": { "@azure/msal-node": "7.1.2" },
+  "devDependencies": { "jsdom": "30.1.3" }
 }

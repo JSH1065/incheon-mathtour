@@ -47,9 +47,7 @@
   function boyImg(face){ return CHAR_BASE+face+'_boy.webp'; }
   function girlImg(face){ return CHAR_BASE+face+'_girl.webp'; }
   function replaceImgTags(text){
-    let out=text;
-    for(let n=1;n<=3;n++){ if(pics[n]) out=out.split('IMG'+n).join(pics[n]); }
-    return out;
+    return window.MathTourContent.replaceImages(text, pics);
   }
 
   function buildFullHtml({ preview = false } = {}){
@@ -72,7 +70,7 @@
       };
     });
     const sceneHtml = gameAsset ? '<iframe id="mt-game-asset" title="학생이 만든 게임" sandbox="allow-scripts allow-forms" style="width:100%;height:100%;border:0;display:block"></iframe><div id="mt-game-error" hidden style="position:absolute;inset:0;background:#fff5f5;color:#b71c1c;padding:20px;overflow:auto;z-index:10001"></div>' : replaceImgTags(scenes.map(sc=>sc.outer).join('\n'));
-    const styleCss = gameAsset ? '' : replaceImgTags(studentStyle);
+    const styleCss = gameAsset ? '' : window.MathTourContent.replaceImageCss(studentStyle, pics);
     const scriptJs = gameAsset ? buildAssetHostScript() : studentScript;
 
     const titleBar = esc(regionName)+' › '+esc(placeName)+(topic?' › '+esc(topic):'');
@@ -258,9 +256,7 @@ function buildAssetHostScript() {
         html = '<!doctype html>' + gameDoc.documentElement.outerHTML;
       } else {
         scene.creditSource = scene.outer;
-        const section = new DOMParser().parseFromString(scene.outer, 'text/html').querySelector('section.scene');
-        section.removeAttribute('hidden'); section.style.cssText += ';display:block!important;visibility:visible!important;position:relative!important;height:auto!important;min-height:100%;';
-        html = replaceImgTags('<!doctype html><html lang="ko"><head><meta charset="utf-8"><style>*{box-sizing:border-box}html,body{margin:0;min-height:100%;font-family:Malgun Gothic,sans-serif}body{padding:14px}img{max-width:100%}' + studentStyle + '</style></head><body>' + section.outerHTML + '</body></html>');
+        html = window.MathTourContent.storyDocument(scene.outer, studentStyle, pics);
       }
       return { title: scene.title, game: scene.gameNumber, channel, html };
     });

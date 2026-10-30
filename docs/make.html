@@ -132,6 +132,7 @@
 
 </style>
 <script src="./config.js?v=20261028-live"></script>
+<script src="./content-renderer.js?v=20261030-images"></script>
 <script src="./site-common.js?v=20261029-nav" defer></script>
 </head>
 <body>
@@ -437,9 +438,7 @@
   function boyImg(face){ return CHAR_BASE+face+'_boy.webp'; }
   function girlImg(face){ return CHAR_BASE+face+'_girl.webp'; }
   function replaceImgTags(text){
-    let out=text;
-    for(let n=1;n<=3;n++){ if(pics[n]) out=out.split('IMG'+n).join(pics[n]); }
-    return out;
+    return window.MathTourContent.replaceImages(text, pics);
   }
 
   function buildFullHtml({ preview = false } = {}){
@@ -462,7 +461,7 @@
       };
     });
     const sceneHtml = gameAsset ? '<iframe id="mt-game-asset" title="학생이 만든 게임" sandbox="allow-scripts allow-forms" style="width:100%;height:100%;border:0;display:block"></iframe><div id="mt-game-error" hidden style="position:absolute;inset:0;background:#fff5f5;color:#b71c1c;padding:20px;overflow:auto;z-index:10001"></div>' : replaceImgTags(scenes.map(sc=>sc.outer).join('\n'));
-    const styleCss = gameAsset ? '' : replaceImgTags(studentStyle);
+    const styleCss = gameAsset ? '' : window.MathTourContent.replaceImageCss(studentStyle, pics);
     const scriptJs = gameAsset ? buildAssetHostScript() : studentScript;
 
     const titleBar = esc(regionName)+' › '+esc(placeName)+(topic?' › '+esc(topic):'');
@@ -782,7 +781,7 @@ document.querySelector('.wrap').addEventListener('change', function (event) {
 <script src="./classroom-access.js?v=20261030-common"></script>
 <script src="./project-core.js?v=20261029-six"></script>
 <script src="./submission-files.js?v=20261029-six"></script>
-<script src="./project-maker.js?v=20261030-photos"></script>
+<script src="./project-maker.js?v=20261030-images"></script>
 <script src="./storyboard-core.js?v=20261029-six"></script>
 <script src="./storyboard-panel.js?v=20261029-pdf"></script>
 

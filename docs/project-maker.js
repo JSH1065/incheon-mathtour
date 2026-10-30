@@ -160,7 +160,10 @@
           if (new DOMParser().parseFromString(html, 'text/html').querySelectorAll('section.scene').length === 6 && !/\bmissionClear\s*\(/.test(html)) throw new Error('본문 파일을 선택한 것 같아요. 게임 HTML 파일을 선택해 주세요.');
           gameHtml = html; gameFileName = file.name; fileList(); refreshPrompts();
         }
-        showAssetStatus(kind === 'program' ? '본문 6개 장면을 가져왔어요.' : '게임 하나를 가져왔어요. 4번 장면에 자동으로 연결돼요.', false);
+        const assetErrors = kind === 'game' ? embeddedErrors(html) : [];
+        showAssetStatus(assetErrors.length
+          ? '게임 파일은 가져왔지만 제출 전에 수정이 필요해요.\n' + assetErrors.join('\n')
+          : kind === 'program' ? '본문 6개 장면을 가져왔어요.' : '게임 하나를 가져왔어요. 4번 장면에 자동으로 연결돼요.', assetErrors.length > 0);
       } catch (error) { if (version === versions[kind]) showAssetStatus(error.message || '파일을 읽지 못했어요.', true); }
       finally { if (version === versions[kind]) { pending.delete(kind); this.value = ''; } }
     });
@@ -193,10 +196,21 @@
     const doc = new DOMParser().parseFromString(html, 'text/html');
     const errors = [];
     const allowed = value => !value || /^(data:|IMG[123]$|#)/i.test(value.trim());
-    if (doc.querySelector('script[src],link[href],iframe,object,embed,base,meta[http-equiv],script[type="module"]')) errors.push('외부 파일·iframe·모듈 대신 HTML 안에 모든 내용을 넣어 주세요.');
-    if (Array.from(doc.querySelectorAll('[src],[poster]')).some(el => !allowed(el.getAttribute('src')) || !allowed(el.getAttribute('poster'))) || doc.querySelector('[srcset]')) errors.push('이미지는 IMG1·IMG2·IMG3 또는 HTML 안에 포함한 이미지만 사용할 수 있어요.');
-    const css = Array.from(doc.querySelectorAll('style')).map(s => s.textContent).join('\n') + Array.from(doc.querySelectorAll('[style]')).map(s => s.getAttribute('style')).join('\n');
-    if (/@import\b/i.test(css) || Array.from(css.matchAll(/url\(\s*(['"]?)(.*?)\1\s*\)/gi)).some(m => !allowed(m[2]))) errors.push('배경과 스타일의 외부 파일 주소를 IMG 번호 또는 내장 데이터로 바꿔 주세요.');
+    const address = value => String(value || '(주소 없음)').slice(0, 180);
+    for (const script of doc.querySelectorAll('script[src]')) errors.push('외부 JavaScript 파일을 불러와요: ' + address(script.getAttribute('src')) + ' — 필요한 코드를 HTML 안에 포함해 주세요.');
+    for (const link of doc.querySelectorAll('link[href]')) errors.push('외부 스타일·글꼴 등의 파일을 연결했어요: ' + address(link.getAttribute('href')) + ' — 스타일은 HTML 안에 넣고 글꼴은 기본 글꼴을 사용해 주세요.');
+    if (doc.querySelector('iframe,object,embed')) errors.push('다른 문서를 불러오는 iframe·object·embed가 있어요. 게임을 하나의 HTML 안에서 실행하도록 바꿔 주세요.');
+    if (doc.querySelector('base,meta[http-equiv],script[type="module"]')) errors.push('별도 실행 방식이나 페이지 이동 설정이 있어요. base·meta http-equiv·모듈 대신 일반 HTML과 script를 사용해 주세요.');
+    // A script src is JavaScript, not a missing student photo. Do not report it twice.
+    if (Array.from(doc.querySelectorAll('[src],[poster]')).some(el => !el.matches('script,iframe,embed') && (!allowed(el.getAttribute('src')) || !allowed(el.getAttribute('poster')))) || doc.querySelector('[srcset]')) errors.push('이미지·영상·소리에 외부 파일 주소가 있어요. 사진은 IMG1·IMG2·IMG3로 연결하거나 파일 안에 데이터를 포함해 주세요.');
+    const css = (Array.from(doc.querySelectorAll('style')).map(s => s.textContent).join('\n') + Array.from(doc.querySelectorAll('[style]')).map(s => s.getAttribute('style')).join('\n')).replace(/\/\*[\s\S]*?\*\//g, '');
+    // Report imported fonts/styles once, separately from background-image URLs.
+    const cssWithoutImports = css.replace(/@import\s+(?:url\(\s*(['"]?)(.*?)\1\s*\)|(['"])(.*?)\3)[^;]*;?/gi, (whole, q, url, q2, quotedUrl) => {
+      errors.push('외부 글꼴·스타일을 불러와요: ' + address(url || quotedUrl) + ' — @import를 없애고 기본 글꼴과 HTML 안의 스타일을 사용해 주세요.');
+      return '';
+    });
+    if (/@import\b/i.test(cssWithoutImports)) errors.push('외부 스타일을 불러오는 @import가 있어요. 스타일을 HTML 안에 포함해 주세요.');
+    if (Array.from(cssWithoutImports.matchAll(/url\(\s*(['"]?)(.*?)\1\s*\)/gi)).some(m => !allowed(m[2]))) errors.push('배경·글꼴 등의 외부 파일 주소가 있어요. 사진은 IMG 번호로 연결하고 다른 자료는 HTML 안에 포함해 주세요.');
     return errors;
   }
   function bridgeDocument(html, channel) {

@@ -627,7 +627,7 @@ const GAME_ASSET_PROMPT = [
   '[여기에 문제 내용, 조작 방법, 성공 조건을 입력]',
   '',
   '[필수 규칙]',
-  '1. HTML, CSS, JavaScript를 하나의 HTML 파일에 모두 포함해 줘. 외부 라이브러리·별도 파일·localStorage는 사용하지 마. 진행 상태는 게임 안의 변수로 관리해.',
+  '1. HTML, CSS, JavaScript를 하나의 HTML 파일에 모두 포함해 줘. Tailwind CDN·구글 글꼴·외부 라이브러리·별도 파일·localStorage는 사용하지 마. CSS는 style 안에 직접 작성하고 글꼴은 맑은 고딕, sans-serif를 사용해. 진행 상태는 게임 안의 변수로 관리해.',
   '2. 게임은 제작기 안의 iframe에서 실행돼. 실제 게임 영역은 제목·이동 버튼을 제외한 남은 공간이므로 16:9보다 세로가 짧을 수 있어. 게임 화면의 너비와 높이를 주어진 영역에 맞추고, 가로 너비만으로 높이를 계산하거나 16:9 비율을 강제하지 마. 960×540 같은 최대 크기로 게임 화면을 제한하지 마. 640×220과 640×360에서도 글자·입력칸·버튼이 잘리거나 겹치지 않게 배치와 크기를 조절해. overflow:hidden으로 넘치는 내용을 가리기만 하지 마.',
   '3. 공통 힌트 버튼을 위한 아래쪽 48px 여유 공간은 제작기가 이미 확보해. 게임 안에 힌트용 48px 여백을 다시 만들지 마. 게임 자체의 입력칸과 이동 버튼은 게임에 주어진 영역 안에 배치해.',
   '4. 캐릭터·말풍선·공통 힌트 버튼·보석 효과·업로드 화면은 제작기가 제공하므로 게임에 만들지 마.',
@@ -781,7 +781,7 @@ document.querySelector('.wrap').addEventListener('change', function (event) {
 <script src="./classroom-access.js?v=20261030-common"></script>
 <script src="./project-core.js?v=20261029-six"></script>
 <script src="./submission-files.js?v=20261029-six"></script>
-<script src="./project-maker.js?v=20261030-images"></script>
+<script src="./project-maker.js?v=20261030-assets"></script>
 <script src="./storyboard-core.js?v=20261029-six"></script>
 <script src="./storyboard-panel.js?v=20261029-pdf"></script>
 
